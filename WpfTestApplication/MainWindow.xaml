@@ -9,14 +9,20 @@
         Title="MainWindow" Height="350" Width="525" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="25*"/>
-            <RowDefinition Height="4*"/>
+            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}" BorderThickness="1" Background="#FFD4EDFF">
-            <DesignerCanvas:DesignerCanvas x:Name="dcvs">
-                <DesignerCanvas:DesignerCanvasItem Margin="267,93,137,76"/>
-            </DesignerCanvas:DesignerCanvas>
+            <ScrollViewer HorizontalScrollBarVisibility="Visible">
+                <DesignerCanvas:DesignerCanvas x:Name="dcvs" />
+            </ScrollViewer>
         </Border>
-        <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="46,15,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>
+        <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="67,5,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>
+        <StatusBar Grid.Row="2">
+            <Label x:Name="label">
+                <TextBlock Text="{Binding SelectedItems.Count, ElementName=dcvs, Mode=OneWay, StringFormat=\{0:d\} item(s) selected.}" />
+            </Label>
+        </StatusBar>
     </Grid>
 </Window>

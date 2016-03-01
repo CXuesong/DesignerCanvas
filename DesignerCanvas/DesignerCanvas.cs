@@ -20,30 +20,77 @@ namespace Undefined.DesignerCanvas
     /// <summary>
     /// 用于承载绘图图面。
     /// </summary>
-    public class DesignerCanvas : Canvas
+    [TemplatePart(Name = "PART_Canvas", Type = typeof(Canvas))]
+    public class DesignerCanvas : Control
     {
         private readonly GraphicalObjectCollection _Items = new GraphicalObjectCollection();
         private readonly GraphicalObjectCollection _SelectedItems = new GraphicalObjectCollection();
-        private readonly GraphicalObjectContainerFactory containerFactory = new GraphicalObjectContainerFactory();
+        private readonly GraphicalObjectContainerGenerator _ItemContainerGenerator = new GraphicalObjectContainerGenerator();
+
+        #region Items & States
 
         public GraphicalObjectCollection Items => _Items;
 
         public GraphicalObjectCollection SelectedItems => _SelectedItems;
 
-        public DesignerCanvas()
-        {
-            _Items.CollectionChanged += _Items_CollectionChanged;
-            _SelectedItems.CollectionChanged += _SelectedItems_CollectionChanged;
-        }
+        //public GraphicalObjectContainerGenerator ItemContainerGenerator => _ItemContainerGenerator;
+
+        // Indicates whether containers' IsSelected property is beging changed to
+        // correspond with SelectedItems collection.
+        private bool isSelectedContainersSynchronizing = false;
 
         private void _SelectedItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            //throw new NotImplementedException();
+            try
+            {
+                if (isSelectedContainersSynchronizing)
+                    throw new InvalidOperationException("此函数不支持递归调用。");
+                isSelectedContainersSynchronizing = true;
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                    case NotifyCollectionChangedAction.Remove:
+                    case NotifyCollectionChangedAction.Replace:
+                        if (e.OldItems != null)
+                        {
+                            foreach (var item in e.OldItems)
+                            {
+                                var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
+                                if (container != null) container.IsSelected = false;
+                            }
+                        }
+                        if (e.NewItems != null)
+                        {
+                            foreach (var item in e.NewItems)
+                            {
+                                var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
+                                if (container != null) container.IsSelected = true;
+                            }
+                        }
+                        break;
+                    case NotifyCollectionChangedAction.Reset:
+                        var containers = partCanvas.Children.OfType<DesignerCanvasItem>().ToList();
+                        foreach (var item in SelectedItems)
+                        {
+                            var container = _ItemContainerGenerator.ContainerFromItem(item);
+                            container.IsSelected = true;
+                            containers.Remove(container);
+                        }
+                        foreach (var item in containers)
+                        {
+                            item.IsSelected = false;
+                        }
+                        break;
+                }
+            }
+            finally
+            {
+                isSelectedContainersSynchronizing = false;
+            }
         }
 
         private void _Items_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            //throw new NotImplementedException();
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -53,27 +100,123 @@ namespace Undefined.DesignerCanvas
                     {
                         foreach (var item in e.OldItems)
                         {
-                            var container = containerFactory.ContainerFromItem((GraphicalObject) item);
-                            if (container != null) this.Children.Remove(container);
-                            containerFactory.Recycle(container);
+                            var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
+                            if (container != null) partCanvas.Children.Remove(container);
+                            _ItemContainerGenerator.Recycle(container);
                         }
                     }
                     if (e.NewItems != null)
                     {
                         foreach (var item in e.NewItems)
                         {
-                            this.Children.Add(containerFactory.GetContainer((GraphicalObject) item));
+                            partCanvas.Children.Add(_ItemContainerGenerator.CreateContainer((GraphicalObject)item));
                         }
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    foreach (var item in this.Children)
+                    foreach (var item in partCanvas.Children)
                     {
-                        containerFactory.Recycle((DesignerCanvasItem) item);
+                        _ItemContainerGenerator.Recycle((DesignerCanvasItem)item);
                     }
-                    this.Children.Clear();
+                    partCanvas.Children.Clear();
+                    foreach (var item in _Items)
+                    {
+                        partCanvas.Children.Add(_ItemContainerGenerator.CreateContainer(item));
+                    }
                     break;
             }
+        }
+        #endregion
+
+        #region UI
+
+        private Canvas partCanvas;
+
+        internal static DesignerCanvas FindDesignerCanvas(DependencyObject childContainer)
+        {
+            while (childContainer != null)
+            {
+                childContainer = VisualTreeHelper.GetParent(childContainer);
+                var dc = childContainer as DesignerCanvas;
+                if (dc != null) return dc;
+            }
+            return null;
+        }
+
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+            partCanvas = (Canvas) GetTemplateChild("PART_Canvas");
+            if (partCanvas == null)
+            {
+                partCanvas = new Canvas();
+                this.AddVisualChild(partCanvas);
+            }
+            partCanvas.MouseDown += PartCanvas_MouseDown;
+        }
+
+        private void PartCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.Source == partCanvas)
+            {
+                _SelectedItems.Clear();
+            }
+        }
+
+        protected override Size MeasureOverride(Size constraint)
+        {
+            const double measurementMargin = 10;
+            var bounds = _Items.Bounds;
+            return new Size(Math.Max(0, bounds.Right + measurementMargin),
+                Math.Max(0, bounds.Bottom + measurementMargin));
+        }
+
+        #endregion
+
+        #region Notifications from Items
+
+        internal void NotifyItemMouseDown(DesignerCanvasItem container)
+        {
+            Debug.Assert(container != null);
+            //Debug.Print("NotifyItemMouseDown");
+            if (container.IsSelected == false)
+            {
+                // Left click to selecte an object.
+                if ((Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Shift)) == ModifierKeys.None)
+                {
+                    // Unselect other items first.
+                    _SelectedItems.Clear();
+                }
+                _SelectedItems.Add(_ItemContainerGenerator.ItemFromContainer(container));
+            }
+        }
+
+        internal void NotifyItemIsSelectedChanged(DesignerCanvasItem container)
+        {
+            Debug.Assert(container != null);
+            // Do not update SelectedItems when SelectedItems are being updated.
+            if (isSelectedContainersSynchronizing) return;
+            var item = _ItemContainerGenerator.ItemFromContainer(container);
+            if (item == null) return;
+            if (container.IsSelected)
+            {
+                Debug.Assert(!SelectedItems.Contains(item));
+                SelectedItems.Add(item);
+            }
+            else
+            {
+                var reuslt = SelectedItems.Remove(item);
+                Debug.Assert(reuslt);
+            }
+        }
+
+        #endregion
+
+        public DesignerCanvas()
+        {
+            _Items.CollectionChanged += _Items_CollectionChanged;
+            _SelectedItems.CollectionChanged += _SelectedItems_CollectionChanged;
+            // Note PartCanvas property will return null here.
         }
 
         static DesignerCanvas()
@@ -82,7 +225,7 @@ namespace Undefined.DesignerCanvas
         }
     }
 
-    internal class GraphicalObjectContainerFactory
+    public class GraphicalObjectContainerGenerator    // aka. Factory
     {
         private Dictionary<GraphicalObject, DesignerCanvasItem> itemContainerDict =
             new Dictionary<GraphicalObject, DesignerCanvasItem>();
@@ -114,7 +257,7 @@ namespace Undefined.DesignerCanvas
 
         #endregion
 
-        private DesignerCanvasItem GetContainer()
+        private DesignerCanvasItem CreateContainer()
         {
             DesignerCanvasItem container;
             if (containerPool.Count > 0)
@@ -137,11 +280,12 @@ namespace Undefined.DesignerCanvas
         /// <summary>
         /// Gets a new or pooled container for a specific GraphicalObject.
         /// </summary>
-        public DesignerCanvasItem GetContainer(GraphicalObject item)
+        public DesignerCanvasItem CreateContainer(GraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            var container = GetContainer();
+            var container = CreateContainer();
             PrepareContainer(container, item);
+            itemContainerDict.Add(item, container);
             return container;
         }
 
@@ -157,6 +301,8 @@ namespace Undefined.DesignerCanvas
         public void Recycle(DesignerCanvasItem container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
+            var dc = container.DataContext as GraphicalObject;
+            if (dc != null) itemContainerDict.Remove(dc);
             container.DataContext = null;
             if (containerPool.Count < MaxPooledContainers)
             {

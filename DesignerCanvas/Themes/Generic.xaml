@@ -1,31 +1,153 @@
 ﻿<ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="clr-namespace:Undefined.DesignerCanvas">
+    xmlns:local="clr-namespace:Undefined.DesignerCanvas"
+    xmlns:primitive="clr-namespace:Undefined.DesignerCanvas.Primitive">
     <Style TargetType="{x:Type local:DesignerCanvas}">
-        <!--<Setter Property="Template">
+        <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:DesignerCanvas}">
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
-
+                        <Canvas x:Name="PART_Canvas" Background="Transparent">
+                            <!--
+                            Panel elements do not receive mouse or stylus events if a Background
+                            is not defined. If you need to handle mouse or stylus events
+                            but do not want a background for your Panel, use Transparent.
+                            -->
+                        </Canvas>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
-        </Setter>-->
+        </Setter>
     </Style>
+    <ControlTemplate x:Key="DragThumbTemplate" TargetType="primitive:DragThumb">
+        <!-- Later the invisible thumb may be changed into different shapes -->
+        <Rectangle Fill="Transparent" />
+    </ControlTemplate>
     <Style TargetType="{x:Type local:DesignerCanvasItem}">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:DesignerCanvasItem}">
-                    <Border Background="{TemplateBinding Background}"
-                            BorderBrush="Black"
-                            BorderThickness="1px">
-                        <Grid>
-                            <Image x:Name="PART_Image" Source="{Binding Image, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                    <Grid DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
+                        <primitive:DragThumb x:Name="PART_DragThumb" Template="{StaticResource DragThumbTemplate}" />
+                        <Image x:Name="PART_Image" IsHitTestVisible="False" Source="{Binding Image, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                        <primitive:ContainerDesigningDecorator x:Name="PART_DesigningDecorator" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="Selector.IsSelected" Value="True">
+                            <Setter TargetName="PART_DesigningDecorator" Property="DecoratorVisible" Value="True" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="ThumbHandle" TargetType="Shape">
+        <Setter Property="SnapsToDevicePixels" Value="true" />
+        <Setter Property="Stroke" Value="#FFC8C8C8" />
+        <Setter Property="StrokeThickness" Value=".5" />
+        <Setter Property="Width" Value="7" />
+        <Setter Property="Height" Value="7" />
+        <Setter Property="Margin" Value="-2" />
+        <Setter Property="Fill">
+            <Setter.Value>
+                <RadialGradientBrush Center="0.2, 0.2" GradientOrigin="0.2, 0.2" RadiusX="0.8" RadiusY="0.8">
+                    <GradientStop Color="White" Offset="0.0" />
+                    <GradientStop Color="Gray" Offset="0.8" />
+                </RadialGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="primitive:ResizeRotateChrome">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="primitive:ResizeRotateChrome">
+                    <Grid>
+                        <!-- Thumbs for operation, but should be transparent. -->
+                        <Grid Opacity="0">
+                            <!-- ResizeThumb -->
+                            <Grid>
+                                <primitive:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 -4 0 0" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
+                                <primitive:ResizeThumb Width="3" Cursor="SizeWE" Margin="-4 0 0 0" VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
+                                <primitive:ResizeThumb Width="3" Cursor="SizeWE" Margin="0 0 -4 0" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
+                                <primitive:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 0 0 -4" VerticalAlignment="Bottom"  HorizontalAlignment="Stretch"/>
+                                <primitive:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="-6 -6 0 0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                                <primitive:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="0 -6 -6 0" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+                                <primitive:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="-6 0 0 -6" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+                                <primitive:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="0 0 -6 -6" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <!-- RotateThumb -->
+                            <!--<Grid>
+                                <app:RotateThumb Cursor="Cross" Width="7" Height="7" Margin="0,-25,0,0" VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                            </Grid>-->
                         </Grid>
-                    </Border>
+                        <!-- Rendering -->
+                        <Grid IsHitTestVisible="False" Margin="-3">
+                            <Rectangle 
+                                         StrokeThickness="1"
+                                         Margin="1"
+                                         Stroke="Blue"/>
+                            <Line StrokeThickness="1" X1="0" Y1="0" X2="0" Y2="20"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Top"
+                                            Margin="0,-20,0,0"
+                                            Stroke="Blue"/>
+                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-25,0,0"/>
+                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
+                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="primitive:SizeChrome">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="primitive:SizeChrome">
+                    <!--- 调整控件大小时显示大小值。 -->
+                    <Grid>
+                        <Path Stroke="Red"
+                                      StrokeThickness="1"
+                                      Height="10"
+                                      VerticalAlignment="Bottom"
+                                      Margin="-2,0,-2,-15"
+                                      Stretch="Fill"
+                                      Data="M0,0 0,10 M 0,5 100,5 M 100,0 100,10"/>
+                        <TextBlock Text="{Binding Width, StringFormat=0.0}"
+                                           Background="White"
+                                           Padding="3,0,3,0"
+                                           Foreground="Red"
+                                           Margin="0,0,0,-18"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Bottom"/>
+                        <Path Stroke="Red"
+                                      StrokeThickness="1"
+                                      Width="10"
+                                      HorizontalAlignment="Right"
+                                      Margin="0,-2,-15,-2"
+                                      Stretch="Fill"
+                                      Data="M5,0 5,100 M 0,0 10,0 M 0,100 10,100"/>
+                        <TextBlock Text="{Binding Height, StringFormat=0.0}"
+                                           Background="White"
+                                           Foreground="Red"
+                                           Padding="3,0,3,0"
+                                           Margin="0,0,-18,0"
+                                           HorizontalAlignment="Right"
+                                           VerticalAlignment="Center">
+                            <TextBlock.LayoutTransform>
+                                <RotateTransform Angle="90" CenterX="1" CenterY="0.5"/>
+                            </TextBlock.LayoutTransform>
+                        </TextBlock>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

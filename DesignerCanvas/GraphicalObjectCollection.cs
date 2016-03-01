@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,7 +16,7 @@ namespace Undefined.DesignerCanvas
     /// 为了优化性能，此集合的内部实现可能会在未来进行调整。
     /// 因此目前仅公开必要的集合操作。
     /// </summary>
-    public class GraphicalObjectCollection : ICollection<GraphicalObject>, INotifyCollectionChanged
+    public class GraphicalObjectCollection : ICollection<GraphicalObject>, INotifyPropertyChanged, INotifyCollectionChanged
     {
         private LinkedList<GraphicalObject> myCollection = new LinkedList<GraphicalObject>();
 
@@ -49,6 +51,23 @@ namespace Undefined.DesignerCanvas
             }
         }
 
+        /// <summary>
+        /// Gets the unioned boundary of all items.
+        /// </summary>
+        public Rect Bounds
+        {
+            get
+            {
+                if (myCollection.Count == 0) return Rect.Empty;
+                var rect = myCollection.First().Bounds;
+                foreach (var obj in myCollection)
+                {
+                    rect.Union(obj.Bounds);
+                }
+                return rect;
+            }
+        }
+
         #region ICollection
         public IEnumerator<GraphicalObject> GetEnumerator()
             => myCollection.GetEnumerator();
@@ -64,12 +83,17 @@ namespace Undefined.DesignerCanvas
         {
             myCollection.AddLast(item);
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+            OnPropertyChanged(nameof(Count));
+            OnPropertyChanged("Item[]");
         }
 
         public void Clear()
         {
+            if (myCollection.Count == 0) return;
             myCollection.Clear();
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            OnPropertyChanged(nameof(Count));
+            OnPropertyChanged("Item[]");
         }
 
         public bool Contains(GraphicalObject item)
@@ -82,21 +106,33 @@ namespace Undefined.DesignerCanvas
         {
             // NOTE: this is an O(n) operation!
             var result = myCollection.Remove(item);
-            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            if (result)
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+                OnPropertyChanged(nameof(Count));
+                OnPropertyChanged("Item[]");
+            }
             return result;
         }
 
         public int Count => myCollection.Count;
 
         public bool IsReadOnly => false;
+
         #endregion
 
-        #region INotifyCollectionChanged
+        #region INotifyPropertyChanged & INotifyCollectionChanged
         public event NotifyCollectionChangedEventHandler CollectionChanged;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
         {
             CollectionChanged?.Invoke(this, e);
+        }
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
     }

@@ -59,6 +59,10 @@
     <Compile Include="DesignerCanvasItem.cs" />
     <Compile Include="GraphicalObject.cs" />
     <Compile Include="GraphicalObjectCollection.cs" />
+    <Compile Include="Primitive\Adorners.cs" />
+    <Compile Include="Primitive\ContainerDesigningDecorator.cs" />
+    <Compile Include="Primitive\DragThumb.cs" />
+    <Compile Include="Primitive\ResizeThumb.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
