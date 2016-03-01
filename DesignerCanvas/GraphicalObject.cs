@@ -14,7 +14,7 @@ namespace Undefined.DesignerCanvas
     /// 用于为支持图形显示的对象提供数据。
     /// 您可以考虑从此类派生以提供附加数据或行为。
     /// </summary>
-    public class GraphicalObject : INotifyPropertyChanged
+    public class GraphicalObject : INotifyPropertyChanged, IGraphicalObject
     {
         private Point _Location;
 
@@ -122,5 +122,25 @@ namespace Undefined.DesignerCanvas
             }
         }
         #endregion
+
+        public GraphicalObject()
+        {
+            
+        }
+
+        public GraphicalObject(float left, float top, float width, float height, ImageSource image)
+        {
+            _Location = new Point(left, top);
+            _Size = new Size(width, height);
+            _Image = image;
+        }
+    }
+
+    /// <summary>
+    /// This interface is placed here for future abstractions.
+    /// </summary>
+    public interface IGraphicalObject
+    {
+        Rect Bounds { get; }
     }
 }

@@ -15,4 +15,19 @@
             </Setter.Value>
         </Setter>-->
     </Style>
+    <Style TargetType="{x:Type local:DesignerCanvasItem}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:DesignerCanvasItem}">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="Black"
+                            BorderThickness="1px">
+                        <Grid>
+                            <Image x:Name="PART_Image" Source="{Binding Image, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

@@ -5,6 +5,8 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesignerCanvas", "DesignerCanvas\DesignerCanvas.csproj", "{95510603-051A-4A86-B8AF-B8683501D6AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfTestApplication", "WpfTestApplication\WpfTestApplication.csproj", "{5D789A14-F122-448C-BC84-F3D536B04CAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{95510603-051A-4A86-B8AF-B8683501D6AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95510603-051A-4A86-B8AF-B8683501D6AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95510603-051A-4A86-B8AF-B8683501D6AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5D789A14-F122-448C-BC84-F3D536B04CAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D789A14-F122-448C-BC84-F3D536B04CAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D789A14-F122-448C-BC84-F3D536B04CAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D789A14-F122-448C-BC84-F3D536B04CAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

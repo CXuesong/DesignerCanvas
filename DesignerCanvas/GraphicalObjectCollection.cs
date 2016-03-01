@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,7 +14,7 @@ namespace Undefined.DesignerCanvas
     /// 为了优化性能，此集合的内部实现可能会在未来进行调整。
     /// 因此目前仅公开必要的集合操作。
     /// </summary>
-    public class GraphicalObjectCollection : ICollection<GraphicalObject>
+    public class GraphicalObjectCollection : ICollection<GraphicalObject>, INotifyCollectionChanged
     {
         private LinkedList<GraphicalObject> myCollection = new LinkedList<GraphicalObject>();
 
@@ -48,7 +49,7 @@ namespace Undefined.DesignerCanvas
             }
         }
 
-        #region 标准集合操作
+        #region ICollection
         public IEnumerator<GraphicalObject> GetEnumerator()
             => myCollection.GetEnumerator();
 
@@ -60,10 +61,16 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         /// <param name="item">不可为<c>null</c>。</param>
         public void Add(GraphicalObject item)
-            => myCollection.AddLast(item);
+        {
+            myCollection.AddLast(item);
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+        }
 
         public void Clear()
-            => myCollection.Clear();
+        {
+            myCollection.Clear();
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
 
         public bool Contains(GraphicalObject item)
             => myCollection.Contains(item);
@@ -72,11 +79,25 @@ namespace Undefined.DesignerCanvas
             => myCollection.CopyTo(array, arrayIndex);
 
         public bool Remove(GraphicalObject item)
-            => myCollection.Remove(item);
+        {
+            // NOTE: this is an O(n) operation!
+            var result = myCollection.Remove(item);
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, item));
+            return result;
+        }
 
         public int Count => myCollection.Count;
 
         public bool IsReadOnly => false;
+        #endregion
+
+        #region INotifyCollectionChanged
+        public event NotifyCollectionChangedEventHandler CollectionChanged;
+
+        protected virtual void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            CollectionChanged?.Invoke(this, e);
+        }
         #endregion
     }
 }
