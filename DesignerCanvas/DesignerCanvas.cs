@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -22,7 +23,7 @@ namespace Undefined.DesignerCanvas
     /// 用于承载绘图图面。
     /// </summary>
     [TemplatePart(Name = "PART_Canvas", Type = typeof(Canvas))]
-    public class DesignerCanvas : Control
+    public class DesignerCanvas : Control, IScrollInfo
     {
         private readonly GraphicalObjectCollection _Items = new GraphicalObjectCollection();
         private readonly GraphicalObjectCollection _SelectedItems = new GraphicalObjectCollection();
@@ -57,7 +58,7 @@ namespace Undefined.DesignerCanvas
                             foreach (var item in e.OldItems)
                             {
                                 var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
-                                if (container != null) container.IsSelected = false;
+                                container?.SetValue(Selector.IsSelectedProperty, false);
                             }
                         }
                         if (e.NewItems != null)
@@ -65,21 +66,24 @@ namespace Undefined.DesignerCanvas
                             foreach (var item in e.NewItems)
                             {
                                 var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
-                                if (container != null) container.IsSelected = true;
+                                container?.SetValue(Selector.IsSelectedProperty, true);
                             }
                         }
                         break;
                     case NotifyCollectionChangedAction.Reset:
-                        var containers = partCanvas.Children.OfType<DesignerCanvasItem>().ToList();
+                        var unselectedContainers = partCanvas.Children.Cast<DependencyObject>().ToList();
                         foreach (var item in SelectedItems)
                         {
                             var container = _ItemContainerGenerator.ContainerFromItem(item);
-                            container.IsSelected = true;
-                            containers.Remove(container);
+                            if (container != null)
+                            {
+                                container.SetValue(Selector.IsSelectedProperty, true);
+                                unselectedContainers.Remove(container);
+                            }
                         }
-                        foreach (var item in containers)
+                        foreach (var item in unselectedContainers)
                         {
-                            item.IsSelected = false;
+                            item.SetValue(Selector.IsSelectedProperty, false);
                         }
                         break;
                 }
@@ -101,7 +105,7 @@ namespace Undefined.DesignerCanvas
                     {
                         foreach (var item in e.OldItems)
                         {
-                            var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
+                            var container = (UIElement)_ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
                             if (container != null) partCanvas.Children.Remove(container);
                             _ItemContainerGenerator.Recycle(container);
                         }
@@ -110,7 +114,7 @@ namespace Undefined.DesignerCanvas
                     {
                         foreach (var item in e.NewItems)
                         {
-                            partCanvas.Children.Add(_ItemContainerGenerator.CreateContainer((GraphicalObject)item));
+                            partCanvas.Children.Add((UIElement)_ItemContainerGenerator.CreateContainer((GraphicalObject)item));
                         }
                     }
                     break;
@@ -122,7 +126,7 @@ namespace Undefined.DesignerCanvas
                     partCanvas.Children.Clear();
                     foreach (var item in _Items)
                     {
-                        partCanvas.Children.Add(_ItemContainerGenerator.CreateContainer(item));
+                        partCanvas.Children.Add((UIElement)_ItemContainerGenerator.CreateContainer(item));
                     }
                     break;
             }
@@ -286,15 +290,236 @@ namespace Undefined.DesignerCanvas
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(DesignerCanvas), new FrameworkPropertyMetadata(typeof(DesignerCanvas)));
         }
+
+        #region IScrollInfo
+
+        /// <summary>
+        /// Gets a value that indicates whether a control supports scrolling.
+        /// </summary>
+        /// <returns>
+        /// true if the control has a <see cref="T:System.Windows.Controls.ScrollViewer"/> in its style and has a custom keyboard scrolling behavior; otherwise, false.
+        /// </returns>
+        protected override bool HandlesScrolling => true;
+
+        /// <summary>
+        /// Scrolls up within content by one logical unit. 
+        /// </summary>
+        public void LineUp()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls down within content by one logical unit. 
+        /// </summary>
+        public void LineDown()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls left within content by one logical unit.
+        /// </summary>
+        public void LineLeft()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls right within content by one logical unit.
+        /// </summary>
+        public void LineRight()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls up within content by one page.
+        /// </summary>
+        public void PageUp()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls down within content by one page.
+        /// </summary>
+        public void PageDown()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls left within content by one page.
+        /// </summary>
+        public void PageLeft()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls right within content by one page.
+        /// </summary>
+        public void PageRight()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls up within content after a user clicks the wheel button on a mouse.
+        /// </summary>
+        public void MouseWheelUp()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls down within content after a user clicks the wheel button on a mouse.
+        /// </summary>
+        public void MouseWheelDown()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls left within content after a user clicks the wheel button on a mouse.
+        /// </summary>
+        public void MouseWheelLeft()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Scrolls right within content after a user clicks the wheel button on a mouse.
+        /// </summary>
+        public void MouseWheelRight()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Sets the amount of horizontal offset.
+        /// </summary>
+        /// <param name="offset">The degree to which content is horizontally offset from the containing viewport.</param>
+        public void SetHorizontalOffset(double offset)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Sets the amount of vertical offset.
+        /// </summary>
+        /// <param name="offset">The degree to which content is vertically offset from the containing viewport.</param>
+        public void SetVerticalOffset(double offset)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Forces content to scroll until the coordinate space of a <see cref="T:System.Windows.Media.Visual"/> object is visible. 
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Windows.Rect"/> that is visible.
+        /// </returns>
+        /// <param name="visual">A <see cref="T:System.Windows.Media.Visual"/> that becomes visible.</param><param name="rectangle">A bounding rectangle that identifies the coordinate space to make visible.</param>
+        public Rect MakeVisible(Visual visual, Rect rectangle)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether scrolling on the vertical axis is possible. 
+        /// </summary>
+        /// <returns>
+        /// true if scrolling is possible; otherwise, false. This property has no default value.
+        /// </returns>
+        public bool CanVerticallyScroll { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether scrolling on the horizontal axis is possible.
+        /// </summary>
+        /// <returns>
+        /// true if scrolling is possible; otherwise, false. This property has no default value.
+        /// </returns>
+        public bool CanHorizontallyScroll { get; set; }
+
+        /// <summary>
+        /// Gets the horizontal size of the extent.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal size of the extent. This property has no default value.
+        /// </returns>
+        public double ExtentWidth { get; }
+
+        /// <summary>
+        /// Gets the vertical size of the extent.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical size of the extent.This property has no default value.
+        /// </returns>
+        public double ExtentHeight { get; }
+
+        /// <summary>
+        /// Gets the horizontal size of the viewport for this content.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal size of the viewport for this content. This property has no default value.
+        /// </returns>
+        public double ViewportWidth { get; }
+
+        /// <summary>
+        /// Gets the vertical size of the viewport for this content.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical size of the viewport for this content. This property has no default value.
+        /// </returns>
+        public double ViewportHeight { get; }
+
+        /// <summary>
+        /// Gets the horizontal offset of the scrolled content.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal offset. This property has no default value.
+        /// </returns>
+        public double HorizontalOffset { get; }
+
+        /// <summary>
+        /// Gets the vertical offset of the scrolled content.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical offset of the scrolled content. Valid values are between zero and the <see cref="P:System.Windows.Controls.Primitives.IScrollInfo.ExtentHeight"/> minus the <see cref="P:System.Windows.Controls.Primitives.IScrollInfo.ViewportHeight"/>. This property has no default value.
+        /// </returns>
+        public double VerticalOffset { get; }
+
+        /// <summary>
+        /// Gets or sets a <see cref="T:System.Windows.Controls.ScrollViewer"/> element that controls scrolling behavior.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="T:System.Windows.Controls.ScrollViewer"/> element that controls scrolling behavior. This property has no default value.
+        /// </returns>
+        public ScrollViewer ScrollOwner { get; set; }
+
+        #endregion
     }
 
+   /// <summary>
+   /// Generates UIElements for GraphicalObjects.
+   /// Note <see cref="GraphicalObjectCollection"/> has no indexer.
+   /// </summary>
     public class GraphicalObjectContainerGenerator    // aka. Factory
     {
-        private Dictionary<GraphicalObject, DesignerCanvasItem> itemContainerDict =
-            new Dictionary<GraphicalObject, DesignerCanvasItem>();
+        /// <summary>
+        /// An attached property for item container, set to the corrspoinding source item.
+        /// </summary>
+        private static readonly DependencyProperty DataItemProperty =
+            DependencyProperty.RegisterAttached("DataItem", typeof (object), typeof (GraphicalObjectContainerGenerator),
+                new FrameworkPropertyMetadata(null));
+
+        private readonly Dictionary<GraphicalObject, DependencyObject> itemContainerDict =
+            new Dictionary<GraphicalObject, DependencyObject>();
 
         #region Container Pool
-        private List<DesignerCanvasItem> containerPool = new List<DesignerCanvasItem>();
+        private List<DependencyObject> containerPool = new List<DependencyObject>();
         private int _MaxPooledContainers;
 
         /// <summary>
@@ -320,9 +545,9 @@ namespace Undefined.DesignerCanvas
 
         #endregion
 
-        private DesignerCanvasItem CreateContainer()
+        private DependencyObject CreateContainer()
         {
-            DesignerCanvasItem container;
+            DependencyObject container;
             if (containerPool.Count > 0)
             {
                 container = containerPool[containerPool.Count - 1];
@@ -331,11 +556,6 @@ namespace Undefined.DesignerCanvas
             else
             {
                 container = new DesignerCanvasItem();
-                container.SetBinding(Canvas.LeftProperty, new Binding("Left"));
-                container.SetBinding(Canvas.TopProperty, new Binding("Top"));
-                container.SetBinding(FrameworkElement.WidthProperty, new Binding("Width"));
-                container.SetBinding(FrameworkElement.HeightProperty, new Binding("Height"));
-                container.SetBinding(DesignerCanvasItem.ImageProperty, new Binding("Image"));
             }
             return container;
         }
@@ -343,7 +563,7 @@ namespace Undefined.DesignerCanvas
         /// <summary>
         /// Gets a new or pooled container for a specific GraphicalObject.
         /// </summary>
-        public DesignerCanvasItem CreateContainer(GraphicalObject item)
+        public DependencyObject CreateContainer(GraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             var container = CreateContainer();
@@ -352,21 +572,21 @@ namespace Undefined.DesignerCanvas
             return container;
         }
 
-        private void PrepareContainer(DesignerCanvasItem container, GraphicalObject item)
+        private void PrepareContainer(DependencyObject container, GraphicalObject item)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
-            container.DataContext = item;
+            container.SetValue(DataItemProperty, item);
+            container.SetValue(FrameworkElement.DataContextProperty, item);
         }
 
         /// <summary>
         /// Declares a container no longer be used and should be pooled or discarded.
         /// </summary>
-        public void Recycle(DesignerCanvasItem container)
+        public void Recycle(DependencyObject container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
-            var dc = container.DataContext as GraphicalObject;
-            if (dc != null) itemContainerDict.Remove(dc);
-            container.DataContext = null;
+            container.ClearValue(DataItemProperty);
+            container.ClearValue(FrameworkElement.DataContextProperty);
             if (containerPool.Count < MaxPooledContainers)
             {
                 containerPool.Add(container);
@@ -377,10 +597,10 @@ namespace Undefined.DesignerCanvas
         /// Gets the container, if generated, for a specific item.
         /// </summary>
         /// <returns></returns>
-        public DesignerCanvasItem ContainerFromItem(GraphicalObject item)
+        public DependencyObject ContainerFromItem(GraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            DesignerCanvasItem container;
+            DependencyObject container;
             if (itemContainerDict.TryGetValue(item, out container))
                 return container;
             return null;
@@ -393,7 +613,7 @@ namespace Undefined.DesignerCanvas
         public GraphicalObject ItemFromContainer(DependencyObject container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
-            return (container as FrameworkElement)?.DataContext as GraphicalObject;
+            return (GraphicalObject) container.ReadLocalValue(DataItemProperty);
         }
     }
 }

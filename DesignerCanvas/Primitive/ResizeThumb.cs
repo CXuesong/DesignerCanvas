@@ -47,19 +47,6 @@ namespace Undefined.DesignerCanvas.Primitive
             }
         }
 
-        /*/// <summary>
-        /// Gets or sets the control subject to resizing.
-        /// </summary>
-        public FrameworkElement DestControl
-        {
-            get { return (DesignerCanvasItem)GetValue(DestControlProperty); }
-            set { SetValue(DestControlProperty, value); }
-        }
-
-        public static readonly DependencyProperty DestControlProperty =
-            DependencyProperty.Register("DestControl", typeof(FrameworkElement), typeof(ResizeThumb), new PropertyMetadata(null));
-            */
-
         void ResizeThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             var destControl = DataContext as DependencyObject;

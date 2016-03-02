@@ -40,13 +40,13 @@ namespace WpfTestApplication
             dcvs.Items.Add(bumpingItem);
             var timer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(100),
+                Interval = TimeSpan.FromMilliseconds(10),
             };
             var rnd = new Random();
             timer.Tick += (_, e1) =>
             {
-                bumpingItem.Left += (rnd.NextDouble() - 0.5)*10;
-                bumpingItem.Top += (rnd.NextDouble() - 0.5)*10;
+                bumpingItem.Left += (rnd.NextDouble() - 0.5)*2;
+                bumpingItem.Top += (rnd.NextDouble() - 0.5)*2;
             };
             timer.Start();
         }

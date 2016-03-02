@@ -43,6 +43,11 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="Canvas.Left" Value="{Binding Left}" />
+        <Setter Property="Canvas.Top" Value="{Binding Top}" />
+        <Setter Property="Width" Value="{Binding Width}" />
+        <Setter Property="Height" Value="{Binding Height}" />
+        <Setter Property="Image" Value="{Binding Image}" />
     </Style>
     <Style x:Key="ThumbHandle" TargetType="Shape">
         <Setter Property="SnapsToDevicePixels" Value="true" />
@@ -166,3 +171,4 @@
         </Setter>
     </Style>
 </ResourceDictionary>
+

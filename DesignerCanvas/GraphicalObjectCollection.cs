@@ -18,7 +18,7 @@ namespace Undefined.DesignerCanvas
     /// </summary>
     public class GraphicalObjectCollection : ICollection<GraphicalObject>, INotifyPropertyChanged, INotifyCollectionChanged
     {
-        private LinkedList<GraphicalObject> myCollection = new LinkedList<GraphicalObject>();
+        private HashSet<GraphicalObject> myCollection = new HashSet<GraphicalObject>();
 
         /// <summary>
         /// 获取指定区域内的所有对象。
@@ -82,7 +82,7 @@ namespace Undefined.DesignerCanvas
         public void Add(GraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            myCollection.AddLast(item);
+            myCollection.Add(item);
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
             OnPropertyChanged(nameof(Count));
             OnPropertyChanged("Item[]");
@@ -94,7 +94,7 @@ namespace Undefined.DesignerCanvas
             var tempList = new List<GraphicalObject>();
             foreach (var obj in items)
             {
-                myCollection.AddLast(obj);
+                myCollection.Add(obj);
                 tempList.Add(obj);
                 if (tempList.Count >= batchNotificationItems)
                 {

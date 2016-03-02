@@ -26,19 +26,6 @@ namespace Undefined.DesignerCanvas.Primitive
             DragCompleted += DragThumb_DragCompleted;
         }
 
-        /*/// <summary>
-        /// Gets or sets the control subject to resizing.
-        /// </summary>
-        public FrameworkElement DestControl
-        {
-            get { return (DesignerCanvasItem) GetValue(DestControlProperty); }
-            set { SetValue(DestControlProperty, value); }
-        }
-
-        public static readonly DependencyProperty DestControlProperty =
-            DependencyProperty.Register("DestControl", typeof (FrameworkElement), typeof (ResizeThumb),
-                new PropertyMetadata(null));*/
-
         private bool instantPreview;
 
         private void DragThumb_DragStarted(object sender, DragStartedEventArgs e)
