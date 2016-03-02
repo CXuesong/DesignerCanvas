@@ -55,5 +55,20 @@ namespace WpfTestApplication
         {
             //var b = BindingOperations.GetBinding(TestButton, Button.CommandProperty);
         }
+
+        private void AddItemsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var columns = 25;
+            var res = new[] {"1.png", "2.png", "3.png"};
+            var rnd = new Random();
+            var offset = dcvs.Items.Count;
+            for (int i = offset; i < offset + 1000; i++)
+            {
+                var row = i/columns;
+                var col = i%columns;
+                dcvs.Items.Add(new GraphicalObject(100 + row*40, 10 + col*40, 32, 32,
+                    LoadImageResource(res[rnd.Next(0, res.Length)])));
+            }
+        }
     }
 }

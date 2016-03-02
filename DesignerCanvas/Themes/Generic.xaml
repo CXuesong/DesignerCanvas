@@ -152,4 +152,17 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <Style TargetType="primitive:RubberbandChrome">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="primitive:RubberbandChrome">
+                    <Rectangle Stroke="Black" >
+                        <Rectangle.Fill>
+                            <SolidColorBrush Color="Aqua" Opacity="0.5"/>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>

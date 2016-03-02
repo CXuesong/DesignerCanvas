@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Undefined.DesignerCanvas.Primitive;
 
 namespace Undefined.DesignerCanvas
 {
@@ -33,7 +34,7 @@ namespace Undefined.DesignerCanvas
 
         public GraphicalObjectCollection SelectedItems => _SelectedItems;
 
-        //public GraphicalObjectContainerGenerator ItemContainerGenerator => _ItemContainerGenerator;
+        public GraphicalObjectContainerGenerator ItemContainerGenerator => _ItemContainerGenerator;
 
         // Indicates whether containers' IsSelected property is beging changed to
         // correspond with SelectedItems collection.
@@ -125,6 +126,7 @@ namespace Undefined.DesignerCanvas
                     }
                     break;
             }
+            this.InvalidateMeasure();
         }
         #endregion
 
@@ -153,13 +155,74 @@ namespace Undefined.DesignerCanvas
                 this.AddVisualChild(partCanvas);
             }
             partCanvas.MouseDown += PartCanvas_MouseDown;
+            partCanvas.MouseMove += PartCanvas_MouseMove;
+            partCanvas.MouseUp += PartCanvas_MouseUp;
         }
+
+        private Point? RubberbandStartPoint = null;
 
         private void PartCanvas_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.Source == partCanvas)
             {
+                RubberbandStartPoint = e.GetPosition(partCanvas);
+            }
+        }
+
+        private void PartCanvas_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (RubberbandStartPoint != null)
+            {
+                if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
+                {
+                    var adornerLayer = AdornerLayer.GetAdornerLayer(this);
+                    if (adornerLayer != null)
+                    {
+                        var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value, Rubberband_Callback);
+                        adornerLayer.Add(adorner);
+                        RubberbandStartPoint = null;
+                    }
+                }
+            }
+        }
+
+        private void PartCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            RubberbandStartPoint = null;
+            if (e.Source == partCanvas)
+            {
                 _SelectedItems.Clear();
+            }
+        }
+
+        private void Rubberband_Callback(object o, Rect rect)
+        {
+            var mod = Keyboard.Modifiers;
+            if ((mod & (ModifierKeys.Shift | ModifierKeys.Control)) == ModifierKeys.None)
+            {
+                _SelectedItems.Clear();
+                _SelectedItems.AddRange(Items.ObjectsInRegion(rect));
+            }
+            else
+            {
+                var newItems = new HashSet<GraphicalObject>(Items.ObjectsInRegion(rect));
+                if ((mod & ModifierKeys.Shift) == ModifierKeys.Shift)
+                {
+                    // Switch
+                    var intersection = _SelectedItems.Where(i => newItems.Contains(i)).ToList();
+                    foreach (var item in intersection)
+                    {
+                        _SelectedItems.Remove(item);
+                        newItems.Remove(item);
+                    }
+                    _SelectedItems.AddRange(newItems);
+                }
+                else if ((mod & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    // Merge
+                    foreach (var item in _SelectedItems) newItems.Remove(item);
+                    _SelectedItems.AddRange(newItems);
+                }
             }
         }
 
@@ -327,10 +390,10 @@ namespace Undefined.DesignerCanvas
         /// Gets the corresponding item, if exists, for a specific container.
         /// </summary>
         /// <returns></returns>
-        public GraphicalObject ItemFromContainer(DesignerCanvasItem container)
+        public GraphicalObject ItemFromContainer(DependencyObject container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
-            return container.DataContext as GraphicalObject;
+            return (container as FrameworkElement)?.DataContext as GraphicalObject;
         }
     }
 }

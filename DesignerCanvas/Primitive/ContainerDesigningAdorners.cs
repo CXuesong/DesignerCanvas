@@ -74,8 +74,7 @@ namespace Undefined.DesignerCanvas.Primitive
 
         protected override Visual GetVisualChild(int index)
         {
-            if (index == 0)
-                return chrome;
+            if (index == 0) return chrome;
             throw new IndexOutOfRangeException();
         }
     }

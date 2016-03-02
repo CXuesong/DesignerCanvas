@@ -81,8 +81,31 @@ namespace Undefined.DesignerCanvas
         /// <param name="item">不可为<c>null</c>。</param>
         public void Add(GraphicalObject item)
         {
+            if (item == null) throw new ArgumentNullException(nameof(item));
             myCollection.AddLast(item);
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, item));
+            OnPropertyChanged(nameof(Count));
+            OnPropertyChanged("Item[]");
+        }
+
+        public void AddRange(IEnumerable<GraphicalObject> items)
+        {
+            const double batchNotificationItems = 128;
+            var tempList = new List<GraphicalObject>();
+            foreach (var obj in items)
+            {
+                myCollection.AddLast(obj);
+                tempList.Add(obj);
+                if (tempList.Count >= batchNotificationItems)
+                {
+                    OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, tempList));
+                    tempList.Clear();
+                }
+            }
+            if (tempList.Count > 0)
+            {
+                OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Add, tempList));
+            }
             OnPropertyChanged(nameof(Count));
             OnPropertyChanged("Item[]");
         }

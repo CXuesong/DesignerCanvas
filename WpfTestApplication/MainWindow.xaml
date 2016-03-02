@@ -18,11 +18,12 @@
                 <DesignerCanvas:DesignerCanvas x:Name="dcvs" />
             </ScrollViewer>
         </Border>
-        <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="67,5,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>
+        <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="47,0,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>
         <StatusBar Grid.Row="2">
             <Label x:Name="label">
                 <TextBlock Text="{Binding SelectedItems.Count, ElementName=dcvs, Mode=OneWay, StringFormat=\{0:d\} item(s) selected.}" />
             </Label>
         </StatusBar>
+        <Button x:Name="AddItemsButton" Content="_Add 1000 items" HorizontalAlignment="Left" Margin="139,0,0,0" Grid.Row="1" VerticalAlignment="Top" Click="AddItemsButton_Click" />
     </Grid>
 </Window>

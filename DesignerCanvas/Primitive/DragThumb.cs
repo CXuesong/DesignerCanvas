@@ -12,10 +12,18 @@ namespace Undefined.DesignerCanvas.Primitive
 {
     public class DragThumb : Thumb
     {
+        /// <summary>
+        /// If the count of selected items exceeds this value,
+        /// all the selected object except this one will be moved
+        /// only when user releases the thumb.
+        /// </summary>
+        public const int InstantPreviewItemsThreshold = 200;
+
         public DragThumb()
         {
-            base.DragDelta += DragThumb_DragDelta;
-            base.DragCompleted += DragThumb_DragCompleted;
+            DragStarted += DragThumb_DragStarted;
+            DragDelta += DragThumb_DragDelta;
+            DragCompleted += DragThumb_DragCompleted;
         }
 
         /*/// <summary>
@@ -31,6 +39,17 @@ namespace Undefined.DesignerCanvas.Primitive
             DependencyProperty.Register("DestControl", typeof (FrameworkElement), typeof (ResizeThumb),
                 new PropertyMetadata(null));*/
 
+        private bool instantPreview;
+
+        private void DragThumb_DragStarted(object sender, DragStartedEventArgs e)
+        {
+            var destControl = DataContext as DependencyObject;
+            if (destControl == null) return;
+            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
+            if (designer == null) return;
+            instantPreview = designer.SelectedItems.Count < InstantPreviewItemsThreshold;
+        }
+
         private void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             var destControl = DataContext as DependencyObject;
@@ -39,7 +58,6 @@ namespace Undefined.DesignerCanvas.Primitive
             if (designer == null) return;
             var minLeft = double.MaxValue;
             var minTop = double.MaxValue;
-            // we only move DesignerItems
             foreach (var item in designer.SelectedItems)
             {
                 var left = item.Left;
@@ -49,10 +67,20 @@ namespace Undefined.DesignerCanvas.Primitive
             }
             var deltaHorizontal = Math.Max(-minLeft, e.HorizontalChange);
             var deltaVertical = Math.Max(-minTop, e.VerticalChange);
-            foreach (var item in designer.SelectedItems)
+            if (instantPreview)
             {
-                item.Left += deltaHorizontal;
-                item.Top += deltaVertical;
+                // This operation may be slow.
+                foreach (var item in designer.SelectedItems)
+                {
+                    item.Left += deltaHorizontal;
+                    item.Top += deltaVertical;
+                }
+            }
+            else
+            {
+                var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
+                thisItem.Left += deltaHorizontal;
+                thisItem.Top += deltaVertical;
             }
             e.Handled = true;
         }
@@ -62,7 +90,29 @@ namespace Undefined.DesignerCanvas.Primitive
             var destControl = DataContext as DependencyObject;
             if (destControl == null) return;
             var designer = DesignerCanvas.FindDesignerCanvas(destControl);
-            designer?.InvalidateMeasure();
+            if (designer == null) return;
+            if (!instantPreview)
+            {
+                var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
+                var minLeft = double.MaxValue;
+                var minTop = double.MaxValue;
+                foreach (var item in designer.SelectedItems)
+                {
+                    var left = item.Left;
+                    var top = item.Top;
+                    minLeft = double.IsNaN(left) ? 0 : Math.Min(left, minLeft);
+                    minTop = double.IsNaN(top) ? 0 : Math.Min(top, minTop);
+                }
+                var deltaHorizontal = Math.Max(-minLeft, e.HorizontalChange);
+                var deltaVertical = Math.Max(-minTop, e.VerticalChange);
+                foreach (var item in designer.SelectedItems)
+                {
+                    if (item == thisItem) continue;
+                    item.Left += deltaHorizontal;
+                    item.Top += deltaVertical;
+                }
+            }
+            designer.InvalidateMeasure();
         }
     }
 }
