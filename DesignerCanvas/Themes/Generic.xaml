@@ -10,7 +10,7 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
-                        <Canvas x:Name="PART_Canvas" Background="Transparent">
+                        <Canvas x:Name="PART_Canvas" Background="Red">
                             <!--
                             Panel elements do not receive mouse or stylus events if a Background
                             is not defined. If you need to handle mouse or stylus events

@@ -41,8 +41,7 @@ namespace Undefined.DesignerCanvas
             {
                 return myCollection.Where(obj =>
                 {
-                    var b = obj.Bounds;
-                    return bounds.Contains(obj.Bounds) || bounds.IntersectsWith(obj.Bounds);
+                    return bounds.IntersectsWith(obj.Bounds);
                 });
             }
             else

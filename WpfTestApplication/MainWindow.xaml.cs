@@ -38,17 +38,27 @@ namespace WpfTestApplication
             dcvs.Items.Add(new GraphicalObject(50, 10, 32, 32, LoadImageResource("2.png")));
             var bumpingItem = new GraphicalObject(50, 50, 32, 32, LoadImageResource("3.png"));
             dcvs.Items.Add(bumpingItem);
-            var timer = new DispatcherTimer
+            var aniTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(10),
             };
             var rnd = new Random();
-            timer.Tick += (_, e1) =>
+            aniTimer.Tick += (_, e1) =>
             {
                 bumpingItem.Left += (rnd.NextDouble() - 0.5)*2;
                 bumpingItem.Top += (rnd.NextDouble() - 0.5)*2;
             };
-            timer.Start();
+            aniTimer.Start();
+
+            var statTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(500),
+            };
+            statTimer.Tick += (_, e1) =>
+            {
+                RenderedChildrenCounter.Text = "" + dcvs.RenderedChildrenCount;
+            };
+            statTimer.Start();
         }
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
@@ -58,15 +68,15 @@ namespace WpfTestApplication
 
         private void AddItemsButton_Click(object sender, RoutedEventArgs e)
         {
-            var columns = 25;
+            var columns = 50;
             var res = new[] {"1.png", "2.png", "3.png"};
             var rnd = new Random();
             var offset = dcvs.Items.Count;
-            for (int i = offset; i < offset + 1000; i++)
+            for (int i = offset; i < offset + 10000; i++)
             {
                 var row = i/columns;
                 var col = i%columns;
-                dcvs.Items.Add(new GraphicalObject(100 + row*40, 10 + col*40, 32, 32,
+                dcvs.Items.Add(new GraphicalObject(10 + col*40, 100 + row*40, 32, 32,
                     LoadImageResource(res[rnd.Next(0, res.Length)])));
             }
         }

@@ -20,10 +20,16 @@
         </Border>
         <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="47,0,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>
         <StatusBar Grid.Row="2">
-            <Label x:Name="label">
+            <Label>
                 <TextBlock Text="{Binding SelectedItems.Count, ElementName=dcvs, Mode=OneWay, StringFormat=\{0:d\} item(s) selected.}" />
             </Label>
+            <Label>
+                <TextBlock>
+                    <TextBlock x:Name="RenderedChildrenCounter" Text="-" />
+                    <TextBlock Text=" children rendered." />
+                </TextBlock>
+            </Label>
         </StatusBar>
-        <Button x:Name="AddItemsButton" Content="_Add 1000 items" HorizontalAlignment="Left" Margin="139,0,0,0" Grid.Row="1" VerticalAlignment="Top" Click="AddItemsButton_Click" />
+        <Button x:Name="AddItemsButton" Content="_Add 10000 items" HorizontalAlignment="Left" Margin="139,0,0,0" Grid.Row="1" VerticalAlignment="Top" Click="AddItemsButton_Click" />
     </Grid>
 </Window>

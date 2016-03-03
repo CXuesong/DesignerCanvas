@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using Undefined.DesignerCanvas.Primitive;
 
 namespace Undefined.DesignerCanvas
@@ -28,8 +30,7 @@ namespace Undefined.DesignerCanvas
         private readonly GraphicalObjectCollection _Items = new GraphicalObjectCollection();
         private readonly GraphicalObjectCollection _SelectedItems = new GraphicalObjectCollection();
 
-        private readonly GraphicalObjectContainerGenerator _ItemContainerGenerator =
-            new GraphicalObjectContainerGenerator();
+        private GraphicalObjectContainerGenerator _ItemContainerGenerator = new GraphicalObjectContainerGenerator();
 
         #region Items & States
 
@@ -106,32 +107,25 @@ namespace Undefined.DesignerCanvas
                     if (e.OldItems != null)
                     {
                         foreach (var item in e.OldItems)
-                        {
-                            var container =
-                                (UIElement) _ItemContainerGenerator.ContainerFromItem((GraphicalObject) item);
-                            if (container != null) partCanvas.Children.Remove(container);
-                            _ItemContainerGenerator.Recycle(container);
-                        }
+                            SetContainerVisibility((GraphicalObject) item, false);
                     }
                     if (e.NewItems != null)
                     {
                         foreach (var item in e.NewItems)
                         {
-                            partCanvas.Children.Add(
-                                (UIElement) _ItemContainerGenerator.CreateContainer((GraphicalObject) item));
+                            var obj = (GraphicalObject) item;
+                            if (_ViewPortRect.IntersectsWith(obj.Bounds))
+                            {
+                                SetContainerVisibility(obj, true);
+                            }
                         }
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
-                    foreach (var item in partCanvas.Children)
-                    {
-                        _ItemContainerGenerator.Recycle((DesignerCanvasItem) item);
-                    }
+                    _ItemContainerGenerator.RecycleAll();
                     partCanvas.Children.Clear();
-                    foreach (var item in _Items)
-                    {
-                        partCanvas.Children.Add((UIElement) _ItemContainerGenerator.CreateContainer(item));
-                    }
+                    foreach (var item in _Items.ObjectsInRegion(_ViewPortRect, true))
+                        _ItemContainerGenerator.CreateContainer(item);
                     break;
             }
             this.InvalidateMeasure();
@@ -186,10 +180,11 @@ namespace Undefined.DesignerCanvas
             {
                 if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
                 {
-                    var adornerLayer = AdornerLayer.GetAdornerLayer(this);
+                    var adornerLayer = AdornerLayer.GetAdornerLayer(partCanvas);
                     if (adornerLayer != null)
                     {
                         var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value, Rubberband_Callback);
+                        adorner.RenderTransform = canvasTransform;
                         adornerLayer.Add(adorner);
                         RubberbandStartPoint = null;
                     }
@@ -247,12 +242,10 @@ namespace Undefined.DesignerCanvas
             _ExtendRect = bounds;
             // Right now we do not support scrolling to the left / top of the origin.
             _ExtendRect.X = _ExtendRect.Y = 0;
-            _ViewPortSize = constraint;
-            // Readjust the scroll offset.
-            SetHorizontalOffset(_ScrollOffset.X);
-            SetVerticalOffset(_ScrollOffset.Y);
-            ScrollOwner?.InvalidateScrollInfo();
             //partCanvas.Measure(); // Seems no use.
+            _ViewPortRect.Size = constraint;
+            InvalidateViewPortRect();
+            ScrollOwner?.InvalidateScrollInfo();
             if (double.IsInfinity(constraint.Width) || double.IsInfinity(constraint.Height))
             {
                 return new Size(Math.Max(bounds.Right, 0), Math.Max(bounds.Bottom, 0));
@@ -260,9 +253,106 @@ namespace Undefined.DesignerCanvas
             return constraint;
         }
 
-        protected override Size ArrangeOverride(Size arrangeBounds)
+        private Rect lastRenderedViewPortRect;
+
+        /// <summary>
+        /// Update ViewPort rectangle & its children when needed.
+        /// </summary>
+        private void InvalidateViewPortRect()
         {
-            return base.ArrangeOverride(arrangeBounds);
+            Dispatcher.InvokeAsync(() =>
+            {
+                if (lastRenderedViewPortRect != _ViewPortRect)
+                {
+                    if (lastRenderedViewPortRect != _ViewPortRect)
+                    {
+                        // Generate / Recycle Items
+                        OnViewPortChanged(lastRenderedViewPortRect, _ViewPortRect);
+                        ScrollOwner?.InvalidateScrollInfo();
+                    }
+                    lastRenderedViewPortRect = _ViewPortRect;
+                }
+            }, DispatcherPriority.Render);
+        }
+
+        private void OnViewPortChanged(Rect oldViewPort, Rect newViewPort)
+        {
+            double delta;
+            const double safetyMargin = 10;
+
+            delta = newViewPort.X - oldViewPort.X;
+            if (delta > 0)
+                SetContainerVisibility(new Rect(_ExtendRect.X - safetyMargin, _ExtendRect.Y - safetyMargin,
+                    newViewPort.X - (_ExtendRect.X - safetyMargin), _ExtendRect.Height - safetyMargin*2), false);
+            else if (delta < 0)
+                SetContainerVisibility(new Rect(newViewPort.X, newViewPort.Y, -delta, newViewPort.Height), true);
+
+            delta = newViewPort.Y - oldViewPort.Y;
+            if (delta > 0)
+                SetContainerVisibility(new Rect(_ExtendRect.X - safetyMargin, _ExtendRect.Y - safetyMargin,
+                    _ExtendRect.Width + safetyMargin*2, newViewPort.Y - (_ExtendRect.Y - safetyMargin)), false);
+            else if (delta < 0)
+                SetContainerVisibility(new Rect(newViewPort.X, newViewPort.Y, newViewPort.Width, -delta), true);
+
+            delta = newViewPort.Right - oldViewPort.Right;
+            if (delta > 0)
+                SetContainerVisibility(new Rect(oldViewPort.Right, newViewPort.Y, delta, newViewPort.Height), true);
+            else if (delta < 0)
+                SetContainerVisibility(new Rect(newViewPort.Right, double.MinValue/2,
+                    double.MaxValue, double.MaxValue), false);
+
+            delta = newViewPort.Bottom - oldViewPort.Bottom;
+            if (delta > 0)
+                SetContainerVisibility(new Rect(newViewPort.X, oldViewPort.Bottom, newViewPort.Width, delta), true);
+            else if (delta < 0)
+                SetContainerVisibility(new Rect(double.MinValue/2, newViewPort.Bottom,
+                    double.MaxValue, double.MaxValue), false);
+        }
+
+        ///// <summary>
+        ///// Creates or recycles the container for specified item,
+        ///// depending whether the bounds of item is in ViewPort.
+        ///// </summary>
+        //private void SetContainerVisibility(GraphicalObject item)
+        //{
+        //    if (item == null) throw new ArgumentNullException(nameof(item));
+        //    SetContainerVisibility(item, _ViewPortRect.IntersectsWith(item.Bounds));
+        //}
+
+        private void SetContainerVisibility(GraphicalObject item, bool visible)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+            if (visible)
+            {
+                if (_ItemContainerGenerator.ContainerFromItem(item) == null)
+                {
+                    var container = _ItemContainerGenerator.CreateContainer(item);
+                    // Note these 2 statements shouldn't be swapped,
+                    // so the container will not unnecessarily fire NotifyItemIsSelectedChanged().
+                    container.SetValue(Selector.IsSelectedProperty, _SelectedItems.Contains(item));
+                    partCanvas.Children.Add((UIElement) container);
+                }
+            }
+            else
+            {
+                var container = _ItemContainerGenerator.ContainerFromItem(item);
+                if (container != null)
+                {
+                    partCanvas.Children.Remove((UIElement) container);
+                    _ItemContainerGenerator.Recycle(container);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Decides whether to render childen in certain rectangle.
+        /// </summary>
+        private void SetContainerVisibility(Rect rect, bool visible)
+        {
+            // Allow partial shown containers.
+            // Hide when the container is contained in rect.
+            foreach (var obj in _Items.ObjectsInRegion(rect, visible))
+                SetContainerVisibility(obj, visible);
         }
 
         #endregion
@@ -315,32 +405,18 @@ namespace Undefined.DesignerCanvas
 
         static DesignerCanvas()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof (DesignerCanvas),
-                new FrameworkPropertyMetadata(typeof (DesignerCanvas)));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(DesignerCanvas),
+                new FrameworkPropertyMetadata(typeof(DesignerCanvas)));
         }
 
         #region IScrollInfo
 
-        private Rect _ExtendRect;   // Boundary of virtual canvas.
-        private Size _ViewPortSize;
-        private Point _ScrollOffset; // Offset is non-negative, relative to the top-left corner of _ExtendRect.
-
-        /// <summary>
-        /// Gets the boundary of view port relative to the virtual canvas.
-        /// </summary>
-        public Rect ViewPortBounds
-        {
-            get
-            {
-                var tl = _ExtendRect.TopLeft;
-                tl.Offset(_ScrollOffset.X, _ScrollOffset.Y);
-                return new Rect(tl, _ViewPortSize);
-            }
-        }
+        private Rect _ExtendRect; // Boundary of virtual canvas.
+        private Rect _ViewPortRect;
 
         private const double ScrollStepIncrement = 10;
         private const double ScrollPageStepPreservation = 10;
-        private const double ScrollWheelStepIncrementRel = 1.0/3;
+        private const double ScrollWheelStepIncrementRel = 1.0 / 3;
 
         /// <summary>
         /// Scrolls up within content by one logical unit. 
@@ -379,7 +455,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void PageUp()
         {
-            SetVerticalOffset(VerticalOffset - _ViewPortSize.Height);
+            SetVerticalOffset(VerticalOffset - _ViewPortRect.Height);
         }
 
         /// <summary>
@@ -387,7 +463,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void PageDown()
         {
-            SetVerticalOffset(VerticalOffset + _ViewPortSize.Height);
+            SetVerticalOffset(VerticalOffset + _ViewPortRect.Height);
         }
 
         /// <summary>
@@ -395,7 +471,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void PageLeft()
         {
-            SetHorizontalOffset(HorizontalOffset - _ViewPortSize.Width);
+            SetHorizontalOffset(HorizontalOffset - _ViewPortRect.Width);
         }
 
         /// <summary>
@@ -403,7 +479,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void PageRight()
         {
-            SetHorizontalOffset(HorizontalOffset + _ViewPortSize.Width);
+            SetHorizontalOffset(HorizontalOffset + _ViewPortRect.Width);
         }
 
         /// <summary>
@@ -411,7 +487,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelUp()
         {
-            SetVerticalOffset(VerticalOffset - _ViewPortSize.Height*ScrollWheelStepIncrementRel);
+            SetVerticalOffset(VerticalOffset - _ViewPortRect.Height * ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -419,7 +495,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelDown()
         {
-            SetVerticalOffset(VerticalOffset + _ViewPortSize.Height*ScrollWheelStepIncrementRel);
+            SetVerticalOffset(VerticalOffset + _ViewPortRect.Height * ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -427,7 +503,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelLeft()
         {
-            SetHorizontalOffset(HorizontalOffset - _ViewPortSize.Width*ScrollWheelStepIncrementRel);
+            SetHorizontalOffset(HorizontalOffset - _ViewPortRect.Width * ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -435,7 +511,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelRight()
         {
-            SetHorizontalOffset(HorizontalOffset + _ViewPortSize.Width*ScrollWheelStepIncrementRel);
+            SetHorizontalOffset(HorizontalOffset + _ViewPortRect.Width * ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -444,11 +520,12 @@ namespace Undefined.DesignerCanvas
         /// <param name="offset">The degree to which content is horizontally offset from the containing viewport.</param>
         public void SetHorizontalOffset(double offset)
         {
-            if (offset > _ExtendRect.Width - _ViewPortSize.Width) offset = _ExtendRect.Width - _ViewPortSize.Width;
+            if (offset > _ExtendRect.Width - _ViewPortRect.Width) offset = _ExtendRect.Width - _ViewPortRect.Width;
             if (offset < 0) offset = 0;
-            _ScrollOffset.X = offset;
+            _ViewPortRect.X = offset;
             canvasTransform.X = -_ExtendRect.Left - offset;
             ScrollOwner?.InvalidateScrollInfo();
+            InvalidateViewPortRect();
         }
 
         /// <summary>
@@ -457,11 +534,12 @@ namespace Undefined.DesignerCanvas
         /// <param name="offset">The degree to which content is vertically offset from the containing viewport.</param>
         public void SetVerticalOffset(double offset)
         {
-            if (offset > _ExtendRect.Height - _ViewPortSize.Height) offset = _ExtendRect.Height - _ViewPortSize.Height;
+            if (offset > _ExtendRect.Height - _ViewPortRect.Height) offset = _ExtendRect.Height - _ViewPortRect.Height;
             if (offset < 0) offset = 0;
-            _ScrollOffset.Y = offset;
+            _ViewPortRect.Y = offset;
             canvasTransform.Y = -_ExtendRect.Top - offset;
             ScrollOwner?.InvalidateScrollInfo();
+            InvalidateViewPortRect();
         }
 
         /// <summary>
@@ -480,11 +558,10 @@ namespace Undefined.DesignerCanvas
             if (fe != null)
             {
                 // Make sure the center of the visual will be shown.
-                ltPoint.Offset(fe.ActualWidth/2, fe.ActualHeight/2);
+                ltPoint.Offset(fe.ActualWidth / 2, fe.ActualHeight / 2);
             }
             // Now the coordinate of visual is relative to the canvas.
-            var vb = ViewPortBounds;
-            if (!vb.Contains(ltPoint))
+            if (!_ViewPortRect.Contains(ltPoint))
             {
                 SetHorizontalOffset(ltPoint.X);
                 SetVerticalOffset(ltPoint.Y);
@@ -530,7 +607,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal size of the viewport for this content. This property has no default value.
         /// </returns>
-        public double ViewportWidth => _ViewPortSize.Width;
+        public double ViewportWidth => _ViewPortRect.Width;
 
         /// <summary>
         /// Gets the vertical size of the viewport for this content.
@@ -538,7 +615,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical size of the viewport for this content. This property has no default value.
         /// </returns>
-        public double ViewportHeight => _ViewPortSize.Height;
+        public double ViewportHeight => _ViewPortRect.Height;
 
         /// <summary>
         /// Gets the horizontal offset of the scrolled content.
@@ -546,7 +623,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal offset. This property has no default value.
         /// </returns>
-        public double HorizontalOffset => _ScrollOffset.X;
+        public double HorizontalOffset => _ViewPortRect.X;
 
         /// <summary>
         /// Gets the vertical offset of the scrolled content.
@@ -554,7 +631,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical offset of the scrolled content. Valid values are between zero and the <see cref="P:System.Windows.Controls.Primitives.IScrollInfo.ExtentHeight"/> minus the <see cref="P:System.Windows.Controls.Primitives.IScrollInfo.ViewportHeight"/>. This property has no default value.
         /// </returns>
-        public double VerticalOffset => _ScrollOffset.Y;
+        public double VerticalOffset => _ViewPortRect.Y;
 
         /// <summary>
         /// Gets or sets a <see cref="T:System.Windows.Controls.ScrollViewer"/> element that controls scrolling behavior.
@@ -563,6 +640,13 @@ namespace Undefined.DesignerCanvas
         /// A <see cref="T:System.Windows.Controls.ScrollViewer"/> element that controls scrolling behavior. This property has no default value.
         /// </returns>
         public ScrollViewer ScrollOwner { get; set; }
+
+        #endregion
+
+        #region Debug Support
+#if DEBUG
+        public int RenderedChildrenCount => partCanvas.Children.Count;
+#endif
 
         #endregion
     }
@@ -583,10 +667,15 @@ namespace Undefined.DesignerCanvas
         private readonly Dictionary<GraphicalObject, DependencyObject> itemContainerDict =
             new Dictionary<GraphicalObject, DependencyObject>();
 
-        #region Container Pool
+        public GraphicalObjectContainerGenerator()
+        {
+
+        }
+
+#region Container Pool
 
         private List<DependencyObject> containerPool = new List<DependencyObject>();
-        private int _MaxPooledContainers;
+        private int _MaxPooledContainers = 200;
 
         /// <summary>
         /// Specifies the maximum number of containers that can exist in the pool.
@@ -609,7 +698,7 @@ namespace Undefined.DesignerCanvas
                 containerPool.RemoveRange(containerPool.Count - exceededItems, exceededItems);
         }
 
-        #endregion
+#endregion
 
         private DependencyObject CreateContainer()
         {
@@ -651,11 +740,22 @@ namespace Undefined.DesignerCanvas
         public void Recycle(DependencyObject container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
+            var item = ItemFromContainer(container);
+            if (item == null) throw new InvalidOperationException("试图回收非列表项目。");
+            itemContainerDict.Remove(item);
             container.ClearValue(DataItemProperty);
             container.ClearValue(FrameworkElement.DataContextProperty);
             if (containerPool.Count < MaxPooledContainers)
             {
                 containerPool.Add(container);
+            }
+        }
+
+        public void RecycleAll()
+        {
+            foreach (var container in itemContainerDict.Values)
+            {
+                Recycle(container);
             }
         }
 
@@ -679,7 +779,9 @@ namespace Undefined.DesignerCanvas
         public GraphicalObject ItemFromContainer(DependencyObject container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
-            return (GraphicalObject) container.ReadLocalValue(DataItemProperty);
+            var localValue = container.ReadLocalValue(DataItemProperty);
+            if (localValue == DependencyProperty.UnsetValue) localValue = null;
+            return (GraphicalObject)localValue;
         }
     }
 }
