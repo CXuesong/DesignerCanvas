@@ -22,12 +22,14 @@ namespace Undefined.DesignerCanvas
     /// <summary>
     /// 用于承载绘图图面。
     /// </summary>
-    [TemplatePart(Name = "PART_Canvas", Type = typeof(Canvas))]
+    [TemplatePart(Name = "PART_Canvas", Type = typeof (Canvas))]
     public class DesignerCanvas : Control, IScrollInfo
     {
         private readonly GraphicalObjectCollection _Items = new GraphicalObjectCollection();
         private readonly GraphicalObjectCollection _SelectedItems = new GraphicalObjectCollection();
-        private readonly GraphicalObjectContainerGenerator _ItemContainerGenerator = new GraphicalObjectContainerGenerator();
+
+        private readonly GraphicalObjectContainerGenerator _ItemContainerGenerator =
+            new GraphicalObjectContainerGenerator();
 
         #region Items & States
 
@@ -57,7 +59,7 @@ namespace Undefined.DesignerCanvas
                         {
                             foreach (var item in e.OldItems)
                             {
-                                var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
+                                var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject) item);
                                 container?.SetValue(Selector.IsSelectedProperty, false);
                             }
                         }
@@ -65,7 +67,7 @@ namespace Undefined.DesignerCanvas
                         {
                             foreach (var item in e.NewItems)
                             {
-                                var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
+                                var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject) item);
                                 container?.SetValue(Selector.IsSelectedProperty, true);
                             }
                         }
@@ -105,7 +107,8 @@ namespace Undefined.DesignerCanvas
                     {
                         foreach (var item in e.OldItems)
                         {
-                            var container = (UIElement)_ItemContainerGenerator.ContainerFromItem((GraphicalObject)item);
+                            var container =
+                                (UIElement) _ItemContainerGenerator.ContainerFromItem((GraphicalObject) item);
                             if (container != null) partCanvas.Children.Remove(container);
                             _ItemContainerGenerator.Recycle(container);
                         }
@@ -114,29 +117,32 @@ namespace Undefined.DesignerCanvas
                     {
                         foreach (var item in e.NewItems)
                         {
-                            partCanvas.Children.Add((UIElement)_ItemContainerGenerator.CreateContainer((GraphicalObject)item));
+                            partCanvas.Children.Add(
+                                (UIElement) _ItemContainerGenerator.CreateContainer((GraphicalObject) item));
                         }
                     }
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     foreach (var item in partCanvas.Children)
                     {
-                        _ItemContainerGenerator.Recycle((DesignerCanvasItem)item);
+                        _ItemContainerGenerator.Recycle((DesignerCanvasItem) item);
                     }
                     partCanvas.Children.Clear();
                     foreach (var item in _Items)
                     {
-                        partCanvas.Children.Add((UIElement)_ItemContainerGenerator.CreateContainer(item));
+                        partCanvas.Children.Add((UIElement) _ItemContainerGenerator.CreateContainer(item));
                     }
                     break;
             }
             this.InvalidateMeasure();
         }
+
         #endregion
 
         #region UI
 
         private Canvas partCanvas;
+        private TranslateTransform canvasTransform = new TranslateTransform();
 
         internal static DesignerCanvas FindDesignerCanvas(DependencyObject childContainer)
         {
@@ -158,6 +164,7 @@ namespace Undefined.DesignerCanvas
                 partCanvas = new Canvas();
                 this.AddVisualChild(partCanvas);
             }
+            partCanvas.RenderTransform = canvasTransform;
             partCanvas.MouseDown += PartCanvas_MouseDown;
             partCanvas.MouseMove += PartCanvas_MouseMove;
             partCanvas.MouseUp += PartCanvas_MouseUp;
@@ -234,8 +241,28 @@ namespace Undefined.DesignerCanvas
         {
             const double measurementMargin = 10;
             var bounds = _Items.Bounds;
-            return new Size(Math.Max(0, bounds.Right + measurementMargin),
-                Math.Max(0, bounds.Bottom + measurementMargin));
+            if (bounds.IsEmpty) bounds = new Rect(0, 0, 0, 0);
+            bounds.Width += measurementMargin;
+            bounds.Height += measurementMargin;
+            _ExtendRect = bounds;
+            // Right now we do not support scrolling to the left / top of the origin.
+            _ExtendRect.X = _ExtendRect.Y = 0;
+            _ViewPortSize = constraint;
+            // Readjust the scroll offset.
+            SetHorizontalOffset(_ScrollOffset.X);
+            SetVerticalOffset(_ScrollOffset.Y);
+            ScrollOwner?.InvalidateScrollInfo();
+            //partCanvas.Measure(); // Seems no use.
+            if (double.IsInfinity(constraint.Width) || double.IsInfinity(constraint.Height))
+            {
+                return new Size(Math.Max(bounds.Right, 0), Math.Max(bounds.Bottom, 0));
+            }
+            return constraint;
+        }
+
+        protected override Size ArrangeOverride(Size arrangeBounds)
+        {
+            return base.ArrangeOverride(arrangeBounds);
         }
 
         #endregion
@@ -288,25 +315,39 @@ namespace Undefined.DesignerCanvas
 
         static DesignerCanvas()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(DesignerCanvas), new FrameworkPropertyMetadata(typeof(DesignerCanvas)));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof (DesignerCanvas),
+                new FrameworkPropertyMetadata(typeof (DesignerCanvas)));
         }
 
         #region IScrollInfo
 
+        private Rect _ExtendRect;   // Boundary of virtual canvas.
+        private Size _ViewPortSize;
+        private Point _ScrollOffset; // Offset is non-negative, relative to the top-left corner of _ExtendRect.
+
         /// <summary>
-        /// Gets a value that indicates whether a control supports scrolling.
+        /// Gets the boundary of view port relative to the virtual canvas.
         /// </summary>
-        /// <returns>
-        /// true if the control has a <see cref="T:System.Windows.Controls.ScrollViewer"/> in its style and has a custom keyboard scrolling behavior; otherwise, false.
-        /// </returns>
-        protected override bool HandlesScrolling => true;
+        public Rect ViewPortBounds
+        {
+            get
+            {
+                var tl = _ExtendRect.TopLeft;
+                tl.Offset(_ScrollOffset.X, _ScrollOffset.Y);
+                return new Rect(tl, _ViewPortSize);
+            }
+        }
+
+        private const double ScrollStepIncrement = 10;
+        private const double ScrollPageStepPreservation = 10;
+        private const double ScrollWheelStepIncrementRel = 1.0/3;
 
         /// <summary>
         /// Scrolls up within content by one logical unit. 
         /// </summary>
         public void LineUp()
         {
-            throw new NotImplementedException();
+            SetVerticalOffset(VerticalOffset - ScrollStepIncrement);
         }
 
         /// <summary>
@@ -314,7 +355,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void LineDown()
         {
-            throw new NotImplementedException();
+            SetVerticalOffset(VerticalOffset + ScrollStepIncrement);
         }
 
         /// <summary>
@@ -322,7 +363,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void LineLeft()
         {
-            throw new NotImplementedException();
+            SetHorizontalOffset(HorizontalOffset - ScrollStepIncrement);
         }
 
         /// <summary>
@@ -330,7 +371,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void LineRight()
         {
-            throw new NotImplementedException();
+            SetHorizontalOffset(HorizontalOffset + ScrollStepIncrement);
         }
 
         /// <summary>
@@ -338,7 +379,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void PageUp()
         {
-            throw new NotImplementedException();
+            SetVerticalOffset(VerticalOffset - _ViewPortSize.Height);
         }
 
         /// <summary>
@@ -346,7 +387,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void PageDown()
         {
-            throw new NotImplementedException();
+            SetVerticalOffset(VerticalOffset + _ViewPortSize.Height);
         }
 
         /// <summary>
@@ -354,7 +395,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void PageLeft()
         {
-            throw new NotImplementedException();
+            SetHorizontalOffset(HorizontalOffset - _ViewPortSize.Width);
         }
 
         /// <summary>
@@ -362,7 +403,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void PageRight()
         {
-            throw new NotImplementedException();
+            SetHorizontalOffset(HorizontalOffset + _ViewPortSize.Width);
         }
 
         /// <summary>
@@ -370,7 +411,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelUp()
         {
-            throw new NotImplementedException();
+            SetVerticalOffset(VerticalOffset - _ViewPortSize.Height*ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -378,7 +419,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelDown()
         {
-            throw new NotImplementedException();
+            SetVerticalOffset(VerticalOffset + _ViewPortSize.Height*ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -386,7 +427,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelLeft()
         {
-            throw new NotImplementedException();
+            SetHorizontalOffset(HorizontalOffset - _ViewPortSize.Width*ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -394,7 +435,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelRight()
         {
-            throw new NotImplementedException();
+            SetHorizontalOffset(HorizontalOffset + _ViewPortSize.Width*ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -403,7 +444,11 @@ namespace Undefined.DesignerCanvas
         /// <param name="offset">The degree to which content is horizontally offset from the containing viewport.</param>
         public void SetHorizontalOffset(double offset)
         {
-            throw new NotImplementedException();
+            if (offset > _ExtendRect.Width - _ViewPortSize.Width) offset = _ExtendRect.Width - _ViewPortSize.Width;
+            if (offset < 0) offset = 0;
+            _ScrollOffset.X = offset;
+            canvasTransform.X = -_ExtendRect.Left - offset;
+            ScrollOwner?.InvalidateScrollInfo();
         }
 
         /// <summary>
@@ -412,7 +457,11 @@ namespace Undefined.DesignerCanvas
         /// <param name="offset">The degree to which content is vertically offset from the containing viewport.</param>
         public void SetVerticalOffset(double offset)
         {
-            throw new NotImplementedException();
+            if (offset > _ExtendRect.Height - _ViewPortSize.Height) offset = _ExtendRect.Height - _ViewPortSize.Height;
+            if (offset < 0) offset = 0;
+            _ScrollOffset.Y = offset;
+            canvasTransform.Y = -_ExtendRect.Top - offset;
+            ScrollOwner?.InvalidateScrollInfo();
         }
 
         /// <summary>
@@ -424,7 +473,23 @@ namespace Undefined.DesignerCanvas
         /// <param name="visual">A <see cref="T:System.Windows.Media.Visual"/> that becomes visible.</param><param name="rectangle">A bounding rectangle that identifies the coordinate space to make visible.</param>
         public Rect MakeVisible(Visual visual, Rect rectangle)
         {
-            throw new NotImplementedException();
+            if (visual == null) throw new ArgumentNullException(nameof(visual));
+            var ltPoint = visual.PointToScreen(new Point(0, 0));
+            ltPoint = partCanvas.PointFromScreen(ltPoint);
+            var fe = visual as FrameworkElement;
+            if (fe != null)
+            {
+                // Make sure the center of the visual will be shown.
+                ltPoint.Offset(fe.ActualWidth/2, fe.ActualHeight/2);
+            }
+            // Now the coordinate of visual is relative to the canvas.
+            var vb = ViewPortBounds;
+            if (!vb.Contains(ltPoint))
+            {
+                SetHorizontalOffset(ltPoint.X);
+                SetVerticalOffset(ltPoint.Y);
+            }
+            return rectangle;
         }
 
         /// <summary>
@@ -449,7 +514,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal size of the extent. This property has no default value.
         /// </returns>
-        public double ExtentWidth { get; }
+        public double ExtentWidth => _ExtendRect.Width;
 
         /// <summary>
         /// Gets the vertical size of the extent.
@@ -457,7 +522,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical size of the extent.This property has no default value.
         /// </returns>
-        public double ExtentHeight { get; }
+        public double ExtentHeight => _ExtendRect.Height;
 
         /// <summary>
         /// Gets the horizontal size of the viewport for this content.
@@ -465,7 +530,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal size of the viewport for this content. This property has no default value.
         /// </returns>
-        public double ViewportWidth { get; }
+        public double ViewportWidth => _ViewPortSize.Width;
 
         /// <summary>
         /// Gets the vertical size of the viewport for this content.
@@ -473,7 +538,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical size of the viewport for this content. This property has no default value.
         /// </returns>
-        public double ViewportHeight { get; }
+        public double ViewportHeight => _ViewPortSize.Height;
 
         /// <summary>
         /// Gets the horizontal offset of the scrolled content.
@@ -481,7 +546,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal offset. This property has no default value.
         /// </returns>
-        public double HorizontalOffset { get; }
+        public double HorizontalOffset => _ScrollOffset.X;
 
         /// <summary>
         /// Gets the vertical offset of the scrolled content.
@@ -489,7 +554,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical offset of the scrolled content. Valid values are between zero and the <see cref="P:System.Windows.Controls.Primitives.IScrollInfo.ExtentHeight"/> minus the <see cref="P:System.Windows.Controls.Primitives.IScrollInfo.ViewportHeight"/>. This property has no default value.
         /// </returns>
-        public double VerticalOffset { get; }
+        public double VerticalOffset => _ScrollOffset.Y;
 
         /// <summary>
         /// Gets or sets a <see cref="T:System.Windows.Controls.ScrollViewer"/> element that controls scrolling behavior.
@@ -502,11 +567,11 @@ namespace Undefined.DesignerCanvas
         #endregion
     }
 
-   /// <summary>
-   /// Generates UIElements for GraphicalObjects.
-   /// Note <see cref="GraphicalObjectCollection"/> has no indexer.
-   /// </summary>
-    public class GraphicalObjectContainerGenerator    // aka. Factory
+    /// <summary>
+    /// Generates UIElements for GraphicalObjects.
+    /// Note <see cref="GraphicalObjectCollection"/> has no indexer.
+    /// </summary>
+    public class GraphicalObjectContainerGenerator // aka. Factory
     {
         /// <summary>
         /// An attached property for item container, set to the corrspoinding source item.
@@ -519,6 +584,7 @@ namespace Undefined.DesignerCanvas
             new Dictionary<GraphicalObject, DependencyObject>();
 
         #region Container Pool
+
         private List<DependencyObject> containerPool = new List<DependencyObject>();
         private int _MaxPooledContainers;
 
