@@ -183,8 +183,8 @@ namespace Undefined.DesignerCanvas
                     var adornerLayer = AdornerLayer.GetAdornerLayer(partCanvas);
                     if (adornerLayer != null)
                     {
-                        var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value, Rubberband_Callback);
-                        adorner.RenderTransform = canvasTransform;
+                        var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value,
+                            new Vector(_ViewPortRect.X, _ViewPortRect.Y), Rubberband_Callback);
                         adornerLayer.Add(adorner);
                         RubberbandStartPoint = null;
                     }
@@ -241,8 +241,10 @@ namespace Undefined.DesignerCanvas
             bounds.Height += measurementMargin;
             _ExtendRect = bounds;
             // Right now we do not support scrolling to the left / top of the origin.
+            _ExtendRect.Width += _ExtendRect.X;
+            _ExtendRect.Height += _ExtendRect.Y;
             _ExtendRect.X = _ExtendRect.Y = 0;
-            //partCanvas.Measure(); // Seems no use.
+            partCanvas.Measure(bounds.Size); // Seems no use.
             _ViewPortRect.Size = constraint;
             InvalidateViewPortRect();
             ScrollOwner?.InvalidateScrollInfo();
@@ -251,6 +253,19 @@ namespace Undefined.DesignerCanvas
                 return new Size(Math.Max(bounds.Right, 0), Math.Max(bounds.Bottom, 0));
             }
             return constraint;
+        }
+
+        protected override Size ArrangeOverride(Size arrangeBounds)
+        {
+            if (this.VisualChildrenCount > 0)
+            {
+                // Resize the canvas to fit the visual boundary.
+                // Note the canvas may be contained in a border or other controls
+                // so we should update the first visual child instead of the partCanvas.
+                var uiElement = this.GetVisualChild(0) as UIElement;
+                uiElement?.Arrange(_ExtendRect);
+            }
+            return arrangeBounds;
         }
 
         private Rect lastRenderedViewPortRect;
@@ -268,6 +283,8 @@ namespace Undefined.DesignerCanvas
                     {
                         // Generate / Recycle Items
                         OnViewPortChanged(lastRenderedViewPortRect, _ViewPortRect);
+                        canvasTransform.X = -_ViewPortRect.Left;
+                        canvasTransform.Y = -_ViewPortRect.Top;
                         ScrollOwner?.InvalidateScrollInfo();
                     }
                     lastRenderedViewPortRect = _ViewPortRect;
@@ -523,8 +540,7 @@ namespace Undefined.DesignerCanvas
             if (offset > _ExtendRect.Width - _ViewPortRect.Width) offset = _ExtendRect.Width - _ViewPortRect.Width;
             if (offset < 0) offset = 0;
             _ViewPortRect.X = offset;
-            canvasTransform.X = -_ExtendRect.Left - offset;
-            ScrollOwner?.InvalidateScrollInfo();
+            //ScrollOwner?.InvalidateScrollInfo();
             InvalidateViewPortRect();
         }
 
@@ -537,8 +553,7 @@ namespace Undefined.DesignerCanvas
             if (offset > _ExtendRect.Height - _ViewPortRect.Height) offset = _ExtendRect.Height - _ViewPortRect.Height;
             if (offset < 0) offset = 0;
             _ViewPortRect.Y = offset;
-            canvasTransform.Y = -_ExtendRect.Top - offset;
-            ScrollOwner?.InvalidateScrollInfo();
+            //ScrollOwner?.InvalidateScrollInfo();
             InvalidateViewPortRect();
         }
 

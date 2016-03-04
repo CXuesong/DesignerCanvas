@@ -47,27 +47,25 @@ namespace Undefined.DesignerCanvas.Primitive
             var minTop = double.MaxValue;
             foreach (var item in designer.SelectedItems)
             {
-                var left = item.Left;
-                var top = item.Top;
-                minLeft = double.IsNaN(left) ? 0 : Math.Min(left, minLeft);
-                minTop = double.IsNaN(top) ? 0 : Math.Min(top, minTop);
+                minLeft = Math.Min(item.Left, minLeft);
+                minTop = Math.Min(item.Top, minTop);
             }
-            var deltaHorizontal = Math.Max(-minLeft, e.HorizontalChange);
-            var deltaVertical = Math.Max(-minTop, e.VerticalChange);
+            var deltaX = Math.Max(-minLeft, e.HorizontalChange);
+            var deltaY = Math.Max(-minTop, e.VerticalChange);
             if (instantPreview)
             {
                 // This operation may be slow.
                 foreach (var item in designer.SelectedItems)
                 {
-                    item.Left += deltaHorizontal;
-                    item.Top += deltaVertical;
+                    item.Left += deltaX;
+                    item.Top += deltaY;
                 }
             }
             else
             {
                 var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
-                thisItem.Left += deltaHorizontal;
-                thisItem.Top += deltaVertical;
+                thisItem.Left += deltaX;
+                thisItem.Top += deltaY;
             }
             e.Handled = true;
         }

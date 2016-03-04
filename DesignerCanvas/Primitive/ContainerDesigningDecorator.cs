@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Media;
 
 namespace Undefined.DesignerCanvas.Primitive
 {
@@ -31,32 +32,44 @@ namespace Undefined.DesignerCanvas.Primitive
             DependencyProperty.Register("DecoratorVisible", typeof (bool), typeof (ContainerDesigningDecorator),
                 new FrameworkPropertyMetadata(false, DecoratorVisibleProperty_Changed));
 
-        private void ShowAdorner()
+        /// <summary>
+        /// When overridden in a derived class, participates in rendering operations that are directed by the layout system. The rendering instructions for this element are not used directly when this method is invoked, and are instead preserved for later asynchronous use by layout and drawing. 
+        /// </summary>
+        /// <param name="drawingContext">The drawing instructions for a specific element. This context is provided to the layout system.</param>
+        protected override void OnRender(DrawingContext drawingContext)
         {
-            var aLayer = AdornerLayer.GetAdornerLayer(this);
-            if (aLayer == null) return;
-            // The adorner should be abandoned in HideAdorner.
-            Debug.Assert(adorner == null);
-            var designerItem = DataContext as Control;
-            if (designerItem == null) return;
-            adorner = new ResizeRotateAdorner(designerItem);
-            aLayer.Add(adorner);
+            base.OnRender(drawingContext);
+            var adornerParent = adorner?.Parent as AdornerLayer;
+            if (DecoratorVisible)
+            {
+                var adornerLayer = AdornerLayer.GetAdornerLayer(this);
+                if (adornerLayer == null) return;
+                if (adorner != null && adornerParent != adornerLayer)
+                {
+                    adornerParent?.Remove(adorner);
+                    adorner = null;
+                }
+                if (adorner == null)
+                {
+                    var designerItem = DataContext as Control;
+                    if (designerItem == null) return;
+                    adorner = new ResizeRotateAdorner(designerItem);
+                    adornerLayer.Add(adorner);
+                }
+            }
+            else
+            {
+                if (adorner == null) return;
+                adornerParent?.Remove(adorner);
+                adorner = null;
+            }
         }
 
-        private void HideAdorner()
-        {
-            if (adorner == null) return;
-            var aLayer = AdornerLayer.GetAdornerLayer(this);
-            if (aLayer == null) return;
-            aLayer.Remove(adorner);
-            adorner = null;
-        }
-        
         private void ComponentDesigningDecorator_Unloaded(object sender, RoutedEventArgs e)
         {
             if (adorner != null)
             {
-                AdornerLayer aLayer = AdornerLayer.GetAdornerLayer(this);
+                var aLayer = AdornerLayer.GetAdornerLayer(this);
                 aLayer?.Remove(this.adorner);
                 adorner = null;
             }
@@ -65,12 +78,9 @@ namespace Undefined.DesignerCanvas.Primitive
         private static void DecoratorVisibleProperty_Changed(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var decorator = (ContainerDesigningDecorator)d;
-            var DecoratorVisible = (bool) e.NewValue;
-            if (DecoratorVisible)
-                decorator.ShowAdorner();
-            else 
-                decorator.HideAdorner();
+            decorator.InvalidateVisual();
         }
+
         public ContainerDesigningDecorator()
         {
             Unloaded += ComponentDesigningDecorator_Unloaded;

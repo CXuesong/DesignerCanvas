@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,19 +17,24 @@ namespace Undefined.DesignerCanvas.Primitive
         private readonly DesignerCanvas _Canvas;
         private readonly Action<object, Rect> _Callback;
         private readonly RubberbandChrome chrome;
+        // Note the adorner layer will not scroll.
         private Point _StartPoint;
         private Point _EndPoint;
+        private Vector _ViewPortOffset;
 
-        public RubberbandAdorner(DesignerCanvas canvas, Point startPoint, Action<object, Rect> callback) : base(canvas)
+        /// <param name="startPoint">Relative to the virtual canvas.</param>
+        /// <param name="viewPortOffset">The offset of view port.</param>
+        public RubberbandAdorner(DesignerCanvas canvas, Point startPoint, Vector viewPortOffset, Action<object, Rect> callback) : base(canvas)
         {
             _Canvas = canvas;
             _Callback = callback;
-            _StartPoint = _EndPoint = startPoint;
+            _StartPoint = _EndPoint = startPoint - viewPortOffset;
+            _ViewPortOffset = viewPortOffset;
             chrome = new RubberbandChrome()
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
-                Margin = new Thickness(_StartPoint.X, _StartPoint.Y, 0, 0)
+                Margin = new Thickness(_StartPoint.X , _StartPoint.Y, 0, 0)
             };
             ResizeChrome();
             this.AddVisualChild(chrome);
@@ -52,7 +58,6 @@ namespace Undefined.DesignerCanvas.Primitive
             chrome.Width = Math.Abs(_EndPoint.X - _StartPoint.X);
             chrome.Height = Math.Abs(_EndPoint.Y - _StartPoint.Y);
         }
-
 
         protected override Size ArrangeOverride(Size arrangeBounds)
         {
@@ -88,7 +93,7 @@ namespace Undefined.DesignerCanvas.Primitive
         {
             base.OnMouseUp(e);
             ReleaseMouseCapture();
-            _Callback?.Invoke(this, new Rect(_StartPoint, _EndPoint));
+            _Callback?.Invoke(this, new Rect(_StartPoint + _ViewPortOffset, _EndPoint + _ViewPortOffset));
             var adornerLayer = Parent as AdornerLayer;
             adornerLayer?.Remove(this);
             e.Handled = true;
