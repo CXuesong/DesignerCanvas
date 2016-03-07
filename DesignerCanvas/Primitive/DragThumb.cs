@@ -45,7 +45,7 @@ namespace Undefined.DesignerCanvas.Primitive
             if (designer == null) return;
             var minLeft = double.MaxValue;
             var minTop = double.MaxValue;
-            foreach (var item in designer.SelectedItems)
+            foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
             {
                 minLeft = Math.Min(item.Left, minLeft);
                 minTop = Math.Min(item.Top, minTop);
@@ -55,7 +55,7 @@ namespace Undefined.DesignerCanvas.Primitive
             if (instantPreview)
             {
                 // This operation may be slow.
-                foreach (var item in designer.SelectedItems)
+                foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
                 {
                     item.Left += deltaX;
                     item.Top += deltaY;
@@ -81,7 +81,7 @@ namespace Undefined.DesignerCanvas.Primitive
                 var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 var minLeft = double.MaxValue;
                 var minTop = double.MaxValue;
-                foreach (var item in designer.SelectedItems)
+                foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
                 {
                     var left = item.Left;
                     var top = item.Top;
@@ -90,7 +90,7 @@ namespace Undefined.DesignerCanvas.Primitive
                 }
                 var deltaHorizontal = Math.Max(-minLeft, e.HorizontalChange);
                 var deltaVertical = Math.Max(-minTop, e.VerticalChange);
-                foreach (var item in designer.SelectedItems)
+                foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
                 {
                     if (item == thisItem) continue;
                     item.Left += deltaHorizontal;

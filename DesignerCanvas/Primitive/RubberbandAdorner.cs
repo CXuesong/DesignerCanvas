@@ -41,7 +41,7 @@ namespace Undefined.DesignerCanvas.Primitive
             CaptureMouse();
         }
 
-        protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
+        protected override System.Windows.Media.HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
         {
             var result = base.HitTestCore(hitTestParameters);
             if (result == null) return new PointHitTestResult(this, hitTestParameters.HitPoint);

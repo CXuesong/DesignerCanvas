@@ -16,17 +16,17 @@ namespace Undefined.DesignerCanvas
     /// 为了优化性能，此集合的内部实现可能会在未来进行调整。
     /// 因此目前仅公开必要的集合操作。
     /// </summary>
-    public class GraphicalObjectCollection : ICollection<GraphicalObject>, INotifyPropertyChanged, INotifyCollectionChanged
+    public class GraphicalObjectCollection : ICollection<IGraphicalObject>, INotifyPropertyChanged, INotifyCollectionChanged
     {
-        private HashSet<GraphicalObject> myCollection = new HashSet<GraphicalObject>();
+        private readonly HashSet<IGraphicalObject> myCollection = new HashSet<IGraphicalObject>();
 
         /// <summary>
         /// 获取指定区域内的所有对象。
         /// </summary>
         /// <param name="bounds">要返回其内部对象的选框。</param>
-        public IEnumerable<GraphicalObject> ObjectsInRegion(Rect bounds)
+        public IEnumerable<IGraphicalObject> ObjectsInRegion(Rect bounds)
         {
-            return ObjectsInRegion(bounds, false);
+            return ObjectsInRegion(bounds, ItemSelectionOptions.None);
         }
 
         /// <summary>
@@ -34,20 +34,21 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         /// <param name="bounds">要返回其内部对象的选框。</param>
         /// <param name="includePartialSelection">在返回的集合中包括与选框相交的对象。</param>
-        public IEnumerable<GraphicalObject> ObjectsInRegion(Rect bounds, bool includePartialSelection)
+        public IEnumerable<IGraphicalObject> ObjectsInRegion(Rect bounds, ItemSelectionOptions options)
         {
-            if (bounds.Width <= 0 || bounds.Height <= 0) return Enumerable.Empty<GraphicalObject>();
-            if (includePartialSelection)
+            if (bounds.IsEmpty || bounds.Width == 0 || bounds.Height == 0) return Enumerable.Empty<GraphicalObject>();
+            var query = ((options & ItemSelectionOptions.IncludePartialSelection) == ItemSelectionOptions.IncludePartialSelection)
+                ? myCollection.Where(obj => bounds.IntersectsWith(obj.Bounds))
+                : myCollection.Where(obj => bounds.Contains(obj.Bounds));
+            if ((options & ItemSelectionOptions.PerformHitTest) == ItemSelectionOptions.PerformHitTest)
             {
-                return myCollection.Where(obj =>
-                {
-                    return bounds.IntersectsWith(obj.Bounds);
-                });
+                if ((options & ItemSelectionOptions.IncludePartialSelection) ==
+                    ItemSelectionOptions.IncludePartialSelection)
+                    query = query.Where(obj => obj.HitTest(bounds) != HitTestResult.None);
+                else
+                    query = query.Where(obj => obj.HitTest(bounds) == HitTestResult.Contains);
             }
-            else
-            {
-                return myCollection.Where(obj => bounds.Contains(obj.Bounds));
-            }
+            return query;
         }
 
         /// <summary>
@@ -68,7 +69,7 @@ namespace Undefined.DesignerCanvas
         }
 
         #region ICollection
-        public IEnumerator<GraphicalObject> GetEnumerator()
+        public IEnumerator<IGraphicalObject> GetEnumerator()
             => myCollection.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -78,7 +79,7 @@ namespace Undefined.DesignerCanvas
         /// 向集合添加一个新项目。
         /// </summary>
         /// <param name="item">不可为<c>null</c>。</param>
-        public void Add(GraphicalObject item)
+        public void Add(IGraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             myCollection.Add(item);
@@ -87,10 +88,10 @@ namespace Undefined.DesignerCanvas
             OnPropertyChanged("Item[]");
         }
 
-        public void AddRange(IEnumerable<GraphicalObject> items)
+        public void AddRange(IEnumerable<IGraphicalObject> items)
         {
             const double batchNotificationItems = 128;
-            var tempList = new List<GraphicalObject>();
+            var tempList = new List<IGraphicalObject>();
             foreach (var obj in items)
             {
                 myCollection.Add(obj);
@@ -118,13 +119,13 @@ namespace Undefined.DesignerCanvas
             OnPropertyChanged("Item[]");
         }
 
-        public bool Contains(GraphicalObject item)
+        public bool Contains(IGraphicalObject item)
             => myCollection.Contains(item);
 
-        public void CopyTo(GraphicalObject[] array, int arrayIndex)
+        public void CopyTo(IGraphicalObject[] array, int arrayIndex)
             => myCollection.CopyTo(array, arrayIndex);
 
-        public bool Remove(GraphicalObject item)
+        public bool Remove(IGraphicalObject item)
         {
             // NOTE: this is an O(n) operation!
             var result = myCollection.Remove(item);
@@ -157,5 +158,13 @@ namespace Undefined.DesignerCanvas
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
         #endregion
+    }
+
+    [Flags]
+    public enum ItemSelectionOptions
+    {
+        None = 0,
+        IncludePartialSelection = 1,
+        PerformHitTest = 2,
     }
 }

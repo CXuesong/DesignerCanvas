@@ -55,10 +55,14 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Connection.cs" />
     <Compile Include="DesignerCanvas.cs" />
     <Compile Include="DesignerCanvasItem.cs" />
     <Compile Include="GraphicalObject.cs" />
     <Compile Include="GraphicalObjectCollection.cs" />
+    <Compile Include="IGraphicalObject.cs" />
+    <Compile Include="Primitive\Connection.cs" />
+    <Compile Include="Primitive\Connector.cs" />
     <Compile Include="Primitive\ContainerDesigningAdorners.cs" />
     <Compile Include="Primitive\ContainerDesigningDecorator.cs" />
     <Compile Include="Primitive\DragThumb.cs" />

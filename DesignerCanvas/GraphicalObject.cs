@@ -100,6 +100,18 @@ namespace Undefined.DesignerCanvas
 
         public Rect Bounds => new Rect(_Location, _Size);
 
+        /// <summary>
+        /// Determines whether the object is in the specified region.
+        /// </summary>
+        public HitTestResult HitTest(Rect testRectangle)
+        {
+            var b = Bounds;
+            if (testRectangle.Contains(b)) return HitTestResult.Inside;
+            if (b.Contains(testRectangle)) return HitTestResult.Contains;
+            if (b.IntersectsWith(testRectangle)) return HitTestResult.Intersects;
+            return HitTestResult.None;
+        }
+
         #region PropertyNotifications
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -134,13 +146,5 @@ namespace Undefined.DesignerCanvas
             _Size = new Size(width, height);
             _Image = image;
         }
-    }
-
-    /// <summary>
-    /// This interface is placed here for future abstractions.
-    /// </summary>
-    public interface IGraphicalObject
-    {
-        Rect Bounds { get; }
     }
 }

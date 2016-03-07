@@ -124,7 +124,7 @@ namespace Undefined.DesignerCanvas
                 case NotifyCollectionChangedAction.Reset:
                     _ItemContainerGenerator.RecycleAll();
                     partCanvas.Children.Clear();
-                    foreach (var item in _Items.ObjectsInRegion(_ViewPortRect, true))
+                    foreach (var item in _Items.ObjectsInRegion(_ViewPortRect, ItemSelectionOptions.IncludePartialSelection))
                         _ItemContainerGenerator.CreateContainer(item);
                     break;
             }
@@ -211,7 +211,7 @@ namespace Undefined.DesignerCanvas
             }
             else
             {
-                var newItems = new HashSet<GraphicalObject>(Items.ObjectsInRegion(rect));
+                var newItems = new HashSet<IGraphicalObject>(Items.ObjectsInRegion(rect));
                 if ((mod & ModifierKeys.Shift) == ModifierKeys.Shift)
                 {
                     // Switch
@@ -336,7 +336,7 @@ namespace Undefined.DesignerCanvas
         //    SetContainerVisibility(item, _ViewPortRect.IntersectsWith(item.Bounds));
         //}
 
-        private void SetContainerVisibility(GraphicalObject item, bool visible)
+        private void SetContainerVisibility(IGraphicalObject item, bool visible)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             if (visible)
@@ -368,7 +368,9 @@ namespace Undefined.DesignerCanvas
         {
             // Allow partial shown containers.
             // Hide when the container is contained in rect.
-            foreach (var obj in _Items.ObjectsInRegion(rect, visible))
+            foreach (var obj in _Items.ObjectsInRegion(rect, visible
+                ? ItemSelectionOptions.IncludePartialSelection
+                : ItemSelectionOptions.None))
                 SetContainerVisibility(obj, visible);
         }
 
@@ -679,8 +681,8 @@ namespace Undefined.DesignerCanvas
             DependencyProperty.RegisterAttached("DataItem", typeof (object), typeof (GraphicalObjectContainerGenerator),
                 new FrameworkPropertyMetadata(null));
 
-        private readonly Dictionary<GraphicalObject, DependencyObject> itemContainerDict =
-            new Dictionary<GraphicalObject, DependencyObject>();
+        private readonly Dictionary<IGraphicalObject, DependencyObject> itemContainerDict =
+            new Dictionary<IGraphicalObject, DependencyObject>();
 
         public GraphicalObjectContainerGenerator()
         {
@@ -733,7 +735,7 @@ namespace Undefined.DesignerCanvas
         /// <summary>
         /// Gets a new or pooled container for a specific GraphicalObject.
         /// </summary>
-        public DependencyObject CreateContainer(GraphicalObject item)
+        public DependencyObject CreateContainer(IGraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             var container = CreateContainer();
@@ -742,7 +744,7 @@ namespace Undefined.DesignerCanvas
             return container;
         }
 
-        private void PrepareContainer(DependencyObject container, GraphicalObject item)
+        private void PrepareContainer(DependencyObject container, IGraphicalObject item)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
             container.SetValue(DataItemProperty, item);
@@ -778,7 +780,7 @@ namespace Undefined.DesignerCanvas
         /// Gets the container, if generated, for a specific item.
         /// </summary>
         /// <returns></returns>
-        public DependencyObject ContainerFromItem(GraphicalObject item)
+        public DependencyObject ContainerFromItem(IGraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             DependencyObject container;

@@ -55,9 +55,9 @@ namespace Undefined.DesignerCanvas.Primitive
             if (designer == null) return;
             double minLeft, minTop, minDeltaHorizontal, minDeltaVertical;
             // only resize DesignerItems
-            CalculateDragLimits(designer.SelectedItems, out minLeft, out minTop,
+            CalculateDragLimits(designer.SelectedItems.OfType<GraphicalObject>(), out minLeft, out minTop,
                 out minDeltaHorizontal, out minDeltaVertical);
-            foreach (var item in designer.SelectedItems)
+            foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
             {
                 Debug.Assert(item != null);
                 double dragDeltaVertical;
