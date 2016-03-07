@@ -21,7 +21,12 @@
         <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="47,0,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>
         <StatusBar Grid.Row="2">
             <Label>
-                <TextBlock Text="{Binding SelectedItems.Count, ElementName=dcvs, Mode=OneWay, StringFormat=\{0:d\} item(s) selected.}" />
+                <TextBlock>
+                    <TextBlock Text="{Binding SelectedItems.Count, ElementName=dcvs, Mode=OneWay}" />
+                <TextBlock Text=" / " />
+                <TextBlock Text="{Binding Items.Count, ElementName=dcvs, Mode=OneWay}" />
+                <TextBlock Text=" items(s) selected." />
+                </TextBlock>
             </Label>
             <Label>
                 <TextBlock>
