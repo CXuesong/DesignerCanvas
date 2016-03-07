@@ -34,10 +34,15 @@ namespace WpfTestApplication
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            dcvs.Items.Add(new GraphicalObject(10, 10, 32, 32, LoadImageResource("1.png")));
-            dcvs.Items.Add(new GraphicalObject(50, 10, 32, 32, LoadImageResource("2.png")));
+            var g1 = new GraphicalObject(10, 10, 32, 32, LoadImageResource("1.png"));
+            var g2 = new GraphicalObject(50, 10, 32, 32, LoadImageResource("2.png"));
             var bumpingItem = new GraphicalObject(50, 50, 32, 32, LoadImageResource("3.png"));
-            dcvs.Items.Add(bumpingItem);
+            dcvs.Items.AddRange(new[] {g1, g2, bumpingItem});
+            dcvs.Items.AddRange(new[]
+            {
+                new Connection(g1.Connectors[0], g2.Connectors[0]),
+                new Connection(g2.Connectors[1], bumpingItem.Connectors[2]),
+            });
             var aniTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(10),

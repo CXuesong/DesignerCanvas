@@ -63,7 +63,7 @@ namespace Undefined.DesignerCanvas.Primitive
             }
             else
             {
-                var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
+                var thisItem = (GraphicalObject)designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 thisItem.Left += deltaX;
                 thisItem.Top += deltaY;
             }

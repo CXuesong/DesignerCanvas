@@ -113,7 +113,8 @@ namespace Undefined.DesignerCanvas
                     {
                         foreach (var item in e.NewItems)
                         {
-                            var obj = (GraphicalObject) item;
+                            var obj = item as GraphicalObject;
+                            if (obj == null) continue;
                             if (_ViewPortRect.IntersectsWith(obj.Bounds))
                             {
                                 SetContainerVisibility(obj, true);
@@ -793,12 +794,12 @@ namespace Undefined.DesignerCanvas
         /// Gets the corresponding item, if exists, for a specific container.
         /// </summary>
         /// <returns></returns>
-        public GraphicalObject ItemFromContainer(DependencyObject container)
+        public IGraphicalObject ItemFromContainer(DependencyObject container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
             var localValue = container.ReadLocalValue(DataItemProperty);
             if (localValue == DependencyProperty.UnsetValue) localValue = null;
-            return (GraphicalObject)localValue;
+            return (IGraphicalObject) localValue;
         }
     }
 }

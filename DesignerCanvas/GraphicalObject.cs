@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -42,6 +43,7 @@ namespace Undefined.DesignerCanvas
                 {
                     OnPropertyChanged(nameof(Width));
                     OnPropertyChanged(nameof(Height));
+                    OnPropertyChanged(nameof(Bounds));
                 }
             }
         }
@@ -54,6 +56,7 @@ namespace Undefined.DesignerCanvas
                 _Location.X = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Location));
+                OnPropertyChanged(nameof(Bounds));
             }
         }
 
@@ -65,6 +68,7 @@ namespace Undefined.DesignerCanvas
                 _Location.Y = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Location));
+                OnPropertyChanged(nameof(Bounds));
             }
         }
 
@@ -76,6 +80,7 @@ namespace Undefined.DesignerCanvas
                 _Size.Width = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Size));
+                OnPropertyChanged(nameof(Bounds));
             }
         }
 
@@ -87,6 +92,7 @@ namespace Undefined.DesignerCanvas
                 _Size.Height = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Size));
+                OnPropertyChanged(nameof(Bounds));
             }
         }
 
@@ -111,6 +117,11 @@ namespace Undefined.DesignerCanvas
             if (b.IntersectsWith(testRectangle)) return HitTestResult.Intersects;
             return HitTestResult.None;
         }
+
+        /// <summary>
+        /// Gets the collection of the object's connectors.
+        /// </summary>
+        public ConnectorCollection Connectors { get; }
 
         #region PropertyNotifications
         public event PropertyChangedEventHandler PropertyChanged;
@@ -137,7 +148,11 @@ namespace Undefined.DesignerCanvas
 
         public GraphicalObject()
         {
-            
+            Connectors = new ConnectorCollection(this, 4);
+            Connectors[0].RelativePosition = new Point(0.5, 0);
+            Connectors[1].RelativePosition = new Point(1, 0.5);
+            Connectors[2].RelativePosition = new Point(0.5, 1);
+            Connectors[3].RelativePosition = new Point(0, 0.5);
         }
 
         public GraphicalObject(float left, float top, float width, float height, ImageSource image)
@@ -145,6 +160,7 @@ namespace Undefined.DesignerCanvas
             _Location = new Point(left, top);
             _Size = new Size(width, height);
             _Image = image;
+            Connectors = new ConnectorCollection(this, 4);
         }
     }
 }
