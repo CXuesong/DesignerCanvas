@@ -75,6 +75,7 @@ namespace Undefined.DesignerCanvas
                         PropertyChangedEventManager.AddHandler(value.Owner,
                             SourceObject_PropertyChanged, nameof(value.Owner.Bounds));
                     SetProperty(ref _Source, value);
+                    UpdatePositions();
                 }
             }
         }
@@ -97,6 +98,7 @@ namespace Undefined.DesignerCanvas
                         PropertyChangedEventManager.AddHandler(value.Owner,
                             SinkObject_PropertyChanged, nameof(value.Owner.Bounds));
                     SetProperty(ref _Sink, value);
+                    UpdatePositions();
                 }
             }
         }

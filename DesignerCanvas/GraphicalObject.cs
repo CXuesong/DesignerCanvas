@@ -156,11 +156,11 @@ namespace Undefined.DesignerCanvas
         }
 
         public GraphicalObject(float left, float top, float width, float height, ImageSource image)
+            : this()
         {
             _Location = new Point(left, top);
             _Size = new Size(width, height);
             _Image = image;
-            Connectors = new ConnectorCollection(this, 4);
         }
     }
 }

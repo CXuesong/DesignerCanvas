@@ -64,6 +64,8 @@
     <Compile Include="GraphicalObject.cs" />
     <Compile Include="GraphicalObjectCollection.cs" />
     <Compile Include="IGraphicalObject.cs" />
+    <Compile Include="ObjectPool.cs" />
+    <Compile Include="DesignerCanvasConnection.cs" />
     <Compile Include="Primitive\ContainerDesigningAdorners.cs" />
     <Compile Include="Primitive\ContainerDesigningDecorator.cs" />
     <Compile Include="Primitive\DragThumb.cs" />

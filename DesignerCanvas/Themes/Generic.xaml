@@ -10,7 +10,7 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
-                        <Canvas x:Name="PART_Canvas" Background="Red">
+                        <Canvas x:Name="PART_Canvas" Background="Transparent">
                             <!--
                             Panel elements do not receive mouse or stylus events if a Background
                             is not defined. If you need to handle mouse or stylus events
@@ -170,6 +170,28 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+    </Style>
+    <Style TargetType="local:DesignerCanvasConnection">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:DesignerCanvasConnection">
+                    <Canvas DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" >
+                        <Path Name="PART_ConnectionPath"
+                              StrokeThickness="2"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              StrokeLineJoin="Round"
+                              SnapsToDevicePixels="True"
+                              Data="{Binding PathGeometry}" Stroke="Navy"/>
+                        <Canvas.Effect>
+                            <DropShadowEffect Color="Gray" Direction="315" ShadowDepth="10" Opacity="0.1"/>
+                        </Canvas.Effect>
+                    </Canvas>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="SourcePoint" Value="{Binding SourcePosition}" />
+        <Setter Property="SinkPoint" Value="{Binding SinkPosition}" />
     </Style>
 </ResourceDictionary>
 

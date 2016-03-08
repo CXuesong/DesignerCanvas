@@ -77,12 +77,22 @@ namespace WpfTestApplication
             var res = new[] {"1.png", "2.png", "3.png"};
             var rnd = new Random();
             var offset = dcvs.Items.Count;
+            var objs = new List<GraphicalObject>();
             for (int i = offset; i < offset + 10000; i++)
             {
                 var row = i/columns;
                 var col = i%columns;
-                dcvs.Items.Add(new GraphicalObject(10 + col*40, 100 + row*40, 32, 32,
-                    LoadImageResource(res[rnd.Next(0, res.Length)])));
+                var obj = new GraphicalObject(10 + col * 40, 100 + row * 40, 32, 32,
+                    LoadImageResource(res[rnd.Next(0, res.Length)]));
+                dcvs.Items.Add(obj);
+                if (objs.Count > 0 && rnd.NextDouble() < 0.2)
+                {
+                    var anotherObj = objs[rnd.Next(Math.Max(0, objs.Count - 10), objs.Count)];
+                    var conn = new Connection(obj.Connectors[rnd.Next(0, obj.Connectors.Count)],
+                        anotherObj.Connectors[rnd.Next(0, anotherObj.Connectors.Count)]);
+                    dcvs.Items.Add(conn);
+                }
+                objs.Add(obj);
             }
         }
     }

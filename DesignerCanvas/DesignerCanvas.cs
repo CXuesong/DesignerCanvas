@@ -48,8 +48,7 @@ namespace Undefined.DesignerCanvas
         {
             try
             {
-                if (isSelectedContainersSynchronizing)
-                    throw new InvalidOperationException("此函数不支持递归调用。");
+                if (isSelectedContainersSynchronizing) throw new InvalidOperationException("此函数不支持递归调用。");
                 isSelectedContainersSynchronizing = true;
                 switch (e.Action)
                 {
@@ -60,7 +59,7 @@ namespace Undefined.DesignerCanvas
                         {
                             foreach (var item in e.OldItems)
                             {
-                                var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject) item);
+                                var container = _ItemContainerGenerator.ContainerFromItem((IGraphicalObject) item);
                                 container?.SetValue(Selector.IsSelectedProperty, false);
                             }
                         }
@@ -68,7 +67,7 @@ namespace Undefined.DesignerCanvas
                         {
                             foreach (var item in e.NewItems)
                             {
-                                var container = _ItemContainerGenerator.ContainerFromItem((GraphicalObject) item);
+                                var container = _ItemContainerGenerator.ContainerFromItem((IGraphicalObject) item);
                                 container?.SetValue(Selector.IsSelectedProperty, true);
                             }
                         }
@@ -107,13 +106,13 @@ namespace Undefined.DesignerCanvas
                     if (e.OldItems != null)
                     {
                         foreach (var item in e.OldItems)
-                            SetContainerVisibility((GraphicalObject) item, false);
+                            SetContainerVisibility((IGraphicalObject) item, false);
                     }
                     if (e.NewItems != null)
                     {
                         foreach (var item in e.NewItems)
                         {
-                            var obj = item as GraphicalObject;
+                            var obj = item as IGraphicalObject;
                             if (obj == null) continue;
                             if (_ViewPortRect.IntersectsWith(obj.Bounds))
                             {
@@ -377,7 +376,7 @@ namespace Undefined.DesignerCanvas
 
         #endregion
 
-        #region Notifications from Items
+        #region Notifications from Children
 
         internal void NotifyItemMouseDown(DesignerCanvasItem container)
         {
@@ -395,14 +394,14 @@ namespace Undefined.DesignerCanvas
             }
         }
 
-        internal void NotifyItemIsSelectedChanged(DesignerCanvasItem container)
+        internal void NotifyItemIsSelectedChanged(DependencyObject container)
         {
             Debug.Assert(container != null);
             // Do not update SelectedItems when SelectedItems are being updated.
             if (isSelectedContainersSynchronizing) return;
             var item = _ItemContainerGenerator.ItemFromContainer(container);
             if (item == null) return;
-            if (container.IsSelected)
+            if (Selector.GetIsSelected(container))
             {
                 Debug.Assert(!SelectedItems.Contains(item));
                 SelectedItems.Add(item);
@@ -682,55 +681,27 @@ namespace Undefined.DesignerCanvas
             DependencyProperty.RegisterAttached("DataItem", typeof (object), typeof (GraphicalObjectContainerGenerator),
                 new FrameworkPropertyMetadata(null));
 
-        private readonly Dictionary<IGraphicalObject, DependencyObject> itemContainerDict =
+        private readonly Dictionary<IGraphicalObject, DependencyObject> containerDict =
             new Dictionary<IGraphicalObject, DependencyObject>();
+
+        private ObjectPool<DesignerCanvasItem> itemContainerPool =
+            new ObjectPool<DesignerCanvasItem>(() => new DesignerCanvasItem());
+
+        private ObjectPool<DesignerCanvasConnection> connectionontainerPool =
+            new ObjectPool<DesignerCanvasConnection>(() => new DesignerCanvasConnection());
 
         public GraphicalObjectContainerGenerator()
         {
-
+            MaxPooledContainers = 100;
         }
-
-#region Container Pool
-
-        private List<DependencyObject> containerPool = new List<DependencyObject>();
-        private int _MaxPooledContainers = 200;
 
         /// <summary>
         /// Specifies the maximum number of containers that can exist in the pool.
         /// </summary>
         public int MaxPooledContainers
         {
-            get { return _MaxPooledContainers; }
-            set
-            {
-                if (value < 0) throw new ArgumentOutOfRangeException();
-                ShrinkContainerPool();
-                _MaxPooledContainers = value;
-            }
-        }
-
-        private void ShrinkContainerPool()
-        {
-            var exceededItems = containerPool.Count - MaxPooledContainers;
-            if (exceededItems > 0)
-                containerPool.RemoveRange(containerPool.Count - exceededItems, exceededItems);
-        }
-
-#endregion
-
-        private DependencyObject CreateContainer()
-        {
-            DependencyObject container;
-            if (containerPool.Count > 0)
-            {
-                container = containerPool[containerPool.Count - 1];
-                containerPool.RemoveAt(containerPool.Count - 1);
-            }
-            else
-            {
-                container = new DesignerCanvasItem();
-            }
-            return container;
+            get { return itemContainerPool.Capacity; }
+            set { itemContainerPool.Capacity = connectionontainerPool.Capacity = value; }
         }
 
         /// <summary>
@@ -739,10 +710,25 @@ namespace Undefined.DesignerCanvas
         public DependencyObject CreateContainer(IGraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            var container = CreateContainer();
-            PrepareContainer(container, item);
-            itemContainerDict.Add(item, container);
-            return container;
+            DependencyObject doContainer;
+            if (item is GraphicalObject)
+            {
+                var container = itemContainerPool.Take();
+                PrepareContainer(container, item);
+                doContainer = container;
+            }
+            else if (item is Connection)
+            {
+                var container = connectionontainerPool.Take();
+                PrepareContainer(container, item);
+                doContainer = container;
+            }
+            else
+            {
+                throw new ArgumentException(null, nameof(item));
+            }
+            containerDict.Add(item, doContainer);
+            return doContainer;
         }
 
         private void PrepareContainer(DependencyObject container, IGraphicalObject item)
@@ -760,18 +746,23 @@ namespace Undefined.DesignerCanvas
             if (container == null) throw new ArgumentNullException(nameof(container));
             var item = ItemFromContainer(container);
             if (item == null) throw new InvalidOperationException("试图回收非列表项目。");
-            itemContainerDict.Remove(item);
-            container.ClearValue(DataItemProperty);
-            container.ClearValue(FrameworkElement.DataContextProperty);
-            if (containerPool.Count < MaxPooledContainers)
+            containerDict.Remove(item);
+            if (container is DesignerCanvasItem)
             {
-                containerPool.Add(container);
+                itemContainerPool.PutBack((DesignerCanvasItem) container);
+            } else if (container is DesignerCanvasConnection)
+            {
+                connectionontainerPool.PutBack((DesignerCanvasConnection) container);
+            }
+            else
+            {
+                throw new ArgumentException(null, nameof(item));
             }
         }
 
         public void RecycleAll()
         {
-            foreach (var container in itemContainerDict.Values)
+            foreach (var container in containerDict.Values)
             {
                 Recycle(container);
             }
@@ -785,7 +776,7 @@ namespace Undefined.DesignerCanvas
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             DependencyObject container;
-            if (itemContainerDict.TryGetValue(item, out container))
+            if (containerDict.TryGetValue(item, out container))
                 return container;
             return null;
         }
