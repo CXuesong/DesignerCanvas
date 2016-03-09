@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
@@ -31,6 +32,32 @@ namespace Undefined.DesignerCanvas
         private readonly GraphicalObjectCollection _SelectedItems = new GraphicalObjectCollection();
 
         private GraphicalObjectContainerGenerator _ItemContainerGenerator = new GraphicalObjectContainerGenerator();
+
+        #region Properties
+
+        // ItemTemplate & ItemTemplateSelector affect both the Entity & the Connection.
+
+        public DataTemplate ItemTemplate
+        {
+            get { return (DataTemplate)GetValue(ItemTemplateProperty); }
+            set { SetValue(ItemTemplateProperty, value); }
+        }
+
+        public static readonly DependencyProperty ItemTemplateProperty =
+            DependencyProperty.Register("ItemTemplate", typeof (DataTemplate),
+                typeof (DesignerCanvas), new PropertyMetadata(null));
+
+        public DataTemplateSelector ItemTemplateSelector
+        {
+            get { return (DataTemplateSelector)GetValue(ItemTemplateSelectorProperty); }
+            set { SetValue(ItemTemplateSelectorProperty, value); }
+        }
+
+        public static readonly DependencyProperty ItemTemplateSelectorProperty =
+            DependencyProperty.Register("ItemTemplateSelector", typeof (DataTemplateSelector),
+                typeof (DesignerCanvas), new PropertyMetadata(null));
+
+        #endregion
 
         #region Items & States
 
@@ -244,6 +271,9 @@ namespace Undefined.DesignerCanvas
             _ExtendRect.Width += _ExtendRect.X;
             _ExtendRect.Height += _ExtendRect.Y;
             _ExtendRect.X = _ExtendRect.Y = 0;
+            // We want to fit the canvas to its parent.
+            if (_ExtendRect.Width < constraint.Width) _ExtendRect.Width = constraint.Width;
+            if (_ExtendRect.Height < constraint.Height) _ExtendRect.Height = constraint.Height;
             partCanvas.Measure(bounds.Size); // Seems no use.
             _ViewPortRect.Size = constraint;
             InvalidateViewPortRect();
@@ -417,9 +447,24 @@ namespace Undefined.DesignerCanvas
 
         public DesignerCanvas()
         {
+            // Note PartCanvas property returns null here.
             _Items.CollectionChanged += _Items_CollectionChanged;
             _SelectedItems.CollectionChanged += _SelectedItems_CollectionChanged;
-            // Note PartCanvas property will return null here.
+            _ItemContainerGenerator.ContainerPreparing += ItemContainerGenerator_ContainerPreparing;
+        }
+
+        private void ItemContainerGenerator_ContainerPreparing(object sender, ContainerPreparingEventArgs e)
+        {
+            if (ItemTemplate != null || ItemTemplateSelector != null)
+            {
+                e.Container.SetValue(ContentControl.ContentTemplateProperty, ItemTemplate);
+                e.Container.SetValue(ContentControl.ContentTemplateSelectorProperty, ItemTemplateSelector);
+            }
+            else
+            {
+                e.Container.ClearValue(ContentControl.ContentTemplateProperty);
+                e.Container.ClearValue(ContentControl.ContentTemplateSelectorProperty);
+            }
         }
 
         static DesignerCanvas()
@@ -690,6 +735,8 @@ namespace Undefined.DesignerCanvas
         private ObjectPool<DesignerCanvasConnection> connectionontainerPool =
             new ObjectPool<DesignerCanvasConnection>(() => new DesignerCanvasConnection());
 
+        public event EventHandler<ContainerPreparingEventArgs> ContainerPreparing;
+
         public GraphicalObjectContainerGenerator()
         {
             MaxPooledContainers = 100;
@@ -736,6 +783,7 @@ namespace Undefined.DesignerCanvas
             if (container == null) throw new ArgumentNullException(nameof(container));
             container.SetValue(DataItemProperty, item);
             container.SetValue(FrameworkElement.DataContextProperty, item);
+            OnContainerPreparing(new ContainerPreparingEventArgs(container, item));
         }
 
         /// <summary>
@@ -791,6 +839,23 @@ namespace Undefined.DesignerCanvas
             var localValue = container.ReadLocalValue(DataItemProperty);
             if (localValue == DependencyProperty.UnsetValue) localValue = null;
             return (IGraphicalObject) localValue;
+        }
+
+        protected virtual void OnContainerPreparing(ContainerPreparingEventArgs e)
+        {
+            ContainerPreparing?.Invoke(this, e);
+        }
+    }
+
+    public class ContainerPreparingEventArgs : EventArgs
+    {
+        public DependencyObject Container { get; }
+        public IGraphicalObject DataContext { get; }
+
+        public ContainerPreparingEventArgs(DependencyObject container, IGraphicalObject dataContext)
+        {
+            Container = container;
+            DataContext = dataContext;
         }
     }
 }

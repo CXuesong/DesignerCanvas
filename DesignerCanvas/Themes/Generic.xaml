@@ -27,14 +27,14 @@
         <!-- Later the invisible thumb may be changed into different shapes -->
         <Rectangle Fill="Transparent" />
     </ControlTemplate>
-    <Style TargetType="{x:Type local:DesignerCanvasItem}">
+    <Style TargetType="local:DesignerCanvasItem">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:DesignerCanvasItem}">
-                    <Grid DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
-                        <primitive:DragThumb x:Name="PART_DragThumb" Template="{StaticResource DragThumbTemplate}" />
-                        <Image x:Name="PART_Image" IsHitTestVisible="False" Source="{Binding Image, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" />
-                        <primitive:ContainerDesigningDecorator x:Name="PART_DesigningDecorator" />
+                    <Grid>
+                        <primitive:DragThumb x:Name="PART_DragThumb" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Template="{StaticResource DragThumbTemplate}" />
+                        <ContentPresenter IsHitTestVisible="False" />
+                        <primitive:ContainerDesigningDecorator DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" x:Name="PART_DesigningDecorator" />
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="Selector.IsSelected" Value="True">
@@ -44,11 +44,19 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="ContentTemplate">
+            <Setter.Value>
+                <DataTemplate>
+                    <Image Source="{Binding Image}" />
+                </DataTemplate>
+            </Setter.Value>
+        </Setter>
+        <!-- Connect the data object to the Control -->
         <Setter Property="Canvas.Left" Value="{Binding Left}" />
         <Setter Property="Canvas.Top" Value="{Binding Top}" />
         <Setter Property="Width" Value="{Binding Width}" />
         <Setter Property="Height" Value="{Binding Height}" />
-        <Setter Property="Image" Value="{Binding Image}" />
+        <Setter Property="Content" Value="{Binding}" />
     </Style>
     <Style x:Key="ThumbHandle" TargetType="Shape">
         <Setter Property="SnapsToDevicePixels" Value="true" />

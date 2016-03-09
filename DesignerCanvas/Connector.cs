@@ -47,7 +47,6 @@ namespace Undefined.DesignerCanvas
             new Point(_Owner.Left + _Owner.Width*_RelativePosition.X,
                 _Owner.Top + _Owner.Height*_RelativePosition.Y);
 
-
         #region PropertyNotifications
 
         public event PropertyChangedEventHandler PropertyChanged;

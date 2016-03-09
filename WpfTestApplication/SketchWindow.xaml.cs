@@ -23,5 +23,9 @@ namespace WpfTestApplication
         {
             InitializeComponent();
         }
+        private void button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }

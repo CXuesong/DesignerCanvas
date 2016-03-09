@@ -17,15 +17,6 @@ namespace Undefined.DesignerCanvas
     [TemplatePart(Name = "PART_DesigningDecorator", Type = typeof(ContainerDesigningDecorator))]
     public class DesignerCanvasItem : ContentControl
     {
-        public ImageSource Image
-        {
-            get { return (ImageSource)GetValue(ImageProperty); }
-            set { SetValue(ImageProperty, value); }
-        }
-
-        public static readonly DependencyProperty ImageProperty =
-            DependencyProperty.Register("Image", typeof(ImageSource), typeof(DesignerCanvasItem), new PropertyMetadata(null));
-
         public bool IsSelected
         {
             get { return (bool)GetValue(IsSelectedProperty); }
@@ -46,9 +37,6 @@ namespace Undefined.DesignerCanvas
         {
             base.OnPreviewMouseDown(e);
             ParentDesigner?.NotifyItemMouseDown(this);
-            if (e.Handled)
-            {
-            }
             e.Handled = false;
             // Then the Source of MouseDown will be DesignerCanvasItem rather than
             // DesignerCanvas. This is especially to handle the case when 
