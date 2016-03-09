@@ -8,9 +8,9 @@ namespace Undefined.DesignerCanvas
 {
     internal class ObjectPool<T>
     {
-        private Func<T> _OnCreateObject;
+        private readonly Func<T> _OnCreateObject;
+        private readonly List<T> pool = new List<T>();
         private int _Capacity = 10;
-        private List<T> pool = new List<T>();
 
         public ObjectPool(Func<T> onCreateObject)
         {

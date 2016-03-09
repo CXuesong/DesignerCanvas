@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Media;
+using Undefined.DesignerCanvas.ObjectModel;
 
 namespace Undefined.DesignerCanvas.Primitive
 {
@@ -55,9 +56,9 @@ namespace Undefined.DesignerCanvas.Primitive
             if (designer == null) return;
             double minLeft, minTop, minDeltaHorizontal, minDeltaVertical;
             // only resize DesignerItems
-            CalculateDragLimits(designer.SelectedItems.OfType<GraphicalObject>(), out minLeft, out minTop,
+            CalculateDragLimits(designer.SelectedItems.OfType<Entity>(), out minLeft, out minTop,
                 out minDeltaHorizontal, out minDeltaVertical);
-            foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
+            foreach (var item in designer.SelectedItems.OfType<Entity>())
             {
                 Debug.Assert(item != null);
                 double dragDeltaVertical;
@@ -90,7 +91,7 @@ namespace Undefined.DesignerCanvas.Primitive
             e.Handled = true;
         }
 
-        private static void CalculateDragLimits(IEnumerable<GraphicalObject> items, out double minLeft, out double minTop, out double minDeltaHorizontal, out double minDeltaVertical)
+        private static void CalculateDragLimits(IEnumerable<Entity> items, out double minLeft, out double minTop, out double minDeltaHorizontal, out double minDeltaVertical)
         {
             minLeft = double.MaxValue;
             minTop = double.MaxValue;

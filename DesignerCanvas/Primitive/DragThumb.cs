@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using Undefined.DesignerCanvas.ObjectModel;
 
 namespace Undefined.DesignerCanvas.Primitive
 {
@@ -45,7 +46,7 @@ namespace Undefined.DesignerCanvas.Primitive
             if (designer == null) return;
             var minLeft = double.MaxValue;
             var minTop = double.MaxValue;
-            foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
+            foreach (var item in designer.SelectedItems.OfType<Entity>())
             {
                 minLeft = Math.Min(item.Left, minLeft);
                 minTop = Math.Min(item.Top, minTop);
@@ -55,7 +56,7 @@ namespace Undefined.DesignerCanvas.Primitive
             if (instantPreview)
             {
                 // This operation may be slow.
-                foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
+                foreach (var item in designer.SelectedItems.OfType<Entity>())
                 {
                     item.Left += deltaX;
                     item.Top += deltaY;
@@ -63,7 +64,7 @@ namespace Undefined.DesignerCanvas.Primitive
             }
             else
             {
-                var thisItem = (GraphicalObject)designer.ItemContainerGenerator.ItemFromContainer(destControl);
+                var thisItem = (Entity)designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 thisItem.Left += deltaX;
                 thisItem.Top += deltaY;
             }
@@ -81,7 +82,7 @@ namespace Undefined.DesignerCanvas.Primitive
                 var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 var minLeft = double.MaxValue;
                 var minTop = double.MaxValue;
-                foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
+                foreach (var item in designer.SelectedItems.OfType<Entity>())
                 {
                     var left = item.Left;
                     var top = item.Top;
@@ -90,7 +91,7 @@ namespace Undefined.DesignerCanvas.Primitive
                 }
                 var deltaHorizontal = Math.Max(-minLeft, e.HorizontalChange);
                 var deltaVertical = Math.Max(-minTop, e.VerticalChange);
-                foreach (var item in designer.SelectedItems.OfType<GraphicalObject>())
+                foreach (var item in designer.SelectedItems.OfType<Entity>())
                 {
                     if (item == thisItem) continue;
                     item.Left += deltaHorizontal;

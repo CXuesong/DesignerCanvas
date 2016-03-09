@@ -1,42 +1,36 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace Undefined.DesignerCanvas
+namespace Undefined.DesignerCanvas.ObjectModel
 {
     /// <summary>
-    /// 为设计图面上的对象集合提供基本操作。
-    /// 为了优化性能，此集合的内部实现可能会在未来进行调整。
-    /// 因此目前仅公开必要的集合操作。
+    /// Provides basic operations for a collection of <see cref="Entity"/>s & <see cref="Connection"/>s.
+    /// The implementation of this class may be subject to change for a better performance. (E.g. R-Tree)
+    /// Thus for now only foundamental operations are provided, and this class doesn't implement <see cref="IList"/>.
     /// </summary>
     public class GraphicalObjectCollection : ICollection<IGraphicalObject>, INotifyPropertyChanged, INotifyCollectionChanged
     {
         private readonly HashSet<IGraphicalObject> myCollection = new HashSet<IGraphicalObject>();
 
         /// <summary>
-        /// 获取指定区域内的所有对象。
+        /// Gets all <see cref="IGraphicalObject"/> contained in the specified rectangle region.
         /// </summary>
-        /// <param name="bounds">要返回其内部对象的选框。</param>
         public IEnumerable<IGraphicalObject> ObjectsInRegion(Rect bounds)
         {
             return ObjectsInRegion(bounds, ItemSelectionOptions.None);
         }
 
         /// <summary>
-        /// 获取指定区域内的所有对象。
+        /// Gets all <see cref="IGraphicalObject"/> contained in or intersecting with the specified rectangle region.
         /// </summary>
-        /// <param name="bounds">要返回其内部对象的选框。</param>
-        /// <param name="includePartialSelection">在返回的集合中包括与选框相交的对象。</param>
         public IEnumerable<IGraphicalObject> ObjectsInRegion(Rect bounds, ItemSelectionOptions options)
         {
-            if (bounds.IsEmpty || bounds.Width == 0 || bounds.Height == 0) return Enumerable.Empty<GraphicalObject>();
+            if (bounds.IsEmpty || bounds.Width == 0 || bounds.Height == 0) return Enumerable.Empty<Entity>();
             var query = ((options & ItemSelectionOptions.IncludePartialSelection) == ItemSelectionOptions.IncludePartialSelection)
                 ? myCollection.Where(obj => bounds.IntersectsWith(obj.Bounds))
                 : myCollection.Where(obj => bounds.Contains(obj.Bounds));
@@ -76,9 +70,9 @@ namespace Undefined.DesignerCanvas
             => myCollection.GetEnumerator();
 
         /// <summary>
-        /// 向集合添加一个新项目。
+        /// �򼯺�����һ������Ŀ��
         /// </summary>
-        /// <param name="item">不可为<c>null</c>。</param>
+        /// <param name="item">����Ϊ<c>null</c>��</param>
         public void Add(IGraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
@@ -160,11 +154,21 @@ namespace Undefined.DesignerCanvas
         #endregion
     }
 
+    /// <summary>
+    /// Used by <see cref="GraphicalObjectCollection.ObjectsInRegion"/>.
+    /// </summary>
     [Flags]
     public enum ItemSelectionOptions
     {
         None = 0,
+        /// <summary>
+        /// Includes the object intersecting with the specified region.
+        /// </summary>
         IncludePartialSelection = 1,
+        /// <summary>
+        /// Performs hittesting for every object intersecting with the specified region.
+        /// This operation might be slow.
+        /// </summary>
         PerformHitTest = 2,
     }
 }

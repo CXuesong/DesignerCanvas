@@ -8,14 +8,18 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
+using Undefined.DesignerCanvas.ObjectModel;
 using Undefined.DesignerCanvas.Primitive;
 
 namespace Undefined.DesignerCanvas
 {
+    /// <summary>
+    /// Used for rendering <see cref="Entity"/> in <see cref="DesignerCanvas" />.
+    /// </summary>
     [TemplatePart(Name = "PART_Image", Type = typeof(Image))]
     [TemplatePart(Name = "PART_DragThumb", Type = typeof(DragThumb))]
     [TemplatePart(Name = "PART_DesigningDecorator", Type = typeof(ContainerDesigningDecorator))]
-    public class DesignerCanvasItem : ContentControl
+    public class DesignerCanvasEntity : ContentControl
     {
         public bool IsSelected
         {
@@ -24,10 +28,6 @@ namespace Undefined.DesignerCanvas
         }
 
         public static readonly DependencyProperty IsSelectedProperty = Selector.IsSelectedProperty;
-        /*DependencyProperty.Register("IsSelected",
-                                     typeof(bool),
-                                     typeof(DesignerCanvasItem),
-                                     new FrameworkPropertyMetadata(false));*/
 
         public DesignerCanvas ParentDesigner => DesignerCanvas.FindDesignerCanvas(this);
 
@@ -45,14 +45,14 @@ namespace Undefined.DesignerCanvas
 
         #endregion
 
-        static DesignerCanvasItem()
+        static DesignerCanvasEntity()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(DesignerCanvasItem), new FrameworkPropertyMetadata(typeof(DesignerCanvasItem)));
-            Selector.IsSelectedProperty.OverrideMetadata(typeof(DesignerCanvasItem),
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(DesignerCanvasEntity), new FrameworkPropertyMetadata(typeof(DesignerCanvasEntity)));
+            Selector.IsSelectedProperty.OverrideMetadata(typeof(DesignerCanvasEntity),
                 new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     (sender, e) =>
                     {
-                        var s = (DesignerCanvasItem)sender;
+                        var s = (DesignerCanvasEntity)sender;
                         s.ParentDesigner?.NotifyItemIsSelectedChanged(s);
                     }));
         }

@@ -4,10 +4,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Undefined.DesignerCanvas.ObjectModel;
 
 namespace Undefined.DesignerCanvas
 {
-    public class ConnectionCollection : ObservableCollection<Connection>
+    // This collection is currenly not used.
+    internal class ConnectionCollection : ObservableCollection<Connection>
     {
         private readonly Connector _Owner;
 

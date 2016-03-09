@@ -1,23 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Undefined.DesignerCanvas
+namespace Undefined.DesignerCanvas.ObjectModel
 {
     public class ConnectorCollection : IList<Connector>
     {
-        private readonly GraphicalObject _Owner;
+        private readonly Entity _Owner;
         private readonly List<Connector> myList = new List<Connector>();
 
-        internal ConnectorCollection(GraphicalObject owner) : this(owner, 0)
+        internal ConnectorCollection(Entity owner) : this(owner, 0)
         {
         }
 
-        internal ConnectorCollection(GraphicalObject owner, int connectorCount)
+        internal ConnectorCollection(Entity owner, int connectorCount)
         {
             if (owner == null) throw new ArgumentNullException(nameof(owner));
             if (connectorCount < 0) throw new ArgumentOutOfRangeException(nameof(connectorCount));
@@ -37,7 +33,7 @@ namespace Undefined.DesignerCanvas
             return newInst;
         }
 
-        internal GraphicalObject Owner => _Owner;
+        internal Entity Owner => _Owner;
 
         public Connector this[int index] => myList[index];
 

@@ -1,21 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace Undefined.DesignerCanvas
+namespace Undefined.DesignerCanvas.ObjectModel
 {
     public class Connector : INotifyPropertyChanged
     {
-        private readonly GraphicalObject _Owner;
+        private readonly Entity _Owner;
         //private readonly ConnectionCollection _Connections;
 
-        internal Connector(GraphicalObject owner)
+        internal Connector(Entity owner)
         {
             if (owner == null) throw new ArgumentNullException(nameof(owner));
             _Owner = owner;
@@ -26,7 +21,7 @@ namespace Undefined.DesignerCanvas
 
         // Right now it seems no use to keep track of connections.
 
-        public GraphicalObject Owner => _Owner;
+        public Entity Owner => _Owner;
 
 
         private Point _RelativePosition;

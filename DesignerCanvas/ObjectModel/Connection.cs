@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace Undefined.DesignerCanvas
+namespace Undefined.DesignerCanvas.ObjectModel
 {
+    /// <summary>
+    /// Represents a connection between <see cref="Entity"/>s.
+    /// This class can be inherited by user to contain more information.
+    /// </summary>
     public class Connection : INotifyPropertyChanged, IGraphicalObject
     {
         public Connection()
@@ -80,7 +79,7 @@ namespace Undefined.DesignerCanvas
             }
         }
 
-        public GraphicalObject SourceObject => _Source?.Owner;
+        public Entity SourceObject => _Source?.Owner;
 
         private Connector _Sink;
 
@@ -103,7 +102,7 @@ namespace Undefined.DesignerCanvas
             }
         }
 
-        public GraphicalObject SinkObject => _Sink?.Owner;
+        public Entity SinkObject => _Sink?.Owner;
 
         private Point _SourcePosition;
 

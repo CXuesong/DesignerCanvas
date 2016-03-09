@@ -14,6 +14,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Undefined.DesignerCanvas;
+using Undefined.DesignerCanvas.ObjectModel;
 
 namespace WpfTestApplication
 {
@@ -34,9 +35,9 @@ namespace WpfTestApplication
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var g1 = new GraphicalObject(10, 10, 32, 32, LoadImageResource("1.png"));
-            var g2 = new GraphicalObject(50, 10, 32, 32, LoadImageResource("2.png"));
-            var bumpingItem = new GraphicalObject(50, 50, 32, 32, LoadImageResource("3.png"));
+            var g1 = new Entity(10, 10, 32, 32, LoadImageResource("1.png"));
+            var g2 = new Entity(50, 10, 32, 32, LoadImageResource("2.png"));
+            var bumpingItem = new Entity(50, 50, 32, 32, LoadImageResource("3.png"));
             dcvs.Items.AddRange(new[] {g1, g2, bumpingItem});
             dcvs.Items.AddRange(new[]
             {
@@ -77,12 +78,12 @@ namespace WpfTestApplication
             var res = new[] {"1.png", "2.png", "3.png"};
             var rnd = new Random();
             var offset = dcvs.Items.Count;
-            var objs = new List<GraphicalObject>();
+            var objs = new List<Entity>();
             for (int i = offset; i < offset + 10000; i++)
             {
                 var row = i/columns;
                 var col = i%columns;
-                var obj = new GraphicalObject(10 + col * 40, 100 + row * 40, 32, 32,
+                var obj = new Entity(10 + col * 40, 100 + row * 40, 32, 32,
                     LoadImageResource(res[rnd.Next(0, res.Length)]));
                 dcvs.Items.Add(obj);
                 if (objs.Count > 0 && rnd.NextDouble() < 0.2)

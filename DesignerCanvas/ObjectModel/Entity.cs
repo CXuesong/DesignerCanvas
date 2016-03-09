@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
-namespace Undefined.DesignerCanvas
+namespace Undefined.DesignerCanvas.ObjectModel
 {
     /// <summary>
-    /// 用于为支持图形显示的对象提供数据。
-    /// 您可以考虑从此类派生以提供附加数据或行为。
+    /// Represents an entity (or an object, node, vertex) in the graph or diagram.
+    /// There can be <see cref="Connection"/>s between entities.
+    /// This class can be inherited by user to contain more information.
     /// </summary>
-    public class GraphicalObject : INotifyPropertyChanged, IGraphicalObject
+    public class Entity : INotifyPropertyChanged, IGraphicalObject
     {
         private Point _Location;
 
@@ -146,7 +141,7 @@ namespace Undefined.DesignerCanvas
         }
         #endregion
 
-        public GraphicalObject()
+        public Entity()
         {
             Connectors = new ConnectorCollection(this, 4);
             Connectors[0].RelativePosition = new Point(0.5, 0);
@@ -155,7 +150,7 @@ namespace Undefined.DesignerCanvas
             Connectors[3].RelativePosition = new Point(0, 0.5);
         }
 
-        public GraphicalObject(float left, float top, float width, float height, ImageSource image)
+        public Entity(float left, float top, float width, float height, ImageSource image)
             : this()
         {
             _Location = new Point(left, top);

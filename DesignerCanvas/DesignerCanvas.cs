@@ -18,12 +18,13 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Undefined.DesignerCanvas.ObjectModel;
 using Undefined.DesignerCanvas.Primitive;
 
 namespace Undefined.DesignerCanvas
 {
     /// <summary>
-    /// 用于承载绘图图面。
+    /// Hosts a canvas that supports diagram designing.
     /// </summary>
     [TemplatePart(Name = "PART_Canvas", Type = typeof (Canvas))]
     public class DesignerCanvas : Control, IScrollInfo
@@ -31,7 +32,7 @@ namespace Undefined.DesignerCanvas
         private readonly GraphicalObjectCollection _Items = new GraphicalObjectCollection();
         private readonly GraphicalObjectCollection _SelectedItems = new GraphicalObjectCollection();
 
-        private GraphicalObjectContainerGenerator _ItemContainerGenerator = new GraphicalObjectContainerGenerator();
+        private readonly GraphicalObjectContainerGenerator _ItemContainerGenerator = new GraphicalObjectContainerGenerator();
 
         #region Properties
 
@@ -360,7 +361,7 @@ namespace Undefined.DesignerCanvas
         ///// Creates or recycles the container for specified item,
         ///// depending whether the bounds of item is in ViewPort.
         ///// </summary>
-        //private void SetContainerVisibility(GraphicalObject item)
+        //private void SetContainerVisibility(Entity item)
         //{
         //    if (item == null) throw new ArgumentNullException(nameof(item));
         //    SetContainerVisibility(item, _ViewPortRect.IntersectsWith(item.Bounds));
@@ -408,7 +409,7 @@ namespace Undefined.DesignerCanvas
 
         #region Notifications from Children
 
-        internal void NotifyItemMouseDown(DesignerCanvasItem container)
+        internal void NotifyItemMouseDown(DesignerCanvasEntity container)
         {
             Debug.Assert(container != null);
             //Debug.Print("NotifyItemMouseDown");
@@ -714,7 +715,7 @@ namespace Undefined.DesignerCanvas
     }
 
     /// <summary>
-    /// Generates UIElements for GraphicalObjects.
+    /// Generates <see cref="UIElement"/>s for GraphicalObjects.
     /// Note <see cref="GraphicalObjectCollection"/> has no indexer.
     /// </summary>
     public class GraphicalObjectContainerGenerator // aka. Factory
@@ -729,10 +730,10 @@ namespace Undefined.DesignerCanvas
         private readonly Dictionary<IGraphicalObject, DependencyObject> containerDict =
             new Dictionary<IGraphicalObject, DependencyObject>();
 
-        private ObjectPool<DesignerCanvasItem> itemContainerPool =
-            new ObjectPool<DesignerCanvasItem>(() => new DesignerCanvasItem());
+        private readonly ObjectPool<DesignerCanvasEntity> entityContainerPool =
+            new ObjectPool<DesignerCanvasEntity>(() => new DesignerCanvasEntity());
 
-        private ObjectPool<DesignerCanvasConnection> connectionontainerPool =
+        private readonly ObjectPool<DesignerCanvasConnection> connectionontainerPool =
             new ObjectPool<DesignerCanvasConnection>(() => new DesignerCanvasConnection());
 
         public event EventHandler<ContainerPreparingEventArgs> ContainerPreparing;
@@ -747,20 +748,20 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public int MaxPooledContainers
         {
-            get { return itemContainerPool.Capacity; }
-            set { itemContainerPool.Capacity = connectionontainerPool.Capacity = value; }
+            get { return entityContainerPool.Capacity; }
+            set { entityContainerPool.Capacity = connectionontainerPool.Capacity = value; }
         }
 
         /// <summary>
-        /// Gets a new or pooled container for a specific GraphicalObject.
+        /// Gets a new or pooled container for a specific Entity.
         /// </summary>
         public DependencyObject CreateContainer(IGraphicalObject item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             DependencyObject doContainer;
-            if (item is GraphicalObject)
+            if (item is Entity)
             {
-                var container = itemContainerPool.Take();
+                var container = entityContainerPool.Take();
                 PrepareContainer(container, item);
                 doContainer = container;
             }
@@ -795,9 +796,9 @@ namespace Undefined.DesignerCanvas
             var item = ItemFromContainer(container);
             if (item == null) throw new InvalidOperationException("试图回收非列表项目。");
             containerDict.Remove(item);
-            if (container is DesignerCanvasItem)
+            if (container is DesignerCanvasEntity)
             {
-                itemContainerPool.PutBack((DesignerCanvasItem) container);
+                entityContainerPool.PutBack((DesignerCanvasEntity) container);
             } else if (container is DesignerCanvasConnection)
             {
                 connectionontainerPool.PutBack((DesignerCanvasConnection) container);

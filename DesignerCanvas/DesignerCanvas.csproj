@@ -55,15 +55,16 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Connection.cs" />
     <Compile Include="ConnectionCollection.cs" />
-    <Compile Include="Connector.cs" />
-    <Compile Include="ConnectorCollection.cs" />
     <Compile Include="DesignerCanvas.cs" />
-    <Compile Include="DesignerCanvasItem.cs" />
-    <Compile Include="GraphicalObject.cs" />
-    <Compile Include="GraphicalObjectCollection.cs" />
-    <Compile Include="IGraphicalObject.cs" />
+    <Compile Include="DesignerCanvasEntity.cs" />
+    <Compile Include="ObjectModel\Connection.cs" />
+    <Compile Include="ObjectModel\Connector.cs" />
+    <Compile Include="ObjectModel\ConnectorCollection.cs" />
+    <Compile Include="ObjectModel\Entity.cs" />
+    <Compile Include="ObjectModel\GraphicalObjectCollection.cs" />
+    <Compile Include="ObjectModel\HitTestResult.cs" />
+    <Compile Include="ObjectModel\IGraphicalObject.cs" />
     <Compile Include="ObjectPool.cs" />
     <Compile Include="DesignerCanvasConnection.cs" />
     <Compile Include="Primitive\ContainerDesigningAdorners.cs" />
