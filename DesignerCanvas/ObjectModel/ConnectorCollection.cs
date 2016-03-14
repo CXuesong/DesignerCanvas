@@ -6,14 +6,33 @@ namespace Undefined.DesignerCanvas.ObjectModel
 {
     public class ConnectorCollection : IList<Connector>
     {
-        private readonly Entity _Owner;
+        private static ConnectorCollection _Empty;
+
+        private readonly IEntity _Owner;
         private readonly List<Connector> myList = new List<Connector>();
 
-        internal ConnectorCollection(Entity owner) : this(owner, 0)
+        /// <summary>
+        /// Gets a readonly empty collection of connectors.
+        /// </summary>
+        public static ConnectorCollection Empty
+        {
+            get
+            {
+                if (_Empty == null) _Empty = new ConnectorCollection();
+                return _Empty;
+            }
+        }
+
+        private ConnectorCollection()
+        {
+            myList = null;
+        }
+
+        public ConnectorCollection(IEntity owner) : this(owner, 0)
         {
         }
 
-        internal ConnectorCollection(Entity owner, int connectorCount)
+        public ConnectorCollection(IEntity owner, int connectorCount)
         {
             if (owner == null) throw new ArgumentNullException(nameof(owner));
             if (connectorCount < 0) throw new ArgumentOutOfRangeException(nameof(connectorCount));
@@ -26,16 +45,30 @@ namespace Undefined.DesignerCanvas.ObjectModel
             }
         }
 
+        private void CheckReadonly()
+        {
+            if (myList == null) throw new NotSupportedException("Collection is readonly.");
+        }
+
         public Connector Add()
         {
+            CheckReadonly();
             var newInst = new Connector(_Owner);
             myList.Add(newInst);
             return newInst;
         }
 
-        internal Entity Owner => _Owner;
+        internal IEntity Owner => _Owner;
 
-        public Connector this[int index] => myList[index];
+        public Connector this[int index]
+        {
+            get
+            {
+                if (myList == null)
+                    throw new ArgumentOutOfRangeException(nameof(index));
+                return myList[index];
+            }
+        }
 
         #region IList Implementations
         /// <summary>
@@ -67,7 +100,11 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// Removes all items from the <see cref="T:System.Collections.Generic.ICollection`1"/>.
         /// </summary>
         /// <exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only. </exception>
-        public void Clear() => myList.Clear();
+        public void Clear()
+        {
+            CheckReadonly();
+            myList.Clear();
+        }
 
         /// <summary>
         /// Determines whether the <see cref="T:System.Collections.Generic.ICollection`1"/> contains a specific value.
@@ -91,7 +128,11 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// true if <paramref name="item"/> was successfully removed from the <see cref="T:System.Collections.Generic.ICollection`1"/>; otherwise, false. This method also returns false if <paramref name="item"/> is not found in the original <see cref="T:System.Collections.Generic.ICollection`1"/>.
         /// </returns>
         /// <param name="item">The object to remove from the <see cref="T:System.Collections.Generic.ICollection`1"/>.</param><exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.</exception>
-        public bool Remove(Connector item) => myList.Remove(item);
+        public bool Remove(Connector item)
+        {
+            CheckReadonly();
+            return myList.Remove(item);
+        }
 
         /// <summary>
         /// Gets the number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
@@ -99,7 +140,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// <returns>
         /// The number of elements contained in the <see cref="T:System.Collections.Generic.ICollection`1"/>.
         /// </returns>
-        public int Count => myList.Count;
+        public int Count => myList?.Count ?? 0;
 
         /// <summary>
         /// Gets a value indicating whether the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only.
@@ -107,7 +148,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// <returns>
         /// true if the <see cref="T:System.Collections.Generic.ICollection`1"/> is read-only; otherwise, false.
         /// </returns>
-        public bool IsReadOnly => false;
+        public bool IsReadOnly => myList != null;
 
         /// <summary>
         /// Determines the index of a specific item in the <see cref="T:System.Collections.Generic.IList`1"/>.
@@ -124,14 +165,18 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// <param name="index">The zero-based index at which <paramref name="item"/> should be inserted.</param><param name="item">The object to insert into the <see cref="T:System.Collections.Generic.IList`1"/>.</param><exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.</exception><exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IList`1"/> is read-only.</exception>
         void IList<Connector>.Insert(int index, Connector item)
         {
-            throw new  NotSupportedException();
+            throw new NotSupportedException();
         }
 
         /// <summary>
         /// Removes the <see cref="T:System.Collections.Generic.IList`1"/> item at the specified index.
         /// </summary>
         /// <param name="index">The zero-based index of the item to remove.</param><exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.</exception><exception cref="T:System.NotSupportedException">The <see cref="T:System.Collections.Generic.IList`1"/> is read-only.</exception>
-        public void RemoveAt(int index) => myList.RemoveAt(index);
+        public void RemoveAt(int index)
+        {
+            CheckReadonly();
+            myList.RemoveAt(index);
+        }
 
         /// <summary>
         /// Gets or sets the element at the specified index.
@@ -142,7 +187,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// <param name="index">The zero-based index of the element to get or set.</param><exception cref="T:System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="T:System.Collections.Generic.IList`1"/>.</exception><exception cref="T:System.NotSupportedException">The property is set and the <see cref="T:System.Collections.Generic.IList`1"/> is read-only.</exception>
         Connector IList<Connector>.this[int index]
         {
-            get { return myList[index]; }
+            get { return this[index]; }
             set { throw new NotSupportedException();}
         }
 #endregion

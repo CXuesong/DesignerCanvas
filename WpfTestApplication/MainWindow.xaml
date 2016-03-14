@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}" BorderThickness="1" Background="#FFD4EDFF">
             <ScrollViewer HorizontalScrollBarVisibility="Visible" CanContentScroll="True" UseLayoutRounding="True">
-                <DesignerCanvas:DesignerCanvas x:Name="dcvs" VerticalAlignment="Top" HorizontalAlignment="Left" />
+                <DesignerCanvas:DesignerCanvas x:Name="dcvs" MouseDown="dcvs_MouseDown" Background="White" />
             </ScrollViewer>
         </Border>
         <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="47,0,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>

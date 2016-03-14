@@ -7,10 +7,10 @@ namespace Undefined.DesignerCanvas.ObjectModel
 {
     public class Connector : INotifyPropertyChanged
     {
-        private readonly Entity _Owner;
+        private readonly IEntity _Owner;
         //private readonly ConnectionCollection _Connections;
 
-        internal Connector(Entity owner)
+        internal Connector(IEntity owner)
         {
             if (owner == null) throw new ArgumentNullException(nameof(owner));
             _Owner = owner;
@@ -21,7 +21,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
 
         // Right now it seems no use to keep track of connections.
 
-        public Entity Owner => _Owner;
+        public IEntity Owner => _Owner;
 
 
         private Point _RelativePosition;
@@ -38,9 +38,15 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// <summary>
         /// Gets the position of Connector, relative to the DesignerCanvas.
         /// </summary>
-        public Point AbsolutePosition =>
-            new Point(_Owner.Left + _Owner.Width*_RelativePosition.X,
-                _Owner.Top + _Owner.Height*_RelativePosition.Y);
+        public Point AbsolutePosition
+        {
+            get
+            {
+                var bounds = _Owner.Bounds;
+                return new Point(bounds.Left + bounds.Width*_RelativePosition.X,
+                    bounds.Top + bounds.Height*_RelativePosition.Y);
+            }
+        }
 
         #region PropertyNotifications
 

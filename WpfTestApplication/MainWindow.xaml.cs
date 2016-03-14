@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -37,12 +36,14 @@ namespace WpfTestApplication
         {
             var g1 = new Entity(10, 10, 32, 32, LoadImageResource("1.png"));
             var g2 = new Entity(50, 10, 32, 32, LoadImageResource("2.png"));
+            var myG1 = new MyEntity {Bounds = new Rect(100, 10, 20, 20)};
             var bumpingItem = new Entity(50, 50, 32, 32, LoadImageResource("3.png"));
-            dcvs.Items.AddRange(new[] {g1, g2, bumpingItem});
+            dcvs.Items.AddRange(new IGraphicalObject[] {g1, g2, bumpingItem, myG1});
             dcvs.Items.AddRange(new[]
             {
                 new Connection(g1.Connectors[0], g2.Connectors[0]),
                 new Connection(g2.Connectors[1], bumpingItem.Connectors[2]),
+                new Connection(g2.Connectors[1], myG1.Connectors[0]),
             });
             var aniTimer = new DispatcherTimer
             {
@@ -62,7 +63,9 @@ namespace WpfTestApplication
             };
             statTimer.Tick += (_, e1) =>
             {
+#if DEBUG
                 RenderedChildrenCounter.Text = "" + dcvs.RenderedChildrenCount;
+#endif
             };
             statTimer.Start();
         }
@@ -95,6 +98,11 @@ namespace WpfTestApplication
                 }
                 objs.Add(obj);
             }
+        }
+
+        private void dcvs_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            
         }
     }
 }

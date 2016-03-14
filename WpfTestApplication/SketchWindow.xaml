@@ -8,10 +8,8 @@
         mc:Ignorable="d"
         Title="SketchWindow" Height="300" Width="300">
     <Grid>
-
-        <DesignerCanvas:DesignerCanvasConnection HorizontalAlignment="Left" Height="100" Margin="22,36,0,0" VerticalAlignment="Top" Width="100" SinkPoint="10,10"/>
-        <DesignerCanvas:DesignerCanvasEntity Content="DesignerCanvasItem" HorizontalAlignment="Left" Height="100" Margin="84,119,0,0" VerticalAlignment="Top" Width="100"/>
-        <Button x:Name="button" Content="Button" HorizontalAlignment="Left" Margin="207,78,0,0" VerticalAlignment="Top" Width="75" Click="button_Click_1"/>
-
+        <Button x:Name="button" HorizontalAlignment="Left" Margin="85,64,0,0" VerticalAlignment="Top" Width="128" Click="button_Click_1" Height="116">
+            <local:MyEntity></local:MyEntity>
+        </Button>
     </Grid>
 </Window>

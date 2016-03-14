@@ -4,6 +4,8 @@
              xmlns:local="clr-namespace:WpfTestApplication"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <DataTemplate DataType="{x:Type local:MyEntity}">
+            <Button Content="MyEntity" />
+        </DataTemplate>
     </Application.Resources>
 </Application>

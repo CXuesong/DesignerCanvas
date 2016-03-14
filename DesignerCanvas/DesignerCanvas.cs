@@ -38,14 +38,14 @@ namespace Undefined.DesignerCanvas
 
         // ItemTemplate & ItemTemplateSelector affect both the Entity & the Connection.
 
-        public DataTemplate ItemTemplate
+        public DataTemplate EntityItemTemplate
         {
-            get { return (DataTemplate)GetValue(ItemTemplateProperty); }
-            set { SetValue(ItemTemplateProperty, value); }
+            get { return (DataTemplate)GetValue(EntityItemTemplateProperty); }
+            set { SetValue(EntityItemTemplateProperty, value); }
         }
 
-        public static readonly DependencyProperty ItemTemplateProperty =
-            DependencyProperty.Register("ItemTemplate", typeof (DataTemplate),
+        public static readonly DependencyProperty EntityItemTemplateProperty =
+            DependencyProperty.Register("EntityItemTemplate", typeof (DataTemplate),
                 typeof (DesignerCanvas), new PropertyMetadata(null));
 
         public DataTemplateSelector ItemTemplateSelector
@@ -272,16 +272,17 @@ namespace Undefined.DesignerCanvas
             _ExtendRect.Width += _ExtendRect.X;
             _ExtendRect.Height += _ExtendRect.Y;
             _ExtendRect.X = _ExtendRect.Y = 0;
-            // We want to fit the canvas to its parent.
-            if (_ExtendRect.Width < constraint.Width) _ExtendRect.Width = constraint.Width;
-            if (_ExtendRect.Height < constraint.Height) _ExtendRect.Height = constraint.Height;
-            partCanvas.Measure(bounds.Size); // Seems no use.
+            if (HorizontalAlignment == HorizontalAlignment.Stretch && !double.IsInfinity(constraint.Width))
+                if (_ExtendRect.Width < constraint.Width) _ExtendRect.Width = constraint.Width;
+            if (VerticalAlignment == VerticalAlignment.Stretch && !double.IsInfinity(constraint.Height))
+                if (_ExtendRect.Height < constraint.Height) _ExtendRect.Height = constraint.Height;
+            partCanvas.Measure(_ExtendRect.Size); // Seems no use.
             _ViewPortRect.Size = constraint;
             InvalidateViewPortRect();
             ScrollOwner?.InvalidateScrollInfo();
             if (double.IsInfinity(constraint.Width) || double.IsInfinity(constraint.Height))
             {
-                return new Size(Math.Max(bounds.Right, 0), Math.Max(bounds.Bottom, 0));
+                return _ExtendRect.Size;
             }
             return constraint;
         }
@@ -456,9 +457,9 @@ namespace Undefined.DesignerCanvas
 
         private void ItemContainerGenerator_ContainerPreparing(object sender, ContainerPreparingEventArgs e)
         {
-            if (ItemTemplate != null || ItemTemplateSelector != null)
+            if (EntityItemTemplate != null || ItemTemplateSelector != null)
             {
-                e.Container.SetValue(ContentControl.ContentTemplateProperty, ItemTemplate);
+                e.Container.SetValue(ContentControl.ContentTemplateProperty, EntityItemTemplate);
                 e.Container.SetValue(ContentControl.ContentTemplateSelectorProperty, ItemTemplateSelector);
             }
             else
@@ -759,13 +760,13 @@ namespace Undefined.DesignerCanvas
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             DependencyObject doContainer;
-            if (item is Entity)
+            if (item is IEntity)
             {
                 var container = entityContainerPool.Take();
                 PrepareContainer(container, item);
                 doContainer = container;
             }
-            else if (item is Connection)
+            else if (item is IConnection)
             {
                 var container = connectionontainerPool.Take();
                 PrepareContainer(container, item);

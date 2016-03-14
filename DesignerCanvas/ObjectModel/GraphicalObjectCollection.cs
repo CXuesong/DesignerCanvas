@@ -30,7 +30,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// </summary>
         public IEnumerable<IGraphicalObject> ObjectsInRegion(Rect bounds, ItemSelectionOptions options)
         {
-            if (bounds.IsEmpty || bounds.Width == 0 || bounds.Height == 0) return Enumerable.Empty<Entity>();
+            if (bounds.IsEmpty || bounds.Width == 0 || bounds.Height == 0) return Enumerable.Empty<IGraphicalObject>();
             var query = ((options & ItemSelectionOptions.IncludePartialSelection) == ItemSelectionOptions.IncludePartialSelection)
                 ? myCollection.Where(obj => bounds.IntersectsWith(obj.Bounds))
                 : myCollection.Where(obj => bounds.Contains(obj.Bounds));

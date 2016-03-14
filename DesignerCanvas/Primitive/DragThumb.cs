@@ -46,7 +46,7 @@ namespace Undefined.DesignerCanvas.Primitive
             if (designer == null) return;
             var minLeft = double.MaxValue;
             var minTop = double.MaxValue;
-            foreach (var item in designer.SelectedItems.OfType<Entity>())
+            foreach (var item in designer.SelectedItems.OfType<IEntity>())
             {
                 minLeft = Math.Min(item.Left, minLeft);
                 minTop = Math.Min(item.Top, minTop);
@@ -56,7 +56,7 @@ namespace Undefined.DesignerCanvas.Primitive
             if (instantPreview)
             {
                 // This operation may be slow.
-                foreach (var item in designer.SelectedItems.OfType<Entity>())
+                foreach (var item in designer.SelectedItems.OfType<IEntity>())
                 {
                     item.Left += deltaX;
                     item.Top += deltaY;
@@ -64,7 +64,7 @@ namespace Undefined.DesignerCanvas.Primitive
             }
             else
             {
-                var thisItem = (Entity)designer.ItemContainerGenerator.ItemFromContainer(destControl);
+                var thisItem = (IEntity)designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 thisItem.Left += deltaX;
                 thisItem.Top += deltaY;
             }
@@ -82,7 +82,7 @@ namespace Undefined.DesignerCanvas.Primitive
                 var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 var minLeft = double.MaxValue;
                 var minTop = double.MaxValue;
-                foreach (var item in designer.SelectedItems.OfType<Entity>())
+                foreach (var item in designer.SelectedItems.OfType<IEntity>())
                 {
                     var left = item.Left;
                     var top = item.Top;
@@ -91,7 +91,7 @@ namespace Undefined.DesignerCanvas.Primitive
                 }
                 var deltaHorizontal = Math.Max(-minLeft, e.HorizontalChange);
                 var deltaVertical = Math.Max(-minTop, e.VerticalChange);
-                foreach (var item in designer.SelectedItems.OfType<Entity>())
+                foreach (var item in designer.SelectedItems.OfType<IEntity>())
                 {
                     if (item == thisItem) continue;
                     item.Left += deltaHorizontal;

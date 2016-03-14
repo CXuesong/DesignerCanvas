@@ -10,7 +10,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
     /// There can be <see cref="Connection"/>s between entities.
     /// This class can be inherited by user to contain more information.
     /// </summary>
-    public class Entity : INotifyPropertyChanged, IGraphicalObject
+    public class Entity : INotifyPropertyChanged, IEntity
     {
         private Point _Location;
 
@@ -157,5 +157,21 @@ namespace Undefined.DesignerCanvas.ObjectModel
             _Size = new Size(width, height);
             _Image = image;
         }
+    }
+
+    public interface IEntity : IGraphicalObject
+    {
+        double Left { get; set; }
+
+        double Top { get; set; }
+
+        double Width { get; set; }
+
+        double Height { get; set; }
+
+        /// <summary>
+        /// Gets the collection of the object's connectors.
+        /// </summary>
+        ConnectorCollection Connectors { get; }
     }
 }

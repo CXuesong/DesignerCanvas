@@ -9,7 +9,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
     /// Represents a connection between <see cref="Entity"/>s.
     /// This class can be inherited by user to contain more information.
     /// </summary>
-    public class Connection : INotifyPropertyChanged, IGraphicalObject
+    public class Connection : INotifyPropertyChanged, IConnection
     {
         public Connection()
         {
@@ -67,11 +67,13 @@ namespace Undefined.DesignerCanvas.ObjectModel
             {
                 if (_Source != value)
                 {
-                    if (_Source != null)
-                        PropertyChangedEventManager.RemoveHandler(_Source.Owner,
+                    var npc = _Source?.Owner as INotifyPropertyChanged;
+                    if (npc != null)
+                        PropertyChangedEventManager.RemoveHandler(npc,
                             SourceObject_PropertyChanged, nameof(value.Owner.Bounds));
-                    if (value != null)
-                        PropertyChangedEventManager.AddHandler(value.Owner,
+                    npc = value?.Owner as INotifyPropertyChanged;
+                    if (npc != null)
+                        PropertyChangedEventManager.AddHandler(npc,
                             SourceObject_PropertyChanged, nameof(value.Owner.Bounds));
                     SetProperty(ref _Source, value);
                     UpdatePositions();
@@ -79,7 +81,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
             }
         }
 
-        public Entity SourceObject => _Source?.Owner;
+        public IEntity SourceObject => _Source?.Owner;
 
         private Connector _Sink;
 
@@ -90,19 +92,21 @@ namespace Undefined.DesignerCanvas.ObjectModel
             {
                 if (_Sink != value)
                 {
-                    if (_Sink != null)
-                        PropertyChangedEventManager.RemoveHandler(_Sink.Owner,
+                    var npc = _Sink?.Owner as INotifyPropertyChanged;
+                    if (npc != null)
+                        PropertyChangedEventManager.RemoveHandler(npc,
                             SinkObject_PropertyChanged, nameof(value.Owner.Bounds));
-                    if (value != null)
-                        PropertyChangedEventManager.AddHandler(value.Owner,
+                    npc = value?.Owner as INotifyPropertyChanged;
+                    if (npc != null)
+                        PropertyChangedEventManager.AddHandler(npc,
                             SinkObject_PropertyChanged, nameof(value.Owner.Bounds));
-                    SetProperty(ref _Sink, value);
-                    UpdatePositions();
                 }
+                SetProperty(ref _Sink, value);
+                UpdatePositions();
             }
         }
 
-        public Entity SinkObject => _Sink?.Owner;
+        public IEntity SinkObject => _Sink?.Owner;
 
         private Point _SourcePosition;
 
@@ -161,5 +165,12 @@ namespace Undefined.DesignerCanvas.ObjectModel
         }
 
         #endregion
+    }
+
+    /// <summary>
+    /// Currently unused.
+    /// </summary>
+    internal interface IConnection : IGraphicalObject
+    {
     }
 }

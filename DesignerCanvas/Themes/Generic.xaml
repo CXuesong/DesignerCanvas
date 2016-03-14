@@ -2,7 +2,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:Undefined.DesignerCanvas"
-    xmlns:primitive="clr-namespace:Undefined.DesignerCanvas.Primitive">
+    xmlns:primitive="clr-namespace:Undefined.DesignerCanvas.Primitive"
+    xmlns:om="clr-namespace:Undefined.DesignerCanvas.ObjectModel">
     <Style TargetType="{x:Type local:DesignerCanvas}">
         <Setter Property="Template">
             <Setter.Value>
@@ -42,13 +43,6 @@
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="ContentTemplate">
-            <Setter.Value>
-                <DataTemplate>
-                    <Image Source="{Binding Image}" />
-                </DataTemplate>
             </Setter.Value>
         </Setter>
         <!-- Connect the data object to the Control -->
@@ -170,9 +164,9 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitive:RubberbandChrome">
-                    <Rectangle Stroke="Black" >
+                    <Rectangle Stroke="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" >
                         <Rectangle.Fill>
-                            <SolidColorBrush Color="Aqua" Opacity="0.5"/>
+                            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" Opacity="0.3"/>
                         </Rectangle.Fill>
                     </Rectangle>
                 </ControlTemplate>
@@ -191,9 +185,9 @@
                               StrokeLineJoin="Round"
                               SnapsToDevicePixels="True"
                               Data="{Binding PathGeometry}" Stroke="Navy"/>
-                        <Canvas.Effect>
+                        <!--<Canvas.Effect>
                             <DropShadowEffect Color="Gray" Direction="315" ShadowDepth="10" Opacity="0.1"/>
-                        </Canvas.Effect>
+                        </Canvas.Effect>-->
                     </Canvas>
                 </ControlTemplate>
             </Setter.Value>
@@ -201,5 +195,8 @@
         <Setter Property="SourcePoint" Value="{Binding SourcePosition}" />
         <Setter Property="SinkPoint" Value="{Binding SinkPosition}" />
     </Style>
+    <DataTemplate DataType="{x:Type om:Entity}">
+        <Image Source="{Binding Image}" />
+    </DataTemplate>
 </ResourceDictionary>
 
