@@ -29,8 +29,14 @@ namespace WpfTestApplication
         public Rect Bounds
         {
             get { return _Bounds; }
-            set { _Bounds = value; }
+            set
+            {
+                _Bounds = value;
+                BoundsChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
+
+        public event EventHandler BoundsChanged;
 
         /// <summary>
         /// Determines whether the object is in the specified region.

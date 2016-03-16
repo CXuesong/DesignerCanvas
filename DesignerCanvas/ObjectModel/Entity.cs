@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
@@ -12,6 +13,8 @@ namespace Undefined.DesignerCanvas.ObjectModel
     /// </summary>
     public class Entity : INotifyPropertyChanged, IEntity
     {
+        public event EventHandler BoundsChanged;
+
         private Point _Location;
 
         public Point Location
@@ -23,6 +26,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
                 {
                     OnPropertyChanged(nameof(Left));
                     OnPropertyChanged(nameof(Top));
+                    OnBoundsChanged();
                 }
             }
         }
@@ -39,6 +43,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
                     OnPropertyChanged(nameof(Width));
                     OnPropertyChanged(nameof(Height));
                     OnPropertyChanged(nameof(Bounds));
+                    OnBoundsChanged();
                 }
             }
         }
@@ -52,6 +57,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Location));
                 OnPropertyChanged(nameof(Bounds));
+                OnBoundsChanged();
             }
         }
 
@@ -64,6 +70,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Location));
                 OnPropertyChanged(nameof(Bounds));
+                OnBoundsChanged();
             }
         }
 
@@ -76,6 +83,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Size));
                 OnPropertyChanged(nameof(Bounds));
+                OnBoundsChanged();
             }
         }
 
@@ -88,6 +96,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Size));
                 OnPropertyChanged(nameof(Bounds));
+                OnBoundsChanged();
             }
         }
 
@@ -119,6 +128,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
         public ConnectorCollection Connectors { get; }
 
         #region PropertyNotifications
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -139,6 +149,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
                 return false;
             }
         }
+
         #endregion
 
         public Entity()
@@ -156,6 +167,11 @@ namespace Undefined.DesignerCanvas.ObjectModel
             _Location = new Point(left, top);
             _Size = new Size(width, height);
             _Image = image;
+        }
+
+        protected virtual void OnBoundsChanged()
+        {
+            BoundsChanged?.Invoke(this, EventArgs.Empty);
         }
     }
 

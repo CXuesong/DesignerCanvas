@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,8 @@ namespace Undefined.DesignerCanvas.ObjectModel
     /// </summary>
     public class Connection : INotifyPropertyChanged, IConnection
     {
+        public event EventHandler BoundsChanged;
+
         public Connection()
         {
             
@@ -113,7 +116,11 @@ namespace Undefined.DesignerCanvas.ObjectModel
         public Point SourcePosition
         {
             get { return _SourcePosition; }
-            set { SetProperty(ref _SourcePosition, value); }
+            set
+            {
+                if (SetProperty(ref _SourcePosition, value))
+                    OnBoundsChanged();
+            }
         }
 
         private Point _SinkPosition;
@@ -121,9 +128,12 @@ namespace Undefined.DesignerCanvas.ObjectModel
         public Point SinkPosition
         {
             get { return _SinkPosition; }
-            set { SetProperty(ref _SinkPosition, value); }
+            set
+            {
+               if (SetProperty(ref _SinkPosition, value))
+                    OnBoundsChanged();
+            }
         }
-
 
         /// <summary>
         /// Gets the bounding rectangle of the object.
@@ -165,6 +175,11 @@ namespace Undefined.DesignerCanvas.ObjectModel
         }
 
         #endregion
+
+        protected virtual void OnBoundsChanged()
+        {
+            BoundsChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     /// <summary>
