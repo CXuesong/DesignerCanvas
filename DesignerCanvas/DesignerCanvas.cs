@@ -126,6 +126,11 @@ namespace Undefined.DesignerCanvas
 
         private void _Items_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            if (partCanvas == null)
+            {
+                // The control may have not been loaded.
+                return;
+            }
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
@@ -793,10 +798,18 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void Recycle(DependencyObject container)
         {
+            Recycle(container, true);
+        }
+
+        /// <summary>
+        /// Declares a container no longer be used and should be pooled or discarded.
+        /// </summary>
+        private void Recycle(DependencyObject container, bool removeContainerDictEntry)
+        {
             if (container == null) throw new ArgumentNullException(nameof(container));
             var item = ItemFromContainer(container);
             if (item == null) throw new InvalidOperationException("试图回收非列表项目。");
-            containerDict.Remove(item);
+            if (removeContainerDictEntry) containerDict.Remove(item);
             if (container is DesignerCanvasEntity)
             {
                 entityContainerPool.PutBack((DesignerCanvasEntity) container);
@@ -813,9 +826,8 @@ namespace Undefined.DesignerCanvas
         public void RecycleAll()
         {
             foreach (var container in containerDict.Values)
-            {
-                Recycle(container);
-            }
+                Recycle(container, false);
+            containerDict.Clear();
         }
 
         /// <summary>

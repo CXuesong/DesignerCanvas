@@ -18,7 +18,7 @@
                 <DesignerCanvas:DesignerCanvas x:Name="dcvs" MouseDown="dcvs_MouseDown" Background="White" />
             </ScrollViewer>
         </Border>
-        <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="47,0,0,0" VerticalAlignment="Top" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>
+        <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="47,0,0,0" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>
         <StatusBar Grid.Row="2">
             <Label>
                 <TextBlock>
@@ -32,6 +32,12 @@
                 <TextBlock>
                     <TextBlock x:Name="RenderedChildrenCounter" Text="-" />
                     <TextBlock Text=" children rendered." />
+                </TextBlock>
+            </Label>
+            <Label>
+                <TextBlock>
+                    <TextBlock Text=" Focus:" />
+                    <TextBlock x:Name="FocusLabel" Text="-" />
                 </TextBlock>
             </Label>
         </StatusBar>

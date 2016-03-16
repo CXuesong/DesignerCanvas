@@ -66,6 +66,7 @@ namespace WpfTestApplication
 #if DEBUG
                 RenderedChildrenCounter.Text = "" + dcvs.RenderedChildrenCount;
 #endif
+                FocusLabel.Text = FocusManager.GetFocusedElement(this)?.ToString();
             };
             statTimer.Start();
         }

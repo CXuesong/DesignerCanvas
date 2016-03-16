@@ -58,6 +58,20 @@ namespace Undefined.DesignerCanvas.ObjectModel
             return newInst;
         }
 
+        /// <summary>
+        /// Adds one or more connectors into the collection.
+        /// </summary>
+        public ICollection<Connector> Add(int count)
+        {
+            if (count < 1) throw new ArgumentOutOfRangeException(nameof(count));
+            CheckReadonly();
+            var newInst = new Connector[count];
+            for (int i = 0; i < count; i++)
+                newInst[i] = new Connector(_Owner);
+            myList.AddRange(newInst);
+            return newInst;
+        }
+
         internal IEntity Owner => _Owner;
 
         public Connector this[int index]
