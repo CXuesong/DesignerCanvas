@@ -105,5 +105,10 @@ namespace WpfTestApplication
         {
             
         }
+
+        private void dcvs_MouseMove(object sender, MouseEventArgs e)
+        {
+            MousePositionLabel.Content = dcvs.PointToCanvas(e.GetPosition(dcvs));
+        }
     }
 }

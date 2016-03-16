@@ -18,18 +18,17 @@ namespace Undefined.DesignerCanvas.Primitive
         private readonly Action<object, Rect> _Callback;
         private readonly RubberbandChrome chrome;
         // Note the adorner layer will not scroll.
+        // However, we don't count in the render transformation of canvas,
+        // which will be handled in the callback function.
         private Point _StartPoint;
         private Point _EndPoint;
-        private Vector _ViewPortOffset;
 
-        /// <param name="startPoint">Relative to the virtual canvas.</param>
-        /// <param name="viewPortOffset">The offset of view port.</param>
-        public RubberbandAdorner(DesignerCanvas canvas, Point startPoint, Vector viewPortOffset, Action<object, Rect> callback) : base(canvas)
+        /// <param name="startPoint">Relative to the adorner layer. Note the adorner layer will not scroll.</param>
+        public RubberbandAdorner(DesignerCanvas canvas, Point startPoint, Action<object, Rect> callback) : base(canvas)
         {
             _Canvas = canvas;
             _Callback = callback;
-            _StartPoint = _EndPoint = startPoint - viewPortOffset;
-            _ViewPortOffset = viewPortOffset;
+            _StartPoint = _EndPoint = startPoint;
             chrome = new RubberbandChrome()
             {
                 HorizontalAlignment = HorizontalAlignment.Left,
@@ -41,7 +40,7 @@ namespace Undefined.DesignerCanvas.Primitive
             CaptureMouse();
         }
 
-        protected override System.Windows.Media.HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
+        protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
         {
             var result = base.HitTestCore(hitTestParameters);
             if (result == null) return new PointHitTestResult(this, hitTestParameters.HitPoint);
@@ -50,13 +49,10 @@ namespace Undefined.DesignerCanvas.Primitive
 
         private void ResizeChrome()
         {
-            if (_StartPoint.X > _EndPoint.X || _StartPoint.Y > _EndPoint.Y)
-            {
-                chrome.Margin = new Thickness(Math.Min(_StartPoint.X, _EndPoint.X),
-                    Math.Min(_StartPoint.Y, _EndPoint.Y), 0, 0);
-            }
-            chrome.Width = Math.Abs(_EndPoint.X - _StartPoint.X);
-            chrome.Height = Math.Abs(_EndPoint.Y - _StartPoint.Y);
+            var rect = new Rect(_StartPoint, _EndPoint);
+            chrome.Margin = new Thickness(rect.X, rect.Y, 0, 0);
+            chrome.Width = rect.Width;
+            chrome.Height = rect.Height;
         }
 
         protected override Size ArrangeOverride(Size arrangeBounds)
@@ -93,7 +89,7 @@ namespace Undefined.DesignerCanvas.Primitive
         {
             base.OnMouseUp(e);
             ReleaseMouseCapture();
-            _Callback?.Invoke(this, new Rect(_StartPoint + _ViewPortOffset, _EndPoint + _ViewPortOffset));
+            _Callback?.Invoke(this, new Rect(_StartPoint, _EndPoint));
             var adornerLayer = Parent as AdornerLayer;
             adornerLayer?.Remove(this);
             e.Handled = true;

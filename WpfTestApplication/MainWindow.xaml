@@ -15,25 +15,38 @@
         </Grid.RowDefinitions>
         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}" BorderThickness="1" Background="#FFD4EDFF">
             <ScrollViewer HorizontalScrollBarVisibility="Visible" CanContentScroll="True" UseLayoutRounding="True">
-                <DesignerCanvas:DesignerCanvas x:Name="dcvs" MouseDown="dcvs_MouseDown" Background="White" />
+                <DesignerCanvas:DesignerCanvas x:Name="dcvs" MouseDown="dcvs_MouseDown" Background="White" MouseMove="dcvs_MouseMove" />
             </ScrollViewer>
         </Border>
-        <Button x:Name="TestButton" Content="Button" HorizontalAlignment="Left" Margin="47,0,0,0" Width="75" Grid.Row="1" Click="TestButton_Click" Command="{Binding test}"/>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="67*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="39*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="100"/>
+            </Grid.ColumnDefinitions>
+            <Button x:Name="TestButton" Content="Button" Click="TestButton_Click" Command="{Binding test}"/>
+            <Button x:Name="AddItemsButton" Content="_Add 10000 items" Click="AddItemsButton_Click" d:LayoutOverrides="Width" Grid.Column="1" />
+            <Slider Grid.Column="4" Value="{Binding Zoom, ElementName=dcvs}" Minimum="1" Maximum="1000"/>
+            <Label Grid.Column="3" d:LayoutOverrides="Width" Content="{Binding Zoom, ElementName=dcvs}" ContentStringFormat="{}{0}%"/>
+        </Grid>
         <StatusBar Grid.Row="2">
             <Label>
                 <TextBlock>
                     <TextBlock Text="{Binding SelectedItems.Count, ElementName=dcvs, Mode=OneWay}" />
                 <TextBlock Text=" / " />
                 <TextBlock Text="{Binding Items.Count, ElementName=dcvs, Mode=OneWay}" />
-                <TextBlock Text=" items(s) selected." />
+                <TextBlock Text=" selected." />
                 </TextBlock>
             </Label>
             <Label>
                 <TextBlock>
                     <TextBlock x:Name="RenderedChildrenCounter" Text="-" />
-                    <TextBlock Text=" children rendered." />
+                    <TextBlock Text=" rendered." />
                 </TextBlock>
             </Label>
+            <Label x:Name="MousePositionLabel" />
             <Label>
                 <TextBlock>
                     <TextBlock Text=" Focus:" />
@@ -41,6 +54,5 @@
                 </TextBlock>
             </Label>
         </StatusBar>
-        <Button x:Name="AddItemsButton" Content="_Add 10000 items" HorizontalAlignment="Left" Margin="139,0,0,0" Grid.Row="1" VerticalAlignment="Top" Click="AddItemsButton_Click" />
     </Grid>
 </Window>

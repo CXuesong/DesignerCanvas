@@ -32,7 +32,8 @@ namespace Undefined.DesignerCanvas
         private readonly GraphicalObjectCollection _Items = new GraphicalObjectCollection();
         private readonly GraphicalObjectCollection _SelectedItems = new GraphicalObjectCollection();
 
-        private readonly GraphicalObjectContainerGenerator _ItemContainerGenerator = new GraphicalObjectContainerGenerator();
+        private readonly GraphicalObjectContainerGenerator _ItemContainerGenerator =
+            new GraphicalObjectContainerGenerator();
 
         #region Properties
 
@@ -40,7 +41,7 @@ namespace Undefined.DesignerCanvas
 
         public DataTemplate EntityItemTemplate
         {
-            get { return (DataTemplate)GetValue(EntityItemTemplateProperty); }
+            get { return (DataTemplate) GetValue(EntityItemTemplateProperty); }
             set { SetValue(EntityItemTemplateProperty, value); }
         }
 
@@ -50,7 +51,7 @@ namespace Undefined.DesignerCanvas
 
         public DataTemplateSelector ItemTemplateSelector
         {
-            get { return (DataTemplateSelector)GetValue(ItemTemplateSelectorProperty); }
+            get { return (DataTemplateSelector) GetValue(ItemTemplateSelectorProperty); }
             set { SetValue(ItemTemplateSelectorProperty, value); }
         }
 
@@ -138,8 +139,11 @@ namespace Undefined.DesignerCanvas
                 case NotifyCollectionChangedAction.Replace:
                     if (e.OldItems != null)
                     {
-                        foreach (var item in e.OldItems)
-                            SetContainerVisibility((IGraphicalObject) item, false);
+                        foreach (IGraphicalObject item in e.OldItems)
+                        {
+                            SetContainerVisibility(item, false);
+                            _SelectedItems.Remove(item);
+                        }
                     }
                     if (e.NewItems != null)
                     {
@@ -157,7 +161,9 @@ namespace Undefined.DesignerCanvas
                 case NotifyCollectionChangedAction.Reset:
                     _ItemContainerGenerator.RecycleAll();
                     partCanvas.Children.Clear();
-                    foreach (var item in _Items.ObjectsInRegion(_ViewPortRect, ItemSelectionOptions.IncludePartialSelection))
+                    _SelectedItems.Clear();
+                    foreach (
+                        var item in _Items.ObjectsInRegion(_ViewPortRect, ItemSelectionOptions.IncludePartialSelection))
                         _ItemContainerGenerator.CreateContainer(item);
                     break;
             }
@@ -169,7 +175,8 @@ namespace Undefined.DesignerCanvas
         #region UI
 
         private Canvas partCanvas;
-        private TranslateTransform canvasTransform = new TranslateTransform();
+        private TranslateTransform canvasTranslateTransform = new TranslateTransform();
+        private ScaleTransform canvasScaleTransform = new ScaleTransform();
 
         internal static DesignerCanvas FindDesignerCanvas(DependencyObject childContainer)
         {
@@ -191,23 +198,32 @@ namespace Undefined.DesignerCanvas
                 partCanvas = new Canvas();
                 this.AddVisualChild(partCanvas);
             }
-            partCanvas.RenderTransform = canvasTransform;
-            partCanvas.MouseDown += PartCanvas_MouseDown;
-            partCanvas.MouseMove += PartCanvas_MouseMove;
-            partCanvas.MouseUp += PartCanvas_MouseUp;
+            var tg = new TransformGroup();
+            tg.Children.Add(canvasTranslateTransform);
+            tg.Children.Add(canvasScaleTransform);
+            partCanvas.RenderTransform = tg;
         }
 
         private Point? RubberbandStartPoint = null;
 
-        private void PartCanvas_MouseDown(object sender, MouseButtonEventArgs e)
+        /// <summary>
+        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.MouseDown"/> attached event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.Windows.Input.MouseButtonEventArgs"/> that contains the event data. This event data reports details about the mouse button that was pressed and the handled state.</param>
+        protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            if (e.Source == partCanvas)
+            if (e.Source == partCanvas || e.Source == this)
             {
-                RubberbandStartPoint = e.GetPosition(partCanvas);
+                RubberbandStartPoint = e.GetPosition(this);
             }
+            base.OnMouseDown(e);
         }
 
-        private void PartCanvas_MouseMove(object sender, MouseEventArgs e)
+        /// <summary>
+        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.MouseMove"/> attached event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.Windows.Input.MouseEventArgs"/> that contains the event data.</param>
+        protected override void OnMouseMove(MouseEventArgs e)
         {
             if (RubberbandStartPoint != null)
             {
@@ -216,26 +232,32 @@ namespace Undefined.DesignerCanvas
                     var adornerLayer = AdornerLayer.GetAdornerLayer(partCanvas);
                     if (adornerLayer != null)
                     {
-                        var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value,
-                            new Vector(_ViewPortRect.X, _ViewPortRect.Y), Rubberband_Callback);
+                        var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value, Rubberband_Callback);
                         adornerLayer.Add(adorner);
                         RubberbandStartPoint = null;
                     }
                 }
             }
+            base.OnMouseMove(e);
         }
 
-        private void PartCanvas_MouseUp(object sender, MouseButtonEventArgs e)
+        /// <summary>
+        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.MouseUp"/> routed event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.Windows.Input.MouseButtonEventArgs"/> that contains the event data. The event data reports that the mouse button was released.</param>
+        protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             RubberbandStartPoint = null;
-            if (e.Source == partCanvas)
+            if (e.Source == partCanvas || e.Source == this)
             {
                 _SelectedItems.Clear();
             }
+            base.OnMouseUp(e);
         }
 
         private void Rubberband_Callback(object o, Rect rect)
         {
+            rect = new Rect(PointToCanvas(rect.TopLeft), PointToCanvas(rect.BottomRight));
             var mod = Keyboard.Modifiers;
             if ((mod & (ModifierKeys.Shift | ModifierKeys.Control)) == ModifierKeys.None)
             {
@@ -268,6 +290,7 @@ namespace Undefined.DesignerCanvas
         protected override Size MeasureOverride(Size constraint)
         {
             const double measurementMargin = 10;
+            var zoomRatio = Zoom/100.0;
             var bounds = _Items.Bounds;
             if (bounds.IsEmpty) bounds = new Rect(0, 0, 0, 0);
             bounds.Width += measurementMargin;
@@ -281,8 +304,8 @@ namespace Undefined.DesignerCanvas
                 if (_ExtendRect.Width < constraint.Width) _ExtendRect.Width = constraint.Width;
             if (VerticalAlignment == VerticalAlignment.Stretch && !double.IsInfinity(constraint.Height))
                 if (_ExtendRect.Height < constraint.Height) _ExtendRect.Height = constraint.Height;
-            partCanvas.Measure(_ExtendRect.Size); // Seems no use.
-            _ViewPortRect.Size = constraint;
+            //partCanvas.Measure(_ExtendRect.Size); // Seems no use.
+            _ViewPortRect.Size = new Size(constraint.Width/zoomRatio, constraint.Height/zoomRatio);
             InvalidateViewPortRect();
             ScrollOwner?.InvalidateScrollInfo();
             if (double.IsInfinity(constraint.Width) || double.IsInfinity(constraint.Height))
@@ -299,8 +322,14 @@ namespace Undefined.DesignerCanvas
                 // Resize the canvas to fit the visual boundary.
                 // Note the canvas may be contained in a border or other controls
                 // so we should update the first visual child instead of the partCanvas.
-                var uiElement = this.GetVisualChild(0) as UIElement;
-                uiElement?.Arrange(_ExtendRect);
+                var uiElement = GetVisualChild(0) as UIElement;
+                if (uiElement != null)
+                {
+                    var canvasBounds = new Rect(uiElement.TranslatePoint(new Point(0, 0), this),
+                        uiElement.TranslatePoint(new Point(arrangeBounds.Width, arrangeBounds.Height), this));
+                    uiElement.Arrange(new Rect(0, 0, Math.Max(canvasBounds.Width, _ExtendRect.Width),
+                        Math.Max(canvasBounds.Height, _ExtendRect.Height)));
+                }
             }
             return arrangeBounds;
         }
@@ -320,8 +349,8 @@ namespace Undefined.DesignerCanvas
                     {
                         // Generate / Recycle Items
                         OnViewPortChanged(lastRenderedViewPortRect, _ViewPortRect);
-                        canvasTransform.X = -_ViewPortRect.Left;
-                        canvasTransform.Y = -_ViewPortRect.Top;
+                        canvasTranslateTransform.X = -_ViewPortRect.Left;
+                        canvasTranslateTransform.Y = -_ViewPortRect.Top;
                         ScrollOwner?.InvalidateScrollInfo();
                     }
                     lastRenderedViewPortRect = _ViewPortRect;
@@ -413,6 +442,60 @@ namespace Undefined.DesignerCanvas
 
         #endregion
 
+        #region Public UI
+
+        public static readonly DependencyProperty ZoomProperty = DependencyProperty.Register("Zoom",
+            typeof (double), typeof (DesignerCanvas),
+            new FrameworkPropertyMetadata(100.0, FrameworkPropertyMetadataOptions.AffectsMeasure, ZoomChangedCallback),
+            v =>
+            {
+                var value = (double) v;
+                return value >= 0.1 && value <= 50000;
+            });
+
+        private static void ZoomChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var dc = (DesignerCanvas) d;
+            dc.canvasScaleTransform.ScaleX
+                = dc.canvasScaleTransform.ScaleY
+                    = ((double) e.NewValue)/100;
+        }
+
+        /// <summary>
+        /// Gets / sets the canvas zoom percentage. 
+        /// </summary>
+        /// <value>
+        /// The zoom percentage expressed as a value,
+        /// 0.1 to 50000.0. The default is 100.0, which corresponds to 100.0%.
+        /// </value>
+        public double Zoom
+        {
+            get { return (double) GetValue(ZoomProperty); }
+            set { SetValue(ZoomProperty, value); }
+        }
+
+        /// <summary>
+        /// Translates a point from <see cref="DesignerCanvas"/> to 
+        /// its internal Canvas panel.
+        /// </summary>
+        /// <param name="point">The point to be translated, relative to <see cref="DesignerCanvas"/>.</param>
+        public Point PointToCanvas(Point point)
+        {
+            return this.TranslatePoint(point, partCanvas);
+        }
+
+        /// <summary>
+        /// Translates a point to <see cref="DesignerCanvas"/> from 
+        /// its internal Canvas panel.
+        /// </summary>
+        /// <param name="point">The point to be translated, relative to the internal panel of <see cref="DesignerCanvas"/>.</param>
+        public Point PointFromCanvas(Point point)
+        {
+            return partCanvas.TranslatePoint(point, this);
+        }
+
+        #endregion
+
         #region Notifications from Children
 
         internal void NotifyItemMouseDown(DesignerCanvasEntity container)
@@ -476,18 +559,18 @@ namespace Undefined.DesignerCanvas
 
         static DesignerCanvas()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(DesignerCanvas),
-                new FrameworkPropertyMetadata(typeof(DesignerCanvas)));
+            DefaultStyleKeyProperty.OverrideMetadata(typeof (DesignerCanvas),
+                new FrameworkPropertyMetadata(typeof (DesignerCanvas)));
         }
 
         #region IScrollInfo
 
-        private Rect _ExtendRect; // Boundary of virtual canvas.
-        private Rect _ViewPortRect;
+        private Rect _ExtendRect; // Boundary of virtual canvas, regardless of translation & scaling.
+        private Rect _ViewPortRect; // Boundary of view port, relative to virtual canvas.
 
         private const double ScrollStepIncrement = 10;
         private const double ScrollPageStepPreservation = 10;
-        private const double ScrollWheelStepIncrementRel = 1.0 / 3;
+        private const double ScrollWheelStepIncrementRel = 1.0/3;
 
         /// <summary>
         /// Scrolls up within content by one logical unit. 
@@ -558,7 +641,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelUp()
         {
-            SetVerticalOffset(VerticalOffset - _ViewPortRect.Height * ScrollWheelStepIncrementRel);
+            SetVerticalOffset(VerticalOffset - _ViewPortRect.Height*ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -566,7 +649,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelDown()
         {
-            SetVerticalOffset(VerticalOffset + _ViewPortRect.Height * ScrollWheelStepIncrementRel);
+            SetVerticalOffset(VerticalOffset + _ViewPortRect.Height*ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -574,7 +657,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelLeft()
         {
-            SetHorizontalOffset(HorizontalOffset - _ViewPortRect.Width * ScrollWheelStepIncrementRel);
+            SetHorizontalOffset(HorizontalOffset - _ViewPortRect.Width*ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -582,7 +665,7 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         public void MouseWheelRight()
         {
-            SetHorizontalOffset(HorizontalOffset + _ViewPortRect.Width * ScrollWheelStepIncrementRel);
+            SetHorizontalOffset(HorizontalOffset + _ViewPortRect.Width*ScrollWheelStepIncrementRel);
         }
 
         /// <summary>
@@ -591,6 +674,7 @@ namespace Undefined.DesignerCanvas
         /// <param name="offset">The degree to which content is horizontally offset from the containing viewport.</param>
         public void SetHorizontalOffset(double offset)
         {
+            offset = offset/(Zoom/100.0);
             if (offset > _ExtendRect.Width - _ViewPortRect.Width) offset = _ExtendRect.Width - _ViewPortRect.Width;
             if (offset < 0) offset = 0;
             _ViewPortRect.X = offset;
@@ -604,6 +688,7 @@ namespace Undefined.DesignerCanvas
         /// <param name="offset">The degree to which content is vertically offset from the containing viewport.</param>
         public void SetVerticalOffset(double offset)
         {
+            offset = offset/(Zoom/100.0);
             if (offset > _ExtendRect.Height - _ViewPortRect.Height) offset = _ExtendRect.Height - _ViewPortRect.Height;
             if (offset < 0) offset = 0;
             _ViewPortRect.Y = offset;
@@ -627,7 +712,7 @@ namespace Undefined.DesignerCanvas
             if (fe != null)
             {
                 // Make sure the center of the visual will be shown.
-                ltPoint.Offset(fe.ActualWidth / 2, fe.ActualHeight / 2);
+                ltPoint.Offset(fe.ActualWidth/2, fe.ActualHeight/2);
             }
             // Now the coordinate of visual is relative to the canvas.
             if (!_ViewPortRect.Contains(ltPoint))
@@ -660,7 +745,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal size of the extent. This property has no default value.
         /// </returns>
-        public double ExtentWidth => _ExtendRect.Width;
+        public double ExtentWidth => _ExtendRect.Width*Zoom/100.0;
 
         /// <summary>
         /// Gets the vertical size of the extent.
@@ -668,7 +753,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical size of the extent.This property has no default value.
         /// </returns>
-        public double ExtentHeight => _ExtendRect.Height;
+        public double ExtentHeight => _ExtendRect.Height*Zoom/100.0;
 
         /// <summary>
         /// Gets the horizontal size of the viewport for this content.
@@ -676,7 +761,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal size of the viewport for this content. This property has no default value.
         /// </returns>
-        public double ViewportWidth => _ViewPortRect.Width;
+        public double ViewportWidth => _ViewPortRect.Width*Zoom/100.0;
 
         /// <summary>
         /// Gets the vertical size of the viewport for this content.
@@ -684,7 +769,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical size of the viewport for this content. This property has no default value.
         /// </returns>
-        public double ViewportHeight => _ViewPortRect.Height;
+        public double ViewportHeight => _ViewPortRect.Height*Zoom/100.0;
 
         /// <summary>
         /// Gets the horizontal offset of the scrolled content.
@@ -692,7 +777,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the horizontal offset. This property has no default value.
         /// </returns>
-        public double HorizontalOffset => _ViewPortRect.X;
+        public double HorizontalOffset => _ViewPortRect.X*Zoom/100.0;
 
         /// <summary>
         /// Gets the vertical offset of the scrolled content.
@@ -700,7 +785,7 @@ namespace Undefined.DesignerCanvas
         /// <returns>
         /// A <see cref="T:System.Double"/> that represents, in device independent pixels, the vertical offset of the scrolled content. Valid values are between zero and the <see cref="P:System.Windows.Controls.Primitives.IScrollInfo.ExtentHeight"/> minus the <see cref="P:System.Windows.Controls.Primitives.IScrollInfo.ViewportHeight"/>. This property has no default value.
         /// </returns>
-        public double VerticalOffset => _ViewPortRect.Y;
+        public double VerticalOffset => _ViewPortRect.Y*Zoom/100.0;
 
         /// <summary>
         /// Gets or sets a <see cref="T:System.Windows.Controls.ScrollViewer"/> element that controls scrolling behavior.
@@ -713,6 +798,7 @@ namespace Undefined.DesignerCanvas
         #endregion
 
         #region Debug Support
+
 #if DEBUG
         public int RenderedChildrenCount => partCanvas.Children.Count;
 #endif
