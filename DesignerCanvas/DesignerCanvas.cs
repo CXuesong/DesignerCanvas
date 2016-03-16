@@ -204,89 +204,6 @@ namespace Undefined.DesignerCanvas
             partCanvas.RenderTransform = tg;
         }
 
-        private Point? RubberbandStartPoint = null;
-
-        /// <summary>
-        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.MouseDown"/> attached event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.Windows.Input.MouseButtonEventArgs"/> that contains the event data. This event data reports details about the mouse button that was pressed and the handled state.</param>
-        protected override void OnMouseDown(MouseButtonEventArgs e)
-        {
-            if (e.Source == partCanvas || e.Source == this)
-            {
-                RubberbandStartPoint = e.GetPosition(this);
-            }
-            base.OnMouseDown(e);
-        }
-
-        /// <summary>
-        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.MouseMove"/> attached event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.Windows.Input.MouseEventArgs"/> that contains the event data.</param>
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            if (RubberbandStartPoint != null)
-            {
-                if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
-                {
-                    var adornerLayer = AdornerLayer.GetAdornerLayer(partCanvas);
-                    if (adornerLayer != null)
-                    {
-                        var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value, Rubberband_Callback);
-                        adornerLayer.Add(adorner);
-                        RubberbandStartPoint = null;
-                    }
-                }
-            }
-            base.OnMouseMove(e);
-        }
-
-        /// <summary>
-        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.MouseUp"/> routed event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.Windows.Input.MouseButtonEventArgs"/> that contains the event data. The event data reports that the mouse button was released.</param>
-        protected override void OnMouseUp(MouseButtonEventArgs e)
-        {
-            RubberbandStartPoint = null;
-            if (e.Source == partCanvas || e.Source == this)
-            {
-                _SelectedItems.Clear();
-            }
-            base.OnMouseUp(e);
-        }
-
-        private void Rubberband_Callback(object o, Rect rect)
-        {
-            rect = new Rect(PointToCanvas(rect.TopLeft), PointToCanvas(rect.BottomRight));
-            var mod = Keyboard.Modifiers;
-            if ((mod & (ModifierKeys.Shift | ModifierKeys.Control)) == ModifierKeys.None)
-            {
-                _SelectedItems.Clear();
-                _SelectedItems.AddRange(Items.ObjectsInRegion(rect));
-            }
-            else
-            {
-                var newItems = new HashSet<IGraphicalObject>(Items.ObjectsInRegion(rect));
-                if ((mod & ModifierKeys.Shift) == ModifierKeys.Shift)
-                {
-                    // Switch
-                    var intersection = _SelectedItems.Where(i => newItems.Contains(i)).ToList();
-                    foreach (var item in intersection)
-                    {
-                        _SelectedItems.Remove(item);
-                        newItems.Remove(item);
-                    }
-                    _SelectedItems.AddRange(newItems);
-                }
-                else if ((mod & ModifierKeys.Control) == ModifierKeys.Control)
-                {
-                    // Merge
-                    foreach (var item in _SelectedItems) newItems.Remove(item);
-                    _SelectedItems.AddRange(newItems);
-                }
-            }
-        }
-
         protected override Size MeasureOverride(Size constraint)
         {
             const double measurementMargin = 10;
@@ -438,6 +355,133 @@ namespace Undefined.DesignerCanvas
                 ? ItemSelectionOptions.IncludePartialSelection
                 : ItemSelectionOptions.None))
                 SetContainerVisibility(obj, visible);
+        }
+
+        #endregion
+
+        #region Interactive
+
+        private Point? RubberbandStartPoint = null;
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.MouseDown"/> attached event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.Windows.Input.MouseButtonEventArgs"/> that contains the event data. This event data reports details about the mouse button that was pressed and the handled state.</param>
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            if (e.Source == partCanvas || e.Source == this)
+            {
+                RubberbandStartPoint = e.GetPosition(this);
+            }
+            base.OnMouseDown(e);
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.MouseMove"/> attached event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.Windows.Input.MouseEventArgs"/> that contains the event data.</param>
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            if (RubberbandStartPoint != null)
+            {
+                if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
+                {
+                    var adornerLayer = AdornerLayer.GetAdornerLayer(partCanvas);
+                    if (adornerLayer != null)
+                    {
+                        var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value, Rubberband_Callback);
+                        adornerLayer.Add(adorner);
+                        RubberbandStartPoint = null;
+                    }
+                }
+            }
+            base.OnMouseMove(e);
+        }
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.MouseUp"/> routed event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.Windows.Input.MouseButtonEventArgs"/> that contains the event data. The event data reports that the mouse button was released.</param>
+        protected override void OnMouseUp(MouseButtonEventArgs e)
+        {
+            RubberbandStartPoint = null;
+            if (e.Source == partCanvas || e.Source == this)
+            {
+                _SelectedItems.Clear();
+            }
+            base.OnMouseUp(e);
+        }
+
+        private static readonly double[] standardZoomValues =
+        {
+            0.1, 1, 5, 12.5, 25, 50, 75, 100, 200, 400, 800, 1200, 1600, 2000
+        };
+
+        /// <summary>
+        /// Invoked when an unhandled <see cref="E:System.Windows.Input.Mouse.PreviewMouseWheel"/> attached event reaches an element in its route that is derived from this class. Implement this method to add class handling for this event. 
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.Windows.Input.MouseWheelEventArgs"/> that contains the event data.</param>
+        protected override void OnPreviewMouseWheel(MouseWheelEventArgs e)
+        {
+            var mod = Keyboard.Modifiers;
+            // Automatic Zoom
+            if ((mod & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                //If value is not found and value is less than one or more elements in array,
+                // a negative number which is the bitwise complement of the index of the first
+                // element that is larger than value. 
+                var stdZoomIndex = Array.BinarySearch(standardZoomValues, Zoom);
+                var step = Math.Sign(e.Delta);
+                if (stdZoomIndex >= 0)
+                {
+                    stdZoomIndex += step;
+                }
+                else
+                {
+                    stdZoomIndex = ~stdZoomIndex;
+                    if (step > 0)
+                        stdZoomIndex += step - 1;
+                    else
+                        stdZoomIndex += step;
+                }
+                if (stdZoomIndex >= 0 && stdZoomIndex < standardZoomValues.Length)
+                {
+                    Zoom = standardZoomValues[stdZoomIndex];
+                }
+            }
+            base.OnPreviewMouseWheel(e);
+        }
+
+        private void Rubberband_Callback(object o, Rect rect)
+        {
+            rect = new Rect(PointToCanvas(rect.TopLeft), PointToCanvas(rect.BottomRight));
+            var mod = Keyboard.Modifiers;
+            if ((mod & (ModifierKeys.Shift | ModifierKeys.Control)) == ModifierKeys.None)
+            {
+                _SelectedItems.Clear();
+                _SelectedItems.AddRange(Items.ObjectsInRegion(rect));
+            }
+            else
+            {
+                var newItems = new HashSet<IGraphicalObject>(Items.ObjectsInRegion(rect));
+                if ((mod & ModifierKeys.Shift) == ModifierKeys.Shift)
+                {
+                    // Switch
+                    var intersection = _SelectedItems.Where(i => newItems.Contains(i)).ToList();
+                    foreach (var item in intersection)
+                    {
+                        _SelectedItems.Remove(item);
+                        newItems.Remove(item);
+                    }
+                    _SelectedItems.AddRange(newItems);
+                }
+                else if ((mod & ModifierKeys.Control) == ModifierKeys.Control)
+                {
+                    // Merge
+                    foreach (var item in _SelectedItems) newItems.Remove(item);
+                    _SelectedItems.AddRange(newItems);
+                }
+            }
         }
 
         #endregion
