@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 using Undefined.DesignerCanvas.ObjectModel;
 
@@ -54,13 +55,19 @@ namespace Undefined.DesignerCanvas.Primitive
             if (destControl == null) return;
             var designer = DesignerCanvas.FindDesignerCanvas(destControl);
             if (designer == null) return;
+            var mod = Keyboard.Modifiers;
             double minLeft, minTop, minDeltaHorizontal, minDeltaVertical;
             // only resize DesignerItems
             CalculateDragLimits(designer.SelectedItems.OfType<IEntity>(), out minLeft, out minTop,
                 out minDeltaHorizontal, out minDeltaVertical);
+            var isResizingWidthAndHeight = HorizontalAlignment != HorizontalAlignment.Stretch &&
+                                           VerticalAlignment != VerticalAlignment.Stretch;
             foreach (var item in designer.SelectedItems.OfType<IEntity>())
             {
                 Debug.Assert(item != null);
+                double ratio = double.NaN;   // Width / Height
+                if (isResizingWidthAndHeight && (mod & ModifierKeys.Shift) == ModifierKeys.Shift)
+                    ratio = item.Width / item.Height;
                 double dragDeltaVertical;
                 switch (VerticalAlignment)
                 {
@@ -74,18 +81,28 @@ namespace Undefined.DesignerCanvas.Primitive
                         item.Height = item.Height - dragDeltaVertical;
                         break;
                 }
-                double dragDeltaHorizontal;
-                switch (HorizontalAlignment)
+                if (double.IsNaN(ratio))
                 {
-                    case HorizontalAlignment.Left:
-                        dragDeltaHorizontal = Math.Min(Math.Max(-minLeft, e.HorizontalChange), minDeltaHorizontal);
-                        item.Left += dragDeltaHorizontal;
-                        item.Width = item.Width - dragDeltaHorizontal;
-                        break;
-                    case HorizontalAlignment.Right:
-                        dragDeltaHorizontal = Math.Min(-e.HorizontalChange, minDeltaHorizontal);
-                        item.Width = item.Width - dragDeltaHorizontal;
-                        break;
+                    double dragDeltaHorizontal;
+                    switch (HorizontalAlignment)
+                    {
+                        case HorizontalAlignment.Left:
+                            dragDeltaHorizontal = Math.Min(Math.Max(-minLeft, e.HorizontalChange), minDeltaHorizontal);
+                            item.Left += dragDeltaHorizontal;
+                            item.Width -= dragDeltaHorizontal;
+                            break;
+                        case HorizontalAlignment.Right:
+                            dragDeltaHorizontal = Math.Min(-e.HorizontalChange, minDeltaHorizontal);
+                            item.Width -= dragDeltaHorizontal;
+                            break;
+                    }
+                }
+                else
+                {
+                    var delta = item.Height*ratio - item.Width;
+                    item.Width += delta;
+                    if (HorizontalAlignment == HorizontalAlignment.Left)
+                        item.Left -= delta;
                 }
             }
             e.Handled = true;

@@ -103,6 +103,18 @@ namespace WpfTestApplication
         /// </summary>
         public ConnectorCollection Connectors { get; }
 
+        private double _Angle;
+
+        public double Angle
+        {
+            get { return _Angle; }
+            set
+            {
+                _Angle = value;
+                OnPropertyChanged();
+            }
+        }
+        
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

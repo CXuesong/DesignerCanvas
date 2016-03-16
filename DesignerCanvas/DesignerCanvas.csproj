@@ -73,6 +73,7 @@
     <Compile Include="Primitive\DragThumb.cs" />
     <Compile Include="Primitive\RelativePositionPanel.cs" />
     <Compile Include="Primitive\ResizeThumb.cs" />
+    <Compile Include="Primitive\RotateThumb.cs" />
     <Compile Include="Primitive\RubberbandAdorner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

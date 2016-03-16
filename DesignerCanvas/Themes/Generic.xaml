@@ -54,6 +54,12 @@
         <Setter Property="Width" Value="{Binding Width}" />
         <Setter Property="Height" Value="{Binding Height}" />
         <Setter Property="Content" Value="{Binding}" />
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <RotateTransform Angle="{Binding Angle}" />
+            </Setter.Value>
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5, 0.5" />
     </Style>
     <Style x:Key="ThumbHandle" TargetType="Shape">
         <Setter Property="SnapsToDevicePixels" Value="true" />
@@ -90,9 +96,9 @@
                                 <primitive:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="0 0 -6 -6" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
                             </Grid>
                             <!-- RotateThumb -->
-                            <!--<Grid>
-                                <app:RotateThumb Cursor="Cross" Width="7" Height="7" Margin="0,-25,0,0" VerticalAlignment="Top" HorizontalAlignment="Center"/>
-                            </Grid>-->
+                            <Grid>
+                                <primitive:RotateThumb Cursor="Cross" Width="7" Height="7" Margin="0,-25,0,0" VerticalAlignment="Top" HorizontalAlignment="Center"/>
+                            </Grid>
                         </Grid>
                         <!-- Rendering -->
                         <Grid IsHitTestVisible="False" Margin="-3">

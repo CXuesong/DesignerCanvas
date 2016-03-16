@@ -100,6 +100,16 @@ namespace Undefined.DesignerCanvas.ObjectModel
             }
         }
 
+
+        private double _Angle;
+
+        public double Angle
+        {
+            get { return _Angle; }
+            set { SetProperty(ref _Angle, value); }
+        }
+
+
         private ImageSource _Image;
 
         public ImageSource Image
@@ -184,6 +194,11 @@ namespace Undefined.DesignerCanvas.ObjectModel
         double Width { get; set; }
 
         double Height { get; set; }
+
+        /// <summary>
+        /// Angle of rotation, in degrees.
+        /// </summary>
+        double Angle { get; set; }
 
         /// <summary>
         /// Gets the collection of the object's connectors.
