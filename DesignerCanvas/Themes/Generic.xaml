@@ -19,7 +19,7 @@
                                 is not defined. If you need to handle mouse or stylus events
                                 but do not want a background for your Panel, use Transparent.
                                 -->
-                                <Button HorizontalAlignment="Left" VerticalAlignment="Top"></Button>
+                                <!--<Button HorizontalAlignment="Left" VerticalAlignment="Top"></Button>-->
                             </Canvas>
                         </Border>
                     </Border>

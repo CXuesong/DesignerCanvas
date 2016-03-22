@@ -71,6 +71,7 @@ namespace Undefined.DesignerCanvas.Primitive
                     item.Angle += deltaAngle;
                 }
             }
+            designer.InvalidateMeasure();
         }
 
         private double EvalAngle(bool makeRegular)

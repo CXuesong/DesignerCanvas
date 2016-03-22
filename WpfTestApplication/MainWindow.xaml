@@ -15,7 +15,7 @@
         </Grid.RowDefinitions>
         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}" BorderThickness="1" Background="#FFD4EDFF">
             <ScrollViewer HorizontalScrollBarVisibility="Visible" CanContentScroll="True" UseLayoutRounding="True">
-                <DesignerCanvas:DesignerCanvas x:Name="dcvs" MouseDown="dcvs_MouseDown" Background="White" MouseMove="dcvs_MouseMove" />
+                <DesignerCanvas:DesignerCanvas x:Name="dcvs" MouseDown="dcvs_MouseDown" Background="White" MouseMove="dcvs_MouseMove" ShowBoundaries="True" />
             </ScrollViewer>
         </Border>
         <Grid Grid.Row="1">

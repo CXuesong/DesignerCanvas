@@ -47,6 +47,11 @@ namespace Undefined.DesignerCanvas.Primitive
                 adornerLayer?.Remove(sizeAdorner);
                 sizeAdorner = null;
             }
+            var destControl = DataContext as DependencyObject;
+            if (destControl == null) return;
+            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
+            if (designer == null) return;
+            designer.InvalidateMeasure();
         }
 
         void ResizeThumb_DragDelta(object sender, DragDeltaEventArgs e)

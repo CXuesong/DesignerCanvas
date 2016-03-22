@@ -55,7 +55,7 @@ namespace WpfTestApplication
                 bumpingItem.Left += (rnd.NextDouble() - 0.5)*2;
                 bumpingItem.Top += (rnd.NextDouble() - 0.5)*2;
             };
-            aniTimer.Start();
+            //aniTimer.Start();
 
             var statTimer = new DispatcherTimer
             {

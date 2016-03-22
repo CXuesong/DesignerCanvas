@@ -59,6 +59,21 @@ namespace Undefined.DesignerCanvas
             DependencyProperty.Register("ItemTemplateSelector", typeof (DataTemplateSelector),
                 typeof (DesignerCanvas), new PropertyMetadata(null));
 
+
+        /// <summary>
+        /// Decides whether to show boundaries for each item. This functionality is
+        /// used for debugging.
+        /// </summary>
+        public bool ShowBoundaries
+        {
+            get { return (bool)GetValue(ShowBoundariesProperty); }
+            set { SetValue(ShowBoundariesProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ShowBoundaries.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ShowBoundariesProperty = DependencyProperty.Register("ShowBoundaries",
+            typeof (bool), typeof (DesignerCanvas), new PropertyMetadata(false));
+
         #endregion
 
         #region Items & States
@@ -189,6 +204,8 @@ namespace Undefined.DesignerCanvas
             return null;
         }
 
+        private DrawingVisual debuggingVisual;
+
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
@@ -246,6 +263,28 @@ namespace Undefined.DesignerCanvas
                         uiElement.TranslatePoint(new Point(arrangeBounds.Width, arrangeBounds.Height), this));
                     uiElement.Arrange(new Rect(0, 0, Math.Max(canvasBounds.Width, _ExtendRect.Width),
                         Math.Max(canvasBounds.Height, _ExtendRect.Height)));
+                }
+            }
+            if (ShowBoundaries)
+            {
+                if (debuggingVisual == null)
+                {
+                    debuggingVisual = new DrawingVisual();
+                    partCanvas.Background = new VisualBrush(debuggingVisual)
+                    {
+                        AlignmentX = AlignmentX.Left,
+                        AlignmentY = AlignmentY.Top,
+                        Stretch = Stretch.None,
+                    };
+                }
+                using (var dc = debuggingVisual.RenderOpen())
+                {
+                    var pen = new Pen(Brushes.Red, 1);
+                    dc.DrawRectangle(null, pen, new Rect(0, 0, 5, 5));
+                    foreach (var item in Items.Take(500))
+                    {
+                        dc.DrawRectangle(null, pen, item.Bounds);
+                    }
                 }
             }
             return arrangeBounds;

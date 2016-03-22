@@ -26,6 +26,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
                 {
                     OnPropertyChanged(nameof(Left));
                     OnPropertyChanged(nameof(Top));
+                    OnPropertyChanged(nameof(Bounds));
                     OnBoundsChanged();
                 }
             }
@@ -106,7 +107,12 @@ namespace Undefined.DesignerCanvas.ObjectModel
         public double Angle
         {
             get { return _Angle; }
-            set { SetProperty(ref _Angle, value); }
+            set
+            {
+                SetProperty(ref _Angle, value);
+                OnPropertyChanged(nameof(Bounds));
+                OnBoundsChanged();
+            }
         }
 
 
@@ -118,7 +124,21 @@ namespace Undefined.DesignerCanvas.ObjectModel
             set { SetProperty(ref _Image, value); }
         }
 
-        public Rect Bounds => new Rect(_Location, _Size);
+        public Rect Bounds
+        {
+            get
+            {
+                var angle = _Angle*Math.PI/180.0;
+                var sa = Math.Abs(Math.Abs(angle) < 0.01 ? angle : Math.Sin(angle));
+                var ca = Math.Abs(Math.Abs(angle) < 0.01 ? 1 - angle * angle / 2 : Math.Cos(angle));
+                var centerX = _Location.X + _Size.Width/2;
+                var centerY = _Location.Y + _Size.Height/2;
+                // bounding rectangle
+                var width = _Size.Width*ca + _Size.Height*sa;
+                var height = _Size.Width*sa + _Size.Height*ca;
+                return new Rect(centerX - width/2, centerY - height/2, width, height);
+            }
+        }
 
         /// <summary>
         /// Determines whether the object is in the specified region.

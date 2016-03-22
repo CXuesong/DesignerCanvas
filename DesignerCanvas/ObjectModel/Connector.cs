@@ -43,14 +43,15 @@ namespace Undefined.DesignerCanvas.ObjectModel
             get
             {
                 // Assume the rotation center is the center of bounds.
-                var bounds = _Owner.Bounds;
+                var width = _Owner.Width;
+                var height = _Owner.Height;
                 var angle = _Owner.Angle/180.0*Math.PI;
-                var x = _RelativePosition.X-0.5;
-                var y = _RelativePosition.Y-0.5;
-                var sa = angle < 0.01 ? angle : Math.Sin(angle);
-                var ca = angle < 0.01 ? 1 - angle*angle/2 : Math.Cos(angle);
-                return new Point(bounds.Left + (x*ca - y*sa + 0.5)*bounds.Width,
-                    bounds.Top + (x*sa + y*ca + 0.5)*bounds.Height);
+                var x = (_RelativePosition.X - 0.5)*width;
+                var y = (_RelativePosition.Y - 0.5)*height;
+                var sa = Math.Abs(angle) < 0.01 ? angle : Math.Sin(angle);
+                var ca = Math.Abs(angle) < 0.01 ? 1 - angle*angle/2 : Math.Cos(angle);
+                return new Point(_Owner.Left + (x*ca - y*sa) + width/2,
+                    _Owner.Top + (x*sa + y*ca) + height/2);
             }
         }
 
