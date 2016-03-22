@@ -83,7 +83,7 @@
                 <ControlTemplate TargetType="primitive:ResizeRotateChrome">
                     <Grid>
                         <!-- Thumbs for operation, but should be transparent. -->
-                        <Grid Opacity="1">
+                        <Grid Opacity="0">
                             <!-- ResizeThumb -->
                             <Grid>
                                 <primitive:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 -4 0 0" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
