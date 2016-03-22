@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -18,6 +19,7 @@ namespace Undefined.DesignerCanvas.Primitive
 
         public RotateThumb()
         {
+
             DragDelta += RotateThumb_DragDelta;
             DragStarted += RotateThumb_DragStarted;
             DragCompleted += RotateThumb_DragCompleted;
@@ -50,6 +52,7 @@ namespace Undefined.DesignerCanvas.Primitive
             if (item == null) return;
             var mod = Keyboard.Modifiers;
             item.Angle = initialAngle + EvalAngle((mod & ModifierKeys.Shift) == ModifierKeys.Shift);
+            (destControl as UIElement)?.InvalidateArrange();
         }
 
         private void RotateThumb_DragCompleted(object sender, DragCompletedEventArgs e)
@@ -75,9 +78,20 @@ namespace Undefined.DesignerCanvas.Primitive
             const double regularAngleStep = 15;
             var currentPoint = Mouse.GetPosition(canvas);
             var deltaVector = Point.Subtract(currentPoint, centerPoint);
-            var angle = Vector.AngleBetween(startVector, deltaVector);
-            if (makeRegular) angle = Math.Round(angle/regularAngleStep)*regularAngleStep;
-            return angle;
+            if (makeRegular)
+            {
+                var referenceVector = new Vector(1, 0);
+                var angle = Vector.AngleBetween(referenceVector, deltaVector);
+                angle = Math.Round(angle/regularAngleStep)*regularAngleStep;
+                angle += Vector.AngleBetween(startVector, referenceVector);
+                //Debug.Print(angle);
+                return angle;
+            }
+            else
+            {
+                var angle = Vector.AngleBetween(startVector, deltaVector);
+                return angle;
+            }
         }
     }
 }

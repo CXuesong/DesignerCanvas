@@ -6,11 +6,15 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Media;
 using Undefined.DesignerCanvas.ObjectModel;
 
 namespace Undefined.DesignerCanvas.Primitive
 {
+    /// <summary>
+    /// Used for drag &amp; moving objects on the canvas.
+    /// </summary>
     public class DragThumb : Thumb
     {
         /// <summary>
@@ -40,19 +44,22 @@ namespace Undefined.DesignerCanvas.Primitive
 
         private void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            var destControl = DataContext as DependencyObject;
+            var destControl = DataContext as FrameworkElement;
             if (destControl == null) return;
             var designer = DesignerCanvas.FindDesignerCanvas(destControl);
             if (designer == null) return;
             var minLeft = double.MaxValue;
             var minTop = double.MaxValue;
+            var tf = TransformToAncestor((Visual) Parent);
+            var delta = new Point(e.HorizontalChange, e.VerticalChange);
+            delta = tf.Transform(delta);
             foreach (var item in designer.SelectedItems.OfType<IEntity>())
             {
                 minLeft = Math.Min(item.Left, minLeft);
                 minTop = Math.Min(item.Top, minTop);
             }
-            var deltaX = Math.Max(-minLeft, e.HorizontalChange);
-            var deltaY = Math.Max(-minTop, e.VerticalChange);
+            var deltaX = Math.Max(-minLeft, delta.X);
+            var deltaY = Math.Max(-minTop, delta.Y);
             if (instantPreview)
             {
                 // This operation may be slow.
@@ -73,12 +80,15 @@ namespace Undefined.DesignerCanvas.Primitive
 
         private void DragThumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            var destControl = DataContext as DependencyObject;
+            var destControl = DataContext as FrameworkElement;
             if (destControl == null) return;
             var designer = DesignerCanvas.FindDesignerCanvas(destControl);
             if (designer == null) return;
             if (!instantPreview)
             {
+                var tf = TransformToAncestor((Visual)Parent);
+                var delta = new Point(e.HorizontalChange, e.VerticalChange);
+                delta = tf.Transform(delta);
                 var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 var minLeft = double.MaxValue;
                 var minTop = double.MaxValue;
@@ -89,8 +99,8 @@ namespace Undefined.DesignerCanvas.Primitive
                     minLeft = double.IsNaN(left) ? 0 : Math.Min(left, minLeft);
                     minTop = double.IsNaN(top) ? 0 : Math.Min(top, minTop);
                 }
-                var deltaHorizontal = Math.Max(-minLeft, e.HorizontalChange);
-                var deltaVertical = Math.Max(-minTop, e.VerticalChange);
+                var deltaHorizontal = Math.Max(-minLeft, delta.X);
+                var deltaVertical = Math.Max(-minTop, delta.Y);
                 foreach (var item in designer.SelectedItems.OfType<IEntity>())
                 {
                     if (item == thisItem) continue;
