@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -66,7 +67,9 @@ namespace Undefined.DesignerCanvas
             {
                 PathGeometry = geometry = new PathGeometry();
             }
-            var points = new[] {SourcePoint, SinkPoint};
+            var points = DesignerCanvasConnectionBuilder.BuildGeomotryPoints(
+                SourcePoint, ConnectorDirection.Left,
+                SinkPoint, ConnectorDirection.Left).ToArray();
             PathGeometry.Figures.Clear();
             var figure = new PathFigure {StartPoint = points[0]};
             figure.Segments.Add(new PolyLineSegment(points, true));

@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="ConnectionCollection.cs" />
     <Compile Include="DesignerCanvas.cs" />
+    <Compile Include="DesignerCanvasConnectionBuilder.cs" />
     <Compile Include="DesignerCanvasEntity.cs" />
     <Compile Include="ObjectModel\Connection.cs" />
     <Compile Include="ObjectModel\Connector.cs" />
