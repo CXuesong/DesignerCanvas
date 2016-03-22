@@ -35,7 +35,7 @@ namespace WpfTestApplication
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             var g1 = new Entity(10, 10, 32, 32, LoadImageResource("1.png"));
-            var g2 = new Entity(50, 10, 32, 32, LoadImageResource("2.png"));
+            var g2 = new Entity(50, 10, 32, 32, LoadImageResource("2.png")) {Angle = 90};
             var myG1 = new MyEntity {Bounds = new Rect(100, 10, 20, 20)};
             var bumpingItem = new Entity(50, 50, 32, 32, LoadImageResource("3.png"));
             dcvs.Items.AddRange(new IGraphicalObject[] {g1, g2, bumpingItem, myG1});
@@ -55,7 +55,7 @@ namespace WpfTestApplication
                 bumpingItem.Left += (rnd.NextDouble() - 0.5)*2;
                 bumpingItem.Top += (rnd.NextDouble() - 0.5)*2;
             };
-            //aniTimer.Start();
+            aniTimer.Start();
 
             var statTimer = new DispatcherTimer
             {

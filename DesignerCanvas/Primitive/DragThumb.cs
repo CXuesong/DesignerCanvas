@@ -50,9 +50,10 @@ namespace Undefined.DesignerCanvas.Primitive
             if (designer == null) return;
             var minLeft = double.MaxValue;
             var minTop = double.MaxValue;
-            var tf = TransformToAncestor((Visual) Parent);
+            //var tf = TransformToAncestor(designer);
             var delta = new Point(e.HorizontalChange, e.VerticalChange);
-            delta = tf.Transform(delta);
+            var tf = destControl.RenderTransform;
+            if (tf != null) delta = tf.Transform(delta);
             foreach (var item in designer.SelectedItems.OfType<IEntity>())
             {
                 minLeft = Math.Min(item.Left, minLeft);
