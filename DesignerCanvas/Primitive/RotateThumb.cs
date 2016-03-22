@@ -78,21 +78,13 @@ namespace Undefined.DesignerCanvas.Primitive
         {
             const double regularAngleStep = 15;
             var currentPoint = Mouse.GetPosition(canvas);
-            var deltaVector = Point.Subtract(currentPoint, centerPoint);
+            var currentVector = Point.Subtract(currentPoint, centerPoint);
+            var angle = Vector.AngleBetween(startVector, currentVector);
             if (makeRegular)
             {
-                var referenceVector = new Vector(1, 0);
-                var angle = Vector.AngleBetween(referenceVector, deltaVector);
-                angle = Math.Round(angle/regularAngleStep)*regularAngleStep;
-                angle += Vector.AngleBetween(startVector, referenceVector);
-                //Debug.Print(angle);
-                return angle;
+                angle = Math.Round((initialAngle + angle)/regularAngleStep)*regularAngleStep - initialAngle;
             }
-            else
-            {
-                var angle = Vector.AngleBetween(startVector, deltaVector);
-                return angle;
-            }
+            return angle;
         }
     }
 }

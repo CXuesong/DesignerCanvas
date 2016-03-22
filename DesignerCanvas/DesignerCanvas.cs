@@ -789,19 +789,26 @@ namespace Undefined.DesignerCanvas
         public Rect MakeVisible(Visual visual, Rect rectangle)
         {
             if (visual == null) throw new ArgumentNullException(nameof(visual));
-            var ltPoint = visual.PointToScreen(new Point(0, 0));
-            ltPoint = partCanvas.PointFromScreen(ltPoint);
+            // Determine the point to be shown.
+            // Visual doesn't have TranslatePoint function.
+            var focusPoint = new Point(0, 0);
             var fe = visual as FrameworkElement;
             if (fe != null)
             {
                 // Make sure the center of the visual will be shown.
-                ltPoint.Offset(fe.ActualWidth/2, fe.ActualHeight/2);
+                focusPoint = fe.TranslatePoint(new Point(fe.ActualWidth/2, fe.ActualHeight/2), partCanvas);
             }
-            // Now the coordinate of visual is relative to the canvas.
-            if (!_ViewPortRect.Contains(ltPoint))
+            else
             {
-                SetHorizontalOffset(ltPoint.X);
-                SetVerticalOffset(ltPoint.Y);
+                focusPoint = visual.PointToScreen(new Point(0, 0));
+                focusPoint = partCanvas.PointFromScreen(focusPoint);
+            }
+            // Move the view to the specific point.
+            // Now the coordinate of visual is relative to the canvas.
+            if (!_ViewPortRect.Contains(focusPoint))
+            {
+                SetHorizontalOffset(focusPoint.X);
+                SetVerticalOffset(focusPoint.Y);
             }
             return rectangle;
         }
