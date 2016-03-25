@@ -240,6 +240,12 @@ namespace Undefined.DesignerCanvas
                 if (_ExtendRect.Height < constraint.Height) _ExtendRect.Height = constraint.Height;
             //partCanvas.Measure(_ExtendRect.Size); // Seems no use.
             _ViewPortRect.Size = new Size(constraint.Width/zoomRatio, constraint.Height/zoomRatio);
+            if (_ViewPortRect.Width >= _ExtendRect.Width && _ViewPortRect.Height >= _ExtendRect.Height)
+            {
+                // ViewPort is large enough.
+                // Scroll to left-top corner.
+                _ViewPortRect.X = _ViewPortRect.Y = 0;
+            }
             InvalidateViewPortRect();
             ScrollOwner?.InvalidateScrollInfo();
             if (double.IsInfinity(constraint.Width) || double.IsInfinity(constraint.Height))
@@ -408,9 +414,10 @@ namespace Undefined.DesignerCanvas
         /// <param name="e">The <see cref="T:System.Windows.Input.MouseButtonEventArgs"/> that contains the event data. This event data reports details about the mouse button that was pressed and the handled state.</param>
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            if (e.Source == partCanvas || e.Source == this)
+            if (IsInBackground(e.OriginalSource as DependencyObject))
             {
                 RubberbandStartPoint = e.GetPosition(this);
+                Focus();
             }
             base.OnMouseDown(e);
         }
@@ -425,12 +432,15 @@ namespace Undefined.DesignerCanvas
             {
                 if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
                 {
-                    var adornerLayer = AdornerLayer.GetAdornerLayer(partCanvas);
-                    if (adornerLayer != null)
+                    if ((e.GetPosition(this) - RubberbandStartPoint.Value).Length > 2)
                     {
-                        var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value, Rubberband_Callback);
-                        adornerLayer.Add(adorner);
-                        RubberbandStartPoint = null;
+                        var adornerLayer = AdornerLayer.GetAdornerLayer(partCanvas);
+                        if (adornerLayer != null)
+                        {
+                            var adorner = new RubberbandAdorner(this, RubberbandStartPoint.Value, Rubberband_Callback);
+                            adornerLayer.Add(adorner);
+                            RubberbandStartPoint = null;
+                        }
                     }
                 }
             }
@@ -444,11 +454,32 @@ namespace Undefined.DesignerCanvas
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             RubberbandStartPoint = null;
-            if (e.Source == partCanvas || e.Source == this)
+            // Note we should determine whether the mouse is in the blank canvas area.
+            // This event handler will be fired even when mouse is in the child UIElement.
+            if (IsInBackground(e.OriginalSource as DependencyObject))
             {
                 _SelectedItems.Clear();
+                Focus();
             }
             base.OnMouseUp(e);
+        }
+
+        /// <summary>
+        /// Determines whether the specified element is in the DesignerCanvas
+        /// instead of any objects (Entity/Connection) on the canvas.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        private bool IsInBackground(DependencyObject element)
+        {
+            while (element != null)
+            {
+                if (element is DesignerCanvas) return true;
+                if (element is DesignerCanvasEntity) return false;
+                if (element is DesignerCanvasConnection) return false;
+                element = VisualTreeHelper.GetParent(element);
+            }
+            return false;
         }
 
         private static readonly double[] standardZoomValues =
@@ -521,6 +552,7 @@ namespace Undefined.DesignerCanvas
                     _SelectedItems.AddRange(newItems);
                 }
             }
+            Focus();
         }
 
         #endregion

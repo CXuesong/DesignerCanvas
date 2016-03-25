@@ -38,10 +38,6 @@ namespace Undefined.DesignerCanvas
             base.OnPreviewMouseDown(e);
             ParentDesigner?.NotifyItemMouseDown(this);
             Focus();
-            e.Handled = false;
-            // Then the Source of MouseDown will be DesignerCanvasItem rather than
-            // DesignerCanvas. This is especially to handle the case when 
-            // the DesignerCanvasItem recieves a right click.
         }
 
         #endregion

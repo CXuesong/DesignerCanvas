@@ -72,7 +72,7 @@ namespace Undefined.DesignerCanvas.Primitive
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            if (e.LeftButton == MouseButtonState.Pressed)
+            if (e.LeftButton == MouseButtonState.Pressed || e.RightButton == MouseButtonState.Pressed)
             {
                 CaptureMouse();
                 _EndPoint = e.GetPosition(this);
