@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using System.Windows.Media;
 
@@ -14,8 +15,10 @@ namespace Undefined.DesignerCanvas.ObjectModel
     public class Entity : INotifyPropertyChanged, IEntity
     {
         public event EventHandler BoundsChanged;
-
+        private ImageSource _Image;
+        private bool _Resizeable = true;
         private Point _Location;
+        private Size _Size;
 
         public Point Location
         {
@@ -32,7 +35,6 @@ namespace Undefined.DesignerCanvas.ObjectModel
             }
         }
 
-        private Size _Size;
 
         public Size Size
         {
@@ -115,9 +117,6 @@ namespace Undefined.DesignerCanvas.ObjectModel
             }
         }
 
-
-        private ImageSource _Image;
-
         public ImageSource Image
         {
             get { return _Image; }
@@ -151,6 +150,8 @@ namespace Undefined.DesignerCanvas.ObjectModel
             if (b.IntersectsWith(testRectangle)) return HitTestResult.Intersects;
             return HitTestResult.None;
         }
+
+        public virtual bool Resizeable => _Resizeable;
 
         /// <summary>
         /// Gets the collection of the object's connectors.
@@ -219,6 +220,8 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// Angle of rotation, in degrees.
         /// </summary>
         double Angle { get; set; }
+
+        bool Resizeable { get; }
 
         /// <summary>
         /// Gets the collection of the object's connectors.

@@ -76,6 +76,24 @@ namespace Undefined.DesignerCanvas
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Raised when <see cref="SelectedItems"/> has been changed.
+        /// </summary>
+        /// <remarks>
+        /// You may modify <see cref="SelectedItems"/> in the event handler,
+        /// because the event is raised asynchronously.
+        /// </remarks>
+        public event EventHandler SelectionChanged;
+
+        protected virtual void OnSelectionChanged()
+        {
+            SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        #endregion
+
         #region Items & States
 
         public GraphicalObjectCollection Items => _Items;
@@ -88,12 +106,23 @@ namespace Undefined.DesignerCanvas
         // correspond with SelectedItems collection.
         private bool isSelectedContainersSynchronizing = false;
 
+        private bool selectionChangedRaised = false;
+
         private void _SelectedItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
             try
             {
                 if (isSelectedContainersSynchronizing) throw new InvalidOperationException("此函数不支持递归调用。");
                 isSelectedContainersSynchronizing = true;
+                selectionChangedRaised = true;
+                Dispatcher.CurrentDispatcher.BeginInvoke((Action) (() =>
+                {
+                    if (selectionChangedRaised)
+                    {
+                        selectionChangedRaised = false;
+                        OnSelectionChanged();
+                    }
+                }));
                 switch (e.Action)
                 {
                     case NotifyCollectionChangedAction.Add:
@@ -156,20 +185,21 @@ namespace Undefined.DesignerCanvas
                     {
                         foreach (IGraphicalObject item in e.OldItems)
                         {
+                            item.BoundsChanged -= Item_BoundsChanged;
                             SetContainerVisibility(item, false);
                             _SelectedItems.Remove(item);
                         }
                     }
                     if (e.NewItems != null)
                     {
-                        foreach (var item in e.NewItems)
+                        foreach (IGraphicalObject item in e.NewItems)
                         {
-                            var obj = item as IGraphicalObject;
-                            if (obj == null) continue;
-                            if (_ViewPortRect.IntersectsWith(obj.Bounds))
+                            if (item == null) continue;
+                            if (_ViewPortRect.IntersectsWith(item.Bounds))
                             {
-                                SetContainerVisibility(obj, true);
+                                SetContainerVisibility(item, true);
                             }
+                            item.BoundsChanged += Item_BoundsChanged;
                         }
                     }
                     break;
@@ -183,6 +213,13 @@ namespace Undefined.DesignerCanvas
                     break;
             }
             this.InvalidateMeasure();
+        }
+
+        private void Item_BoundsChanged(object sender, EventArgs e)
+        {
+            var obj = (IGraphicalObject) sender;
+            // Bring the container into view if the bounds has been moved into viewport, vice versa.
+            SetContainerVisibility(obj, _ViewPortRect.IntersectsWith(obj.Bounds));
         }
 
         #endregion

@@ -98,6 +98,8 @@ namespace WpfTestApplication
             }
         }
 
+        public bool Resizeable => false;
+
         /// <summary>
         /// Gets the collection of the object's connectors.
         /// </summary>

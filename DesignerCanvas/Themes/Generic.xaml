@@ -4,6 +4,7 @@
     xmlns:local="clr-namespace:Undefined.DesignerCanvas"
     xmlns:primitive="clr-namespace:Undefined.DesignerCanvas.Primitive"
     xmlns:om="clr-namespace:Undefined.DesignerCanvas.ObjectModel">
+    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     <Style TargetType="{x:Type local:DesignerCanvas}">
         <Setter Property="Template">
             <Setter.Value>
@@ -53,6 +54,7 @@
         <Setter Property="Canvas.Top" Value="{Binding Top}" />
         <Setter Property="Width" Value="{Binding Width}" />
         <Setter Property="Height" Value="{Binding Height}" />
+        <Setter Property="Resizeable" Value="{Binding Resizeable, FallbackValue=True}" />
         <Setter Property="Content" Value="{Binding}" />
         <Setter Property="RenderTransform">
             <Setter.Value>
@@ -84,8 +86,8 @@
                     <Grid>
                         <!-- Thumbs for operation, but should be transparent. -->
                         <Grid Opacity="0">
+                            <Grid Visibility="{TemplateBinding CanResize, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <!-- ResizeThumb -->
-                            <Grid>
                                 <primitive:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 -4 0 0" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
                                 <primitive:ResizeThumb Width="3" Cursor="SizeWE" Margin="-4 0 0 0" VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
                                 <primitive:ResizeThumb Width="3" Cursor="SizeWE" Margin="0 0 -4 0" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
@@ -113,14 +115,23 @@
                                             Margin="0,-20,0,0"
                                             Stroke="Blue"/>
                             <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-25,0,0"/>
-                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right" VerticalAlignment="Top"/>
-                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
-                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center" VerticalAlignment="Top"/>
-                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center" VerticalAlignment="Bottom"/>
-                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                            <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                            <Grid Visibility="{TemplateBinding CanResize, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left"
+                                           VerticalAlignment="Top" />
+                                <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right"
+                                           VerticalAlignment="Top" />
+                                <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left"
+                                           VerticalAlignment="Bottom" />
+                                <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right"
+                                           VerticalAlignment="Bottom" />
+                                <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center"
+                                           VerticalAlignment="Top" />
+                                <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center"
+                                           VerticalAlignment="Bottom" />
+                                <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left"
+                                           VerticalAlignment="Center" />
+                                <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right"
+                                           VerticalAlignment="Center" /></Grid>
                         </Grid>
                     </Grid>
                 </ControlTemplate>

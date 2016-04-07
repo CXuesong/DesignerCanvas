@@ -70,7 +70,7 @@ namespace Undefined.DesignerCanvas.Primitive
             if (adorner != null)
             {
                 var aLayer = AdornerLayer.GetAdornerLayer(this);
-                aLayer?.Remove(this.adorner);
+                aLayer?.Remove(adorner);
                 adorner = null;
             }
         }

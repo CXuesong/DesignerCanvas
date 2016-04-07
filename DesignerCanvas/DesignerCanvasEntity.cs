@@ -29,6 +29,18 @@ namespace Undefined.DesignerCanvas
 
         public static readonly DependencyProperty IsSelectedProperty = Selector.IsSelectedProperty;
 
+        /// <summary>
+        /// Determines whether the entity can be resized.
+        /// </summary>
+        public bool Resizeable
+        {
+            get { return (bool)GetValue(ResizeableProperty); }
+            set { SetValue(ResizeableProperty, value); }
+        }
+
+        public static readonly DependencyProperty ResizeableProperty =
+            DependencyProperty.Register("Resizeable", typeof(bool), typeof(DesignerCanvasEntity), new PropertyMetadata(true));
+
         public DesignerCanvas ParentDesigner => DesignerCanvas.FindDesignerCanvas(this);
 
         #region Interactions

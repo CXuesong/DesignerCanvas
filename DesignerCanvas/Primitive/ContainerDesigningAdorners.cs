@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Media;
 
@@ -21,10 +22,15 @@ namespace Undefined.DesignerCanvas.Primitive
 
         public ResizeRotateAdorner(UIElement destControl) : base(destControl)
         {
-            this.SnapsToDevicePixels = true;
+            SnapsToDevicePixels = true;
             chrome = new ResizeRotateChrome();
-            this.AddVisualChild(chrome);
+            AddVisualChild(chrome);
             chrome.DataContext = destControl;
+            chrome.SetBinding(ResizeRotateChrome.CanResizeProperty, new Binding("Resizeable")
+            {
+                Source = destControl,
+                Mode = BindingMode.OneWay
+            });
         }
 
         protected override Size ArrangeOverride(Size arrangeBounds)
@@ -49,6 +55,15 @@ namespace Undefined.DesignerCanvas.Primitive
         static ResizeRotateChrome()
         {
             DefaultStyleKeyProperty.OverrideMetadata(typeof(ResizeRotateChrome), new FrameworkPropertyMetadata(typeof(ResizeRotateChrome)));
+        }
+
+        public static readonly DependencyProperty CanResizeProperty =
+            DependencyProperty.Register("CanResize", typeof(bool), typeof(ResizeRotateChrome), new PropertyMetadata(true));
+
+        public bool CanResize
+        {
+            get { return (bool)GetValue(CanResizeProperty); }
+            set { SetValue(CanResizeProperty, value); }
         }
     }
 
