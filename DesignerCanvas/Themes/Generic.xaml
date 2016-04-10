@@ -198,7 +198,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="local:DesignerCanvasConnection">
-                    <Canvas DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" >
+                    <Grid DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" >
                         <Path Name="PART_ConnectionPath"
                               StrokeThickness="2"
                               StrokeStartLineCap="Round"
@@ -209,7 +209,7 @@
                         <!--<Canvas.Effect>
                             <DropShadowEffect Color="Gray" Direction="315" ShadowDepth="10" Opacity="0.1"/>
                         </Canvas.Effect>-->
-                    </Canvas>
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

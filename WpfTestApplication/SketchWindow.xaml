@@ -8,8 +8,18 @@
         mc:Ignorable="d"
         Title="SketchWindow" Height="300" Width="300">
     <Grid>
-        <Button x:Name="button" HorizontalAlignment="Left" Margin="85,64,0,0" VerticalAlignment="Top" Width="128" Click="button_Click_1" Height="116">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="156*"/>
+            <RowDefinition Height="113*"/>
+        </Grid.RowDefinitions>
+        <Button x:Name="button" HorizontalAlignment="Left" Margin="55,28,0,0" VerticalAlignment="Top" Width="128" Click="button_Click_1" Height="116">
             <local:MyEntity></local:MyEntity>
         </Button>
+        <Canvas Grid.Row="1" VerticalAlignment="Top" HorizontalAlignment="Left" MinHeight="10" MinWidth="10">
+            <Grid>
+                <Path Data="M21,40 L87.068147,40" Fill="#FFF4F4F5" Height="1" Canvas.Left="21" Stretch="Fill" Stroke="Black" Canvas.Top="40" Width="67.068"/>
+                <Path Data="M88.068,41 L114,61.333333" Fill="#FFF4F4F5" Height="21.333" Canvas.Left="88.068" Stretch="Fill" Stroke="Black" Canvas.Top="41" Width="26.932"/>
+            </Grid>
+        </Canvas>
     </Grid>
 </Window>

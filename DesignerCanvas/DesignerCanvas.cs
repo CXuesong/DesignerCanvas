@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -70,7 +71,6 @@ namespace Undefined.DesignerCanvas
             set { SetValue(ShowBoundariesProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for ShowBoundaries.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ShowBoundariesProperty = DependencyProperty.Register("ShowBoundaries",
             typeof (bool), typeof (DesignerCanvas), new PropertyMetadata(false));
 
@@ -439,6 +439,30 @@ namespace Undefined.DesignerCanvas
                 SetContainerVisibility(obj, visible);
         }
 
+        internal void ShowContainers()
+        {
+            // SLOW!
+            foreach (var item in Items)
+            {
+                SetContainerVisibility(item, true);
+            }
+        }
+
+        internal void HideCoveredContainers()
+        {
+            // Top
+            SetContainerVisibility(new Rect(_ExtendRect.Left, _ExtendRect.Top,
+                _ExtendRect.Width, _ViewPortRect.Top), false);
+            // Bottom
+            SetContainerVisibility(new Rect(_ExtendRect.Left, _ViewPortRect.Bottom, _ExtendRect.Width,
+                _ExtendRect.Bottom - _ViewPortRect.Bottom), false);
+            // Left
+            SetContainerVisibility(new Rect(_ExtendRect.Left, _ViewPortRect.Top, _ViewPortRect.Left - _ExtendRect.Left,
+                _ViewPortRect.Height), false);
+            // Right
+            SetContainerVisibility(new Rect(_ViewPortRect.Right, _ViewPortRect.Top,
+                _ExtendRect.Right - _ViewPortRect.Right, _ViewPortRect.Height), false);
+        }
         #endregion
 
         #region Interactive
@@ -646,6 +670,37 @@ namespace Undefined.DesignerCanvas
             return partCanvas.TranslatePoint(point, this);
         }
 
+        /// <summary>
+        /// Exports the image of canvas to the specified <see cref="Stream"/>.
+        /// </summary>
+        public void ExportImage(Stream s, BitmapEncoder encoder)
+        {
+            ExportImage(s, encoder, CanvasImageExporter.WpfDpi, CanvasImageExporter.WpfDpi);
+        }
+
+        /// <summary>
+        /// Exports the image of canvas to the specified <see cref="Stream"/>.
+        /// </summary>
+        public void ExportImage(Stream s, BitmapEncoder encoder, double dpiX, double dpiY)
+        {
+            CanvasImageExporter.ExportImage(this, s, encoder, dpiX, dpiY);
+        }
+
+        /// <summary>
+        /// Exports the image of canvas to the specified file.
+        /// </summary>
+        public void ExportImage(string fileName)
+        {
+            ExportImage(fileName, 96, 96);
+        }
+
+        /// <summary>
+        /// Exports the image of canvas to the specified file.
+        /// </summary>
+        public void ExportImage(string fileName, double dpiX, double dpiY)
+        {
+            CanvasImageExporter.ExportImage(this, fileName, dpiX, dpiY);
+        }
         #endregion
 
         #region Notifications from Children

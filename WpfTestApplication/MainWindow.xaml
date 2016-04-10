@@ -20,14 +20,17 @@
         </Border>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="67*"/>
+                <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="39*"/>
+                <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="100"/>
             </Grid.ColumnDefinitions>
-            <Button x:Name="TestButton" Content="Button" Click="TestButton_Click" Command="{Binding test}"/>
-            <Button x:Name="AddItemsButton" Content="_Add 10000 items" Click="AddItemsButton_Click" d:LayoutOverrides="Width" Grid.Column="1" />
+            <StackPanel Orientation="Horizontal">
+                <Button x:Name="TestButton" Content="Button" Click="TestButton_Click" Command="{Binding test}" />
+                <Button x:Name="AddItemsButton" Content="_Add 10000 items" Click="AddItemsButton_Click" />
+                <Button x:Name="ExportImageButton" Content="_Export Image" Click="ExportImageButton_Click" />
+            </StackPanel>
             <Slider Grid.Column="4" Value="{Binding Zoom, ElementName=dcvs}" Minimum="1" Maximum="1000"/>
             <Label Grid.Column="3" d:LayoutOverrides="Width" Content="{Binding Zoom, ElementName=dcvs}" ContentStringFormat="{}{0}%"/>
         </Grid>

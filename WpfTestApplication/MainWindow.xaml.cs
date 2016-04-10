@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,6 +16,7 @@ using System.Windows.Shapes;
 using System.Windows.Threading;
 using Undefined.DesignerCanvas;
 using Undefined.DesignerCanvas.ObjectModel;
+using IOPath = System.IO.Path;
 
 namespace WpfTestApplication
 {
@@ -73,6 +76,7 @@ namespace WpfTestApplication
 
         private void TestButton_Click(object sender, RoutedEventArgs e)
         {
+            GC.Collect();
             //var b = BindingOperations.GetBinding(TestButton, Button.CommandProperty);
         }
 
@@ -109,6 +113,13 @@ namespace WpfTestApplication
         private void dcvs_MouseMove(object sender, MouseEventArgs e)
         {
             MousePositionLabel.Content = dcvs.PointToCanvas(e.GetPosition(dcvs));
+        }
+
+        private void ExportImageButton_Click(object sender, RoutedEventArgs e)
+        {
+            var tempPath = IOPath.Combine(IOPath.GetTempPath(), "designerCanvasTemp.png");
+            dcvs.ExportImage(tempPath);
+            Process.Start(tempPath, null);
         }
     }
 }
