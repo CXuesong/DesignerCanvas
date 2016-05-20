@@ -37,25 +37,50 @@ namespace Undefined.DesignerCanvas
 
         public Point SourcePoint
         {
-            get { return (Point)GetValue(SourcePointProperty); }
+            get { return (Point) GetValue(SourcePointProperty); }
             set { SetValue(SourcePointProperty, value); }
         }
 
         public Point SinkPoint
         {
-            get { return (Point)GetValue(SinkPointProperty); }
+            get { return (Point) GetValue(SinkPointProperty); }
             set { SetValue(SinkPointProperty, value); }
         }
 
+        public ConnectorDirection SourceDirection
+        {
+            get { return (ConnectorDirection) GetValue(SourceDirectionProperty); }
+            set { SetValue(SourceDirectionProperty, value); }
+        }
+
+        public static readonly DependencyProperty SourceDirectionProperty =
+            DependencyProperty.Register("SourceDirection", typeof (ConnectorDirection),
+                typeof (DesignerCanvasConnection),
+                new FrameworkPropertyMetadata(ConnectorDirection.Horizontal,
+                    FrameworkPropertyMetadataOptions.AffectsArrange));
+
+        public ConnectorDirection SinkDirection
+        {
+            get { return (ConnectorDirection) GetValue(SinkDirectionProperty); }
+            set { SetValue(SinkDirectionProperty, value); }
+        }
+
+        public static readonly DependencyProperty SinkDirectionProperty =
+            DependencyProperty.Register("SinkDirection", typeof (ConnectorDirection),
+                typeof (DesignerCanvasConnection),
+                new FrameworkPropertyMetadata(ConnectorDirection.Horizontal,
+                    FrameworkPropertyMetadataOptions.AffectsArrange));
+
+
         public PathGeometry PathGeometry
         {
-            get { return (PathGeometry)GetValue(PathGeometryProperty); }
+            get { return (PathGeometry) GetValue(PathGeometryProperty); }
             set { SetValue(PathGeometryProperty, value); }
         }
 
         public bool IsSelected
         {
-            get { return (bool)GetValue(IsSelectedProperty); }
+            get { return (bool) GetValue(IsSelectedProperty); }
             set { SetValue(IsSelectedProperty, value); }
         }
 
@@ -68,8 +93,8 @@ namespace Undefined.DesignerCanvas
                 PathGeometry = geometry = new PathGeometry();
             }
             var points = DesignerCanvasConnectionBuilder.BuildGeomotryPoints(
-                SourcePoint, ConnectorDirection.Left,
-                SinkPoint, ConnectorDirection.Left).ToArray();
+                SourcePoint, SourceDirection,
+                SinkPoint, SinkDirection).ToArray();
             PathGeometry.Figures.Clear();
             var figure = new PathFigure {StartPoint = points[0]};
             figure.Segments.Add(new PolyLineSegment(points, true));
@@ -80,12 +105,13 @@ namespace Undefined.DesignerCanvas
 
         static DesignerCanvasConnection()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(DesignerCanvasConnection), new FrameworkPropertyMetadata(typeof(DesignerCanvasConnection)));
-            Selector.IsSelectedProperty.OverrideMetadata(typeof(DesignerCanvasConnection),
+            DefaultStyleKeyProperty.OverrideMetadata(typeof (DesignerCanvasConnection),
+                new FrameworkPropertyMetadata(typeof (DesignerCanvasConnection)));
+            Selector.IsSelectedProperty.OverrideMetadata(typeof (DesignerCanvasConnection),
                 new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     (sender, e) =>
                     {
-                        var s = (DesignerCanvasConnection)sender;
+                        var s = (DesignerCanvasConnection) sender;
                         s.ParentDesigner?.NotifyItemIsSelectedChanged(s);
                     }));
         }

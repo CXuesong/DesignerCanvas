@@ -5,6 +5,16 @@ using System.Windows;
 
 namespace Undefined.DesignerCanvas.ObjectModel
 {
+    /// <summary>
+    /// The direction of the first segment of elbow connection
+    /// connected to the specific connector.
+    /// </summary>
+    public enum ConnectorDirection
+    {
+        Horizontal = 0,
+        Vertical
+    }
+
     public class Connector : INotifyPropertyChanged
     {
         private readonly IEntity _Owner;
@@ -53,6 +63,19 @@ namespace Undefined.DesignerCanvas.ObjectModel
                 return new Point(_Owner.Left + (x*ca - y*sa) + width/2,
                     _Owner.Top + (x*sa + y*ca) + height/2);
             }
+        }
+
+
+        private ConnectorDirection _Direction;
+
+        /// <summary>
+        /// The direction of the first segment of elbow connection
+        /// connected to this connector.
+        /// </summary>
+        public ConnectorDirection Direction
+        {
+            get { return _Direction; }
+            set { SetProperty(ref _Direction, value); }
         }
 
         #region PropertyNotifications

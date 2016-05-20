@@ -215,6 +215,8 @@
         </Setter>
         <Setter Property="SourcePoint" Value="{Binding SourcePosition}" />
         <Setter Property="SinkPoint" Value="{Binding SinkPosition}" />
+        <Setter Property="SourceDirection" Value="{Binding Source.Direction}" />
+        <Setter Property="SinkDirection" Value="{Binding Sink.Direction}" />
     </Style>
     <DataTemplate DataType="{x:Type om:Entity}">
         <Image Source="{Binding Image}" />
