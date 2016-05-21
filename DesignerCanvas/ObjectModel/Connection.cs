@@ -63,6 +63,12 @@ namespace Undefined.DesignerCanvas.ObjectModel
 
         private Connector _Source;
 
+        private Connector _Sink;
+        private Point _SourcePosition;
+        private Point _SinkPosition;
+        private ConnectorDirection _SourceDirection;
+        private ConnectorDirection _SinkDirection;
+
         public Connector Source
         {
             get { return _Source; }
@@ -85,8 +91,6 @@ namespace Undefined.DesignerCanvas.ObjectModel
         }
 
         public IEntity SourceObject => _Source?.Owner;
-
-        private Connector _Sink;
 
         public Connector Sink
         {
@@ -111,8 +115,6 @@ namespace Undefined.DesignerCanvas.ObjectModel
 
         public IEntity SinkObject => _Sink?.Owner;
 
-        private Point _SourcePosition;
-
         public Point SourcePosition
         {
             get { return _SourcePosition; }
@@ -123,8 +125,6 @@ namespace Undefined.DesignerCanvas.ObjectModel
             }
         }
 
-        private Point _SinkPosition;
-
         public Point SinkPosition
         {
             get { return _SinkPosition; }
@@ -133,6 +133,27 @@ namespace Undefined.DesignerCanvas.ObjectModel
                if (SetProperty(ref _SinkPosition, value))
                     OnBoundsChanged();
             }
+        }
+
+        public ConnectorDirection SourceDirection
+        {
+            get { return _SourceDirection; }
+            set { SetProperty(ref _SourceDirection, value); }
+        }
+
+        public ConnectorDirection SinkDirection
+        {
+            get { return _SinkDirection; }
+            set { SetProperty(ref _SinkDirection, value); }
+        }
+
+        private static ConnectorDirection GetActualDirection(ConnectorDirection relativeDirection, double angle)
+        {
+            var deg = Math.Abs((angle % 360 + 360) % 360);
+            if (deg > 45 && deg < 135)
+                return 1 - relativeDirection;
+            else
+                return relativeDirection;
         }
 
         /// <summary>
@@ -170,8 +191,16 @@ namespace Undefined.DesignerCanvas.ObjectModel
 
         private void UpdatePositions()
         {
-            if (_Source != null) SourcePosition = _Source.AbsolutePosition;
-            if (_Sink != null) SinkPosition = _Sink.AbsolutePosition;
+            if (_Source != null)
+            {
+                SourcePosition = _Source.AbsolutePosition;
+                SourceDirection = GetActualDirection(_Source.Direction, _Source.Owner.Angle);
+            }
+            if (_Sink != null)
+            {
+                SinkPosition = _Sink.AbsolutePosition;
+                SinkDirection = GetActualDirection(_Sink.Direction, _Sink.Owner.Angle);
+            }
         }
 
         #endregion

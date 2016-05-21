@@ -36,7 +36,7 @@ namespace Undefined.DesignerCanvas
                 }
                 else
                 {
-                    yield return new Point(startPoint.Y, endPoint.X);
+                    yield return new Point(startPoint.X, endPoint.Y);
                 }
             }
             yield return endPoint;

@@ -65,7 +65,6 @@ namespace Undefined.DesignerCanvas.ObjectModel
             }
         }
 
-
         private ConnectorDirection _Direction;
 
         /// <summary>
