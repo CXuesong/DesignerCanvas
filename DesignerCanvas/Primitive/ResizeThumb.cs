@@ -70,9 +70,9 @@ namespace Undefined.DesignerCanvas.Primitive
             foreach (var item in designer.SelectedItems.OfType<IEntity>())
             {
                 Debug.Assert(item != null);
-                double ratio = double.NaN;   // Width / Height
+                double ratio = double.NaN; // Width / Height
                 if (isResizingWidthAndHeight && (mod & ModifierKeys.Shift) == ModifierKeys.Shift)
-                    ratio = item.Width / item.Height;
+                    ratio = item.Width/item.Height;
                 double dragDeltaVertical;
                 switch (VerticalAlignment)
                 {
@@ -113,8 +113,11 @@ namespace Undefined.DesignerCanvas.Primitive
             e.Handled = true;
         }
 
-        private static void CalculateDragLimits(IEnumerable<IEntity> items, out double minLeft, out double minTop, out double minDeltaHorizontal, out double minDeltaVertical)
+        private static void CalculateDragLimits(IEnumerable<IEntity> items, out double minLeft, out double minTop,
+            out double minDeltaHorizontal, out double minDeltaVertical)
         {
+            const double DefaultMinSize = 10;
+
             minLeft = double.MaxValue;
             minTop = double.MaxValue;
             minDeltaHorizontal = double.MaxValue;
@@ -128,8 +131,11 @@ namespace Undefined.DesignerCanvas.Primitive
                 var top = item.Top;
                 minLeft = double.IsNaN(left) ? 0 : Math.Min(left, minLeft);
                 minTop = double.IsNaN(top) ? 0 : Math.Min(top, minTop);
-                minDeltaVertical = Math.Min(minDeltaVertical, item.Height - 10);
-                minDeltaHorizontal = Math.Min(minDeltaHorizontal, item.Width - 10);
+                var sc = item as ISizeConstraint;
+                var minWidth = Math.Max(sc?.MinWidth ?? DefaultMinSize, 0);
+                var minHeight = Math.Max(sc?.MinHeight ?? DefaultMinSize, 0);
+                minDeltaVertical = Math.Min(minDeltaVertical, item.Height - minHeight);
+                minDeltaHorizontal = Math.Min(minDeltaHorizontal, item.Width - minWidth);
             }
         }
     }

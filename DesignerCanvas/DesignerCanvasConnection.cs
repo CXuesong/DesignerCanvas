@@ -33,6 +33,19 @@ namespace Undefined.DesignerCanvas
             DependencyProperty.Register("PathGeometry", typeof (PathGeometry), typeof (DesignerCanvasConnection),
                 new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsArrange));
 
+        public static readonly DependencyProperty SourceDirectionProperty =
+            DependencyProperty.Register("SourceDirection", typeof (ConnectorDirection),
+                typeof (DesignerCanvasConnection),
+                new FrameworkPropertyMetadata(ConnectorDirection.Horizontal,
+                    FrameworkPropertyMetadataOptions.AffectsArrange,
+                    (d, e) => ((DesignerCanvasConnection) d).UpdatePathGeometry()));
+
+        public static readonly DependencyProperty SinkDirectionProperty =
+            DependencyProperty.Register("SinkDirection", typeof (ConnectorDirection),
+                typeof (DesignerCanvasConnection),
+                new FrameworkPropertyMetadata(ConnectorDirection.Horizontal,
+                    FrameworkPropertyMetadataOptions.AffectsArrange));
+
         public static readonly DependencyProperty IsSelectedProperty = Selector.IsSelectedProperty;
 
         public Point SourcePoint
@@ -53,23 +66,11 @@ namespace Undefined.DesignerCanvas
             set { SetValue(SourceDirectionProperty, value); }
         }
 
-        public static readonly DependencyProperty SourceDirectionProperty =
-            DependencyProperty.Register("SourceDirection", typeof (ConnectorDirection),
-                typeof (DesignerCanvasConnection),
-                new FrameworkPropertyMetadata(ConnectorDirection.Horizontal,
-                    FrameworkPropertyMetadataOptions.AffectsArrange));
-
         public ConnectorDirection SinkDirection
         {
             get { return (ConnectorDirection) GetValue(SinkDirectionProperty); }
             set { SetValue(SinkDirectionProperty, value); }
         }
-
-        public static readonly DependencyProperty SinkDirectionProperty =
-            DependencyProperty.Register("SinkDirection", typeof (ConnectorDirection),
-                typeof (DesignerCanvasConnection),
-                new FrameworkPropertyMetadata(ConnectorDirection.Horizontal,
-                    FrameworkPropertyMetadataOptions.AffectsArrange));
 
 
         public PathGeometry PathGeometry

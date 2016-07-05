@@ -12,7 +12,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
     /// There can be <see cref="Connection"/>s between entities.
     /// This class can be inherited by user to contain more information.
     /// </summary>
-    public class Entity : INotifyPropertyChanged, IEntity
+    public class Entity : INotifyPropertyChanged, IEntity, ISizeConstraint
     {
         public event EventHandler BoundsChanged;
         private ImageSource _Image;
@@ -204,6 +204,10 @@ namespace Undefined.DesignerCanvas.ObjectModel
         {
             BoundsChanged?.Invoke(this, EventArgs.Empty);
         }
+
+        public virtual double MinWidth => 10;
+
+        public virtual double MinHeight => 10;
     }
 
     public interface IEntity : IGraphicalObject
@@ -227,5 +231,15 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// Gets the collection of the object's connectors.
         /// </summary>
         ConnectorCollection Connectors { get; }
+    }
+
+    /// <summary>
+    /// Enables size constraint for a specific type of <see cref="IEntity"/> 。
+    /// </summary>
+    public interface ISizeConstraint
+    {
+        double MinWidth { get; }
+
+        double MinHeight { get; }
     }
 }

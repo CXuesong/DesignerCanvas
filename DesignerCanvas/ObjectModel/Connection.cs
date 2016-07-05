@@ -149,7 +149,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
 
         private static ConnectorDirection GetActualDirection(ConnectorDirection relativeDirection, double angle)
         {
-            var deg = Math.Abs((angle % 360 + 360) % 360);
+            var deg = (angle % 180 + 180) % 180;
             if (deg > 45 && deg < 135)
                 return 1 - relativeDirection;
             else

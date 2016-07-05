@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace Undefined.DesignerCanvas.ObjectModel
@@ -52,13 +53,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
         {
             get
             {
-                if (myCollection.Count == 0) return Rect.Empty;
-                var rect = myCollection.First().Bounds;
-                foreach (var obj in myCollection)
-                {
-                    rect.Union(obj.Bounds);
-                }
-                return rect;
+                return this.GetBounds();
             }
         }
 

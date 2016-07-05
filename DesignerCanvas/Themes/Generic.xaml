@@ -12,17 +12,35 @@
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
-                        <Border Background="Transparent">
-                            <!-- Enables mouse evnet handling -->
-                            <Canvas x:Name="PART_Canvas">
-                                <!--
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border Background="Blue" ClipToBounds="True">
+                                <!-- Enables mouse evnet handling -->
+                                <Grid>
+                                    <Canvas x:Name="PART_Canvas">
+                                        <!--
                                 Panel elements do not receive mouse or stylus events if a Background
                                 is not defined. If you need to handle mouse or stylus events
                                 but do not want a background for your Panel, use Transparent.
                                 -->
-                                <!--<Button HorizontalAlignment="Left" VerticalAlignment="Top"></Button>-->
-                            </Canvas>
-                        </Border>
+                                        <Button HorizontalAlignment="Left" VerticalAlignment="Top"></Button>
+                                    </Canvas>
+                                    <Canvas x:Name="PART_AdornerCanvas">
+
+                                    </Canvas>
+                                </Grid>
+                            </Border>
+
+                            <ScrollBar Grid.Column="1" Orientation="Vertical" x:Name="PART_VerticalScrollBar" />
+                            <ScrollBar Grid.Row="1" Orientation="Horizontal" x:Name="PART_HorizontalScrollBar" />
+                        </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
@@ -87,7 +105,7 @@
                         <!-- Thumbs for operation, but should be transparent. -->
                         <Grid Opacity="0">
                             <Grid Visibility="{TemplateBinding CanResize, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <!-- ResizeThumb -->
+                                <!-- ResizeThumb -->
                                 <primitive:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 -4 0 0" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
                                 <primitive:ResizeThumb Width="3" Cursor="SizeWE" Margin="-4 0 0 0" VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
                                 <primitive:ResizeThumb Width="3" Cursor="SizeWE" Margin="0 0 -4 0" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
@@ -99,7 +117,7 @@
                             </Grid>
                             <!-- RotateThumb -->
                             <Grid>
-                                    <primitive:RotateThumb Cursor="Cross" Width="10" Height="10" Margin="0,-28,0,0"
+                                <primitive:RotateThumb Cursor="Cross" Width="10" Height="10" Margin="0,-28,0,0"
                                                            VerticalAlignment="Top" HorizontalAlignment="Center" />
                             </Grid>
                         </Grid>
@@ -131,7 +149,8 @@
                                 <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left"
                                            VerticalAlignment="Center" />
                                 <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right"
-                                           VerticalAlignment="Center" /></Grid>
+                                           VerticalAlignment="Center" />
+                            </Grid>
                         </Grid>
                     </Grid>
                 </ControlTemplate>
