@@ -26,7 +26,7 @@ namespace Undefined.DesignerCanvas
 
     }
 
-    public interface ICanvasBoxItem : ICanvasItem
+    public interface IBoxCanvasItem : ICanvasItem
     {
 
         double Width { get; set; }

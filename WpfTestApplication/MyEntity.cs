@@ -13,7 +13,7 @@ namespace WpfTestApplication
     /// <summary>
     /// Custom <see cref="ICanvasItem"/> implementation test.
     /// </summary>
-    class MyEntity : ICanvasItem, INotifyPropertyChanged
+    class MyEntity : IBoxCanvasItem, INotifyPropertyChanged
     {
         private Rect _Bounds;
 

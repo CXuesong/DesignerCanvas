@@ -97,9 +97,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
     {
         private RotateTransform rotateTransform = new RotateTransform();
 
-        public new ICanvasBoxItem AdornedObject => (ICanvasBoxItem) base.AdornedObject;
+        public new IBoxCanvasItem AdornedObject => (IBoxCanvasItem) base.AdornedObject;
 
-        public ResizeRotateAdorner(ICanvasBoxItem adornedObject) : base(adornedObject)
+        public ResizeRotateAdorner(IBoxCanvasItem adornedObject) : base(adornedObject)
         {
             SnapsToDevicePixels = true;
             this.DataContext = adornedObject;
@@ -116,7 +116,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         {
             base.OnAdornedObjectPropertyChanged(propertyName);
             if (ParentCanvas == null) return;
-            if (propertyName == nameof(ICanvasBoxItem.Angle)) OnUpdateLayout();
+            if (propertyName == nameof(IBoxCanvasItem.Angle)) OnUpdateLayout();
         }
 
         protected override void OnUpdateLayout()
@@ -135,9 +135,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
     {
         private RotateTransform rotateTransform = new RotateTransform();
 
-        public new ICanvasBoxItem AdornedObject => (ICanvasBoxItem)base.AdornedObject;
+        public new IBoxCanvasItem AdornedObject => (IBoxCanvasItem)base.AdornedObject;
 
-        public SizeAdorner(ICanvasBoxItem adornedObject) : base(adornedObject)
+        public SizeAdorner(IBoxCanvasItem adornedObject) : base(adornedObject)
         {
             SnapsToDevicePixels = true;
             this.DataContext = adornedObject;
@@ -149,7 +149,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         {
             base.OnAdornedObjectPropertyChanged(propertyName);
             if (ParentCanvas == null) return;
-            if (propertyName == nameof(ICanvasBoxItem.Angle)) OnUpdateLayout();
+            if (propertyName == nameof(IBoxCanvasItem.Angle)) OnUpdateLayout();
         }
 
         protected override void OnUpdateLayout()

@@ -135,7 +135,7 @@ namespace Undefined.DesignerCanvas.Controls
         internal CanvasAdorner GenerateDesigningAdornerFormItem(ICanvasItem obj)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
-            var entity = obj as ICanvasBoxItem;
+            var entity = obj as IBoxCanvasItem;
             var polyLine = obj as IPolyLineCanvasItem;
             var e = new DesigningAdornerGeneratingEventArgs(obj);
             // Initialize defaults.

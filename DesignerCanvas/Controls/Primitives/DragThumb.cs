@@ -89,7 +89,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                 delta = tf.Transform(delta);
                 var minLeft = double.MaxValue;
                 var minTop = double.MaxValue;
-                foreach (var item in designer.SelectedItems.OfType<ICanvasBoxItem>())
+                foreach (var item in designer.SelectedItems.OfType<IBoxCanvasItem>())
                 {
                     var left = item.Left;
                     var top = item.Top;
@@ -98,7 +98,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                 }
                 var deltaHorizontal = Math.Max(-minLeft, delta.X);
                 var deltaVertical = Math.Max(-minTop, delta.Y);
-                foreach (var item in designer.SelectedItems.OfType<ICanvasBoxItem>())
+                foreach (var item in designer.SelectedItems.OfType<IBoxCanvasItem>())
                 {
                     if (item == destItem) continue;
                     item.Left += deltaHorizontal;

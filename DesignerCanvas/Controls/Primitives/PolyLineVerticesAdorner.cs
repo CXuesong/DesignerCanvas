@@ -41,9 +41,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         private void PolyLineVertexThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
             if (parentCanvas == null) return;
-            var z = parentCanvas.Zoom / 100.0;
-            var hc = e.HorizontalChange / z;
-            var vc = e.VerticalChange / z;
+            var z = parentCanvas.Zoom/100.0;
+            var hc = e.HorizontalChange/z;
+            var vc = e.VerticalChange/z;
             var mod = Keyboard.Modifiers;
             PolyLine.Points[VertexIndex] += new Vector(hc, vc);
         }
@@ -55,9 +55,12 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
         internal void RefreshPosition()
         {
+            parentCanvas = DesignerCanvas.FindDesignerCanvas(this);
+            if (parentCanvas == null) return;
+            var z = parentCanvas.Zoom/100.0;
             var p = PolyLine.Points[VertexIndex];
-            SetValue(Canvas.LeftProperty, p.X);
-            SetValue(Canvas.TopProperty, p.Y);
+            SetValue(Canvas.LeftProperty, p.X*z);
+            SetValue(Canvas.TopProperty, p.Y*z);
         }
     }
 
@@ -117,9 +120,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                 thumb.Width = thumb.Height = 8;
                 thumb.Margin = new Thickness(-4, -4, 0, 0);
                 thumb.Cursor = Cursors.Cross;
-                thumb.RefreshPosition();
                 vertexThumbs.Add(thumb);
                 canvas.Children.Add(thumb);
+                thumb.RefreshPosition();
             }
         }
 
@@ -129,7 +132,11 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
             var z = ParentCanvas.Zoom/100.0;
             Left = AdornedObject.Left*z;
             Top = AdornedObject.Top*z;
-            if (vertexThumbs.Count != AdornedObject.Points.Count) ResetThumbs();
+            if (vertexThumbs.Count != AdornedObject.Points.Count)
+                ResetThumbs();
+            else
+                foreach (var t in vertexThumbs)
+                    t.RefreshPosition();
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
         private void RotateThumb_DragStarted(object sender, DragStartedEventArgs e)
         {
-            var destObject = DataContext as ICanvasBoxItem;
+            var destObject = DataContext as IBoxCanvasItem;
             if (destObject == null) return;
             var designer = Controls.DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
@@ -36,7 +36,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
         private void RotateThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            var destObject = DataContext as ICanvasBoxItem;
+            var destObject = DataContext as IBoxCanvasItem;
             if (destObject == null) return;
             var designer = Controls.DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
@@ -46,13 +46,13 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
         private void RotateThumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            var destObject = DataContext as ICanvasBoxItem;
+            var destObject = DataContext as IBoxCanvasItem;
             if (destObject == null) return;
             var designer = Controls.DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
             var mod = Keyboard.Modifiers;
             var deltaAngle = EvalAngle((mod & ModifierKeys.Shift) == ModifierKeys.Shift);
-            foreach (var item in designer.SelectedItems.OfType<ICanvasBoxItem>())
+            foreach (var item in designer.SelectedItems.OfType<IBoxCanvasItem>())
             {
                 if (item != destObject)
                     item.Angle += deltaAngle;

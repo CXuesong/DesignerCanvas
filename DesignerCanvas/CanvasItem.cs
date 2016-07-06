@@ -6,7 +6,7 @@ using System.Windows.Media;
 
 namespace Undefined.DesignerCanvas
 {
-    public class CanvasItem : INotifyPropertyChanged, ICanvasBoxItem, ISizeConstraint
+    public class CanvasItem : INotifyPropertyChanged, IBoxCanvasItem, ISizeConstraint
     {
         private bool _Resizeable = true;
         protected Point _Location;
