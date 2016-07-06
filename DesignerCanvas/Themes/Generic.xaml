@@ -49,22 +49,23 @@
         <!-- Later the invisible thumb may be changed into different shapes -->
         <Rectangle Fill="Transparent" />
     </ControlTemplate>
-    <Style TargetType="local:DesignerCanvasEntityContainer">
+    <Style TargetType="local:DesignerCanvasItemContainer">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type local:DesignerCanvasEntityContainer}">
+                <ControlTemplate TargetType="{x:Type local:DesignerCanvasItemContainer}">
                     <Grid>
-                        <primitives:DragThumb x:Name="PART_DragThumb" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Template="{StaticResource DragThumbTemplate}" />
+                        <primitives:DragThumb x:Name="PART_DragThumb" Template="{StaticResource DragThumbTemplate}" />
                         <ContentPresenter IsHitTestVisible="False" />
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="ClipToBounds" Value="False" />
         <!-- Connect the data object to the Control -->
         <Setter Property="Canvas.Left" Value="{Binding Left}" />
         <Setter Property="Canvas.Top" Value="{Binding Top}" />
-        <Setter Property="Width" Value="{Binding Width}" />
-        <Setter Property="Height" Value="{Binding Height}" />
+        <Setter Property="Width" Value="{Binding Width, FallbackValue=NaN}" />
+        <Setter Property="Height" Value="{Binding Height, FallbackValue=NaN}" />
         <Setter Property="Resizeable" Value="{Binding Resizeable, FallbackValue=True}" />
         <Setter Property="Content" Value="{Binding}" />
         <Setter Property="RenderTransform">
@@ -90,7 +91,16 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style TargetType="{x:Type primitives:ResizeRotateAdorner}">
+    <Style TargetType="primitives:PolyLineVerticesAdorner">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="primitives:PolyLineVerticesAdorner">
+                    <Canvas x:Name="PART_Canvas" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="primitives:ResizeRotateAdorner">
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:ResizeRotateAdorner">
@@ -206,8 +216,28 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <DataTemplate DataType="{x:Type local:CanvasItem}">
+    <DataTemplate DataType="{x:Type local:ImageCanvasItem}">
         <Image Source="{Binding Image}" />
     </DataTemplate>
+    <DataTemplate DataType="{x:Type local:PolyLineCanvasItem}">
+        <primitives:PolyLineCanvasItemPresenter />
+    </DataTemplate>
+    <Style TargetType="primitives:PolyLineCanvasItemPresenter">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="primitives:PolyLineCanvasItemPresenter">
+                    <Grid DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" >
+                        <Path Name="PART_ConnectionPath"
+                              StrokeThickness="2"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              StrokeLineJoin="Round"
+                              SnapsToDevicePixels="True"
+                              Data="{Binding PathGeometry}" Stroke="Navy"/>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
 </ResourceDictionary>
 

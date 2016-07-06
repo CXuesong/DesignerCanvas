@@ -6,18 +6,13 @@ using System.Windows.Media;
 
 namespace Undefined.DesignerCanvas
 {
-    /// <summary>
-    /// Represents an entity (or an object, node, vertex) in the graph or diagram.
-    /// There can be <see cref="Connection"/>s between entities.
-    /// This class can be inherited by user to contain more information.
-    /// </summary>
-    public class CanvasItem : INotifyPropertyChanged, ICanvasItem, ISizeConstraint
+    public class CanvasItem : INotifyPropertyChanged, ICanvasBoxItem, ISizeConstraint
     {
-        public event EventHandler BoundsChanged;
-        private ImageSource _Image;
         private bool _Resizeable = true;
-        private Point _Location;
-        private Size _Size;
+        protected Point _Location;
+        protected Size _Size;
+        private double _Angle;
+        public virtual event EventHandler BoundsChanged;
 
         public Point Location
         {
@@ -33,7 +28,6 @@ namespace Undefined.DesignerCanvas
                 }
             }
         }
-
 
         public Size Size
         {
@@ -102,9 +96,6 @@ namespace Undefined.DesignerCanvas
             }
         }
 
-
-        private double _Angle;
-
         public double Angle
         {
             get { return _Angle; }
@@ -116,27 +107,27 @@ namespace Undefined.DesignerCanvas
             }
         }
 
-        public ImageSource Image
-        {
-            get { return _Image; }
-            set { SetProperty(ref _Image, value); }
-        }
-
         public Rect Bounds
         {
             get
             {
-                var angle = _Angle * Math.PI / 180.0;
+                var angle = _Angle*Math.PI/180.0;
                 var sa = Math.Abs(Math.Abs(angle) < 0.01 ? angle : Math.Sin(angle));
-                var ca = Math.Abs(Math.Abs(angle) < 0.01 ? 1 - angle * angle / 2 : Math.Cos(angle));
-                var centerX = _Location.X + _Size.Width / 2;
-                var centerY = _Location.Y + _Size.Height / 2;
+                var ca = Math.Abs(Math.Abs(angle) < 0.01 ? 1 - angle*angle/2 : Math.Cos(angle));
+                var centerX = _Location.X + _Size.Width/2;
+                var centerY = _Location.Y + _Size.Height/2;
                 // bounding rectangle
-                var width = _Size.Width * ca + _Size.Height * sa;
-                var height = _Size.Width * sa + _Size.Height * ca;
-                return new Rect(centerX - width / 2, centerY - height / 2, width, height);
+                var width = _Size.Width*ca + _Size.Height*sa;
+                var height = _Size.Width*sa + _Size.Height*ca;
+                return new Rect(centerX - width/2, centerY - height/2, width, height);
             }
         }
+
+        public virtual bool Resizeable => _Resizeable;
+
+        public virtual double MinWidth => 10;
+
+        public virtual double MinHeight => 10;
 
         /// <summary>
         /// Determines whether the object is in the specified region.
@@ -150,11 +141,7 @@ namespace Undefined.DesignerCanvas
             return HitTestResult.None;
         }
 
-        public virtual bool Resizeable => _Resizeable;
-
-        #region PropertyNotifications
-
-        public event PropertyChangedEventHandler PropertyChanged;
+        public virtual event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -175,29 +162,48 @@ namespace Undefined.DesignerCanvas
             }
         }
 
-        #endregion
+        protected virtual void OnBoundsChanged()
+        {
+            BoundsChanged?.Invoke(this, EventArgs.Empty);
+        }
 
         public CanvasItem()
         {
 
         }
 
-        public CanvasItem(float left, float top, float width, float height, ImageSource image)
+        public CanvasItem(double left, double top, double width, double height)
         {
             _Location = new Point(left, top);
             _Size = new Size(width, height);
+        }
+    }
+
+    /// <summary>
+    /// Represents an entity (or an object, node, vertex) in the graph or diagram.
+    /// There can be <see cref="Connection"/>s between entities.
+    /// This class can be inherited by user to contain more information.
+    /// </summary>
+    public class ImageCanvasItem : CanvasItem
+    {
+        private ImageSource _Image;
+
+        public ImageSource Image
+        {
+            get { return _Image; }
+            set { SetProperty(ref _Image, value); }
+        }
+
+        public ImageCanvasItem()
+        {
+
+        }
+
+        public ImageCanvasItem(double left, double top, double width, double height, ImageSource image)
+            : base(left, top, width, height)
+        {
             _Image = image;
         }
-
-
-        protected virtual void OnBoundsChanged()
-        {
-            BoundsChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        public virtual double MinWidth => 10;
-
-        public virtual double MinHeight => 10;
     }
 
     /// <summary>

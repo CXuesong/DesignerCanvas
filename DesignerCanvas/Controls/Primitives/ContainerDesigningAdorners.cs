@@ -34,9 +34,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         public static readonly DependencyProperty TopProperty =
             DependencyProperty.Register("Top", typeof(double), typeof(CanvasAdorner), new PropertyMetadata(0.0));
 
-        private Controls.DesignerCanvas _ParentCanvas;
+        private DesignerCanvas _ParentCanvas;
 
-        public Controls.DesignerCanvas ParentCanvas => _ParentCanvas;
+        public DesignerCanvas ParentCanvas => _ParentCanvas;
 
         internal void SetCanvas(Controls.DesignerCanvas canvas)
         {
@@ -97,9 +97,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
     {
         private RotateTransform rotateTransform = new RotateTransform();
 
-        public new ICanvasItem AdornedObject => (ICanvasItem) base.AdornedObject;
+        public new ICanvasBoxItem AdornedObject => (ICanvasBoxItem) base.AdornedObject;
 
-        public ResizeRotateAdorner(ICanvasItem adornedObject) : base(adornedObject)
+        public ResizeRotateAdorner(ICanvasBoxItem adornedObject) : base(adornedObject)
         {
             SnapsToDevicePixels = true;
             this.DataContext = adornedObject;
@@ -116,7 +116,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         {
             base.OnAdornedObjectPropertyChanged(propertyName);
             if (ParentCanvas == null) return;
-            if (propertyName == nameof(ICanvasItem.Angle)) OnUpdateLayout();
+            if (propertyName == nameof(ICanvasBoxItem.Angle)) OnUpdateLayout();
         }
 
         protected override void OnUpdateLayout()
@@ -133,21 +133,34 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
     public class SizeAdorner : CanvasAdorner
     {
-        public SizeAdorner(ICanvasItem adornedObject) : base(adornedObject)
+        private RotateTransform rotateTransform = new RotateTransform();
+
+        public new ICanvasBoxItem AdornedObject => (ICanvasBoxItem)base.AdornedObject;
+
+        public SizeAdorner(ICanvasBoxItem adornedObject) : base(adornedObject)
         {
             SnapsToDevicePixels = true;
             this.DataContext = adornedObject;
+            this.RenderTransform = rotateTransform;
+            this.RenderTransformOrigin = new Point(0.5, 0.5);
+        }
+
+        protected override void OnAdornedObjectPropertyChanged(string propertyName)
+        {
+            base.OnAdornedObjectPropertyChanged(propertyName);
+            if (ParentCanvas == null) return;
+            if (propertyName == nameof(ICanvasBoxItem.Angle)) OnUpdateLayout();
         }
 
         protected override void OnUpdateLayout()
         {
             base.OnUpdateLayout();
-            var bounds = AdornedObject.Bounds;
             var zoom = ParentCanvas.Zoom / 100.0;
-            Left = bounds.Left * zoom;
-            Top = bounds.Top * zoom;
-            Width = bounds.Width * zoom;
-            Height = bounds.Height * zoom;
+            Left = AdornedObject.Left * zoom;
+            Top = AdornedObject.Top * zoom;
+            Width = AdornedObject.Width * zoom;
+            Height = AdornedObject.Height * zoom;
+            rotateTransform.Angle = AdornedObject.Angle;
         }
 
         static SizeAdorner()

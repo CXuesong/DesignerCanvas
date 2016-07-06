@@ -36,11 +36,12 @@ namespace WpfTestApplication
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            var g1 = new CanvasItem(10, 10, 32, 32, LoadImageResource("1.png"));
-            var g2 = new CanvasItem(50, 10, 32, 32, LoadImageResource("2.png")) {Angle = 90};
+            var g1 = new ImageCanvasItem(10, 10, 32, 32, LoadImageResource("1.png"));
+            var g2 = new ImageCanvasItem(50, 10, 32, 32, LoadImageResource("2.png")) {Angle = 90};
             var myG1 = new MyEntity {Bounds = new Rect(100, 10, 20, 20)};
-            var bumpingItem = new CanvasItem(50, 50, 32, 32, LoadImageResource("3.png"));
+            var bumpingItem = new ImageCanvasItem(50, 50, 32, 32, LoadImageResource("3.png"));
             dcvs.Items.AddRange(new ICanvasItem[] {g1, g2, bumpingItem, myG1});
+            dcvs.Items.Add(new PolyLineCanvasItem(new[] {new Point(0, 0), new Point(50, 25), new Point(30,50), }));
             var aniTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(10),
@@ -84,7 +85,7 @@ namespace WpfTestApplication
             {
                 var row = i/columns;
                 var col = i%columns;
-                var obj = new CanvasItem(10 + col * 40, 100 + row * 40, 32, 32,
+                var obj = new ImageCanvasItem(10 + col * 40, 100 + row * 40, 32, 32,
                     LoadImageResource(res[rnd.Next(0, res.Length)]));
                 dcvs.Items.Add(obj);
                 //if (objs.Count > 0 && rnd.NextDouble() < 0.2)

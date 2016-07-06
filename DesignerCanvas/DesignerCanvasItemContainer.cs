@@ -19,7 +19,7 @@ namespace Undefined.DesignerCanvas
     /// </summary>
     [TemplatePart(Name = "PART_Image", Type = typeof(Image))]
     [TemplatePart(Name = "PART_DragThumb", Type = typeof(DragThumb))]
-    public class DesignerCanvasEntityContainer : ContentControl
+    public class DesignerCanvasItemContainer : ContentControl
     {
         public bool IsSelected
         {
@@ -39,7 +39,7 @@ namespace Undefined.DesignerCanvas
         }
 
         public static readonly DependencyProperty ResizeableProperty =
-            DependencyProperty.Register("Resizeable", typeof(bool), typeof(DesignerCanvasEntityContainer), new PropertyMetadata(true));
+            DependencyProperty.Register("Resizeable", typeof(bool), typeof(DesignerCanvasItemContainer), new PropertyMetadata(true));
 
 
         public Controls.DesignerCanvas ParentDesigner => Controls.DesignerCanvas.FindDesignerCanvas(this);
@@ -93,18 +93,18 @@ namespace Undefined.DesignerCanvas
             UpdateDesignerAdorner();
         }
 
-        static DesignerCanvasEntityContainer()
+        static DesignerCanvasItemContainer()
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(DesignerCanvasEntityContainer), new FrameworkPropertyMetadata(typeof(DesignerCanvasEntityContainer)));
-            Selector.IsSelectedProperty.OverrideMetadata(typeof(DesignerCanvasEntityContainer),
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(DesignerCanvasItemContainer), new FrameworkPropertyMetadata(typeof(DesignerCanvasItemContainer)));
+            Selector.IsSelectedProperty.OverrideMetadata(typeof(DesignerCanvasItemContainer),
                 new FrameworkPropertyMetadata(false, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     (sender, e) =>
                     {
-                        var s = (DesignerCanvasEntityContainer)sender;
+                        var s = (DesignerCanvasItemContainer)sender;
                         s.UpdateDesignerAdorner();
                         s.ParentDesigner?.NotifyItemIsSelectedChanged(s);
                     }));
-            FocusableProperty.OverrideMetadata(typeof(DesignerCanvasEntityContainer), new FrameworkPropertyMetadata(true));
+            FocusableProperty.OverrideMetadata(typeof(DesignerCanvasItemContainer), new FrameworkPropertyMetadata(true));
         }
     }
 }

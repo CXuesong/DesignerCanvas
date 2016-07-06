@@ -59,19 +59,22 @@
     <Compile Include="CanvasHelper.cs" />
     <Compile Include="CanvasImageExporter.cs" />
     <Compile Include="Controls\DesignerCanvas.cs" />
-    <Compile Include="DesignerCanvasEntityContainer.cs" />
+    <Compile Include="Controls\Primitives\PolyLineCanvasItemPresenter.cs" />
+    <Compile Include="Controls\Primitives\PolyLineVerticesAdorner.cs" />
+    <Compile Include="DesignerCanvasItemContainer.cs" />
     <Compile Include="CanvasItem.cs" />
     <Compile Include="GraphicalObjectCollection.cs" />
     <Compile Include="HitTestResult.cs" />
     <Compile Include="ICanvasItem.cs" />
+    <Compile Include="IPolyLineCanvasItem.cs" />
     <Compile Include="ObjectPool.cs" />
     <Compile Include="Controls\Primitives\ContainerDesigningAdorners.cs" />
-    <Compile Include="Controls\Primitives\ContainerDesigningDecorator.cs" />
     <Compile Include="Controls\Primitives\DragThumb.cs" />
     <Compile Include="Controls\Primitives\RelativePositionPanel.cs" />
     <Compile Include="Controls\Primitives\ResizeThumb.cs" />
     <Compile Include="Controls\Primitives\RotateThumb.cs" />
     <Compile Include="Controls\Primitives\RubberbandAdorner.cs" />
+    <Compile Include="PolyLineCanvasItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

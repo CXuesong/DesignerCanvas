@@ -29,26 +29,28 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
         private void DragThumb_DragStarted(object sender, DragStartedEventArgs e)
         {
-            var destControl = DataContext as DependencyObject;
-            if (destControl == null) return;
-            var designer = Controls.DesignerCanvas.FindDesignerCanvas(destControl);
+            var destObject = DataContext as ICanvasItem;
+            if (destObject == null) return;
+            var designer = DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
             instantPreview = designer.SelectedItems.Count < InstantPreviewItemsThreshold;
         }
 
         private void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            var destControl = DataContext as FrameworkElement;
-            if (destControl == null) return;
-            var designer = Controls.DesignerCanvas.FindDesignerCanvas(destControl);
+            var destItem = DataContext as ICanvasItem;
+            if (destItem == null) return;
+            var designer = DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
+            var container = designer.ItemContainerGenerator.ContainerFromItem(destItem) as UIElement;
+            if (container == null) return;
             var minLeft = double.MaxValue;
             var minTop = double.MaxValue;
             //var tf = TransformToAncestor(designer);
             var delta = new Point(e.HorizontalChange, e.VerticalChange);
-            var tf = destControl.RenderTransform;
+            var tf = container.RenderTransform;
             if (tf != null) delta = tf.Transform(delta);
-            foreach (var item in designer.SelectedItems.OfType<ICanvasItem>())
+            foreach (var item in designer.SelectedItems)
             {
                 minLeft = Math.Min(item.Left, minLeft);
                 minTop = Math.Min(item.Top, minTop);
@@ -58,7 +60,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
             if (instantPreview)
             {
                 // This operation may be slow.
-                foreach (var item in designer.SelectedItems.OfType<ICanvasItem>())
+                foreach (var item in designer.SelectedItems)
                 {
                     item.Left += deltaX;
                     item.Top += deltaY;
@@ -66,28 +68,28 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
             }
             else
             {
-                var thisItem = (ICanvasItem)designer.ItemContainerGenerator.ItemFromContainer(destControl);
-                thisItem.Left += deltaX;
-                thisItem.Top += deltaY;
+                destItem.Left += deltaX;
+                destItem.Top += deltaY;
             }
             e.Handled = true;
         }
 
         private void DragThumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            var destControl = DataContext as FrameworkElement;
-            if (destControl == null) return;
-            var designer = Controls.DesignerCanvas.FindDesignerCanvas(destControl);
+            var destItem = DataContext as ICanvasItem;
+            if (destItem == null) return;
+            var designer = DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
+            var container = designer.ItemContainerGenerator.ContainerFromItem(destItem) as UIElement;
+            if (container == null) return;
             if (!instantPreview)
             {
                 var tf = TransformToAncestor((Visual)Parent);
                 var delta = new Point(e.HorizontalChange, e.VerticalChange);
                 delta = tf.Transform(delta);
-                var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 var minLeft = double.MaxValue;
                 var minTop = double.MaxValue;
-                foreach (var item in designer.SelectedItems.OfType<ICanvasItem>())
+                foreach (var item in designer.SelectedItems.OfType<ICanvasBoxItem>())
                 {
                     var left = item.Left;
                     var top = item.Top;
@@ -96,9 +98,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                 }
                 var deltaHorizontal = Math.Max(-minLeft, delta.X);
                 var deltaVertical = Math.Max(-minTop, delta.Y);
-                foreach (var item in designer.SelectedItems.OfType<ICanvasItem>())
+                foreach (var item in designer.SelectedItems.OfType<ICanvasBoxItem>())
                 {
-                    if (item == thisItem) continue;
+                    if (item == destItem) continue;
                     item.Left += deltaHorizontal;
                     item.Top += deltaVertical;
                 }

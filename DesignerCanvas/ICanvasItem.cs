@@ -5,6 +5,10 @@ namespace Undefined.DesignerCanvas
 {
     public interface ICanvasItem
     {
+        double Left { get; set; }
+
+        double Top { get; set; }
+
         /// <summary>
         /// Gets the bounding rectangle of the object.
         /// </summary>
@@ -20,19 +24,21 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         HitTestResult HitTest(Rect testRectangle);
 
-        double Left { get; set; }
+    }
 
-        double Top { get; set; }
+    public interface ICanvasBoxItem : ICanvasItem
+    {
 
         double Width { get; set; }
 
         double Height { get; set; }
+
+        bool Resizeable { get; }
 
         /// <summary>
         /// Angle of rotation, in degrees.
         /// </summary>
         double Angle { get; set; }
 
-        bool Resizeable { get; }
     }
 }

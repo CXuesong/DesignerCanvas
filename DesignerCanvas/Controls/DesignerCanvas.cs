@@ -135,11 +135,14 @@ namespace Undefined.DesignerCanvas.Controls
         internal CanvasAdorner GenerateDesigningAdornerFormItem(ICanvasItem obj)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
-            var entity = obj as ICanvasItem;
+            var entity = obj as ICanvasBoxItem;
+            var polyLine = obj as IPolyLineCanvasItem;
             var e = new DesigningAdornerGeneratingEventArgs(obj);
             // Initialize defaults.
             if (entity != null)
                 e.Adorder = new ResizeRotateAdorner(entity);
+            else if (polyLine != null)
+                e.Adorder = new PolyLineVerticesAdorner(polyLine);
             OnDesigningAdornerGenerating(e);
             return e.Adorder;
         }
@@ -529,7 +532,7 @@ namespace Undefined.DesignerCanvas.Controls
             while (element != null)
             {
                 if (element is DesignerCanvas) return true;
-                if (element is DesignerCanvasEntityContainer) return false;
+                if (element is DesignerCanvasItemContainer) return false;
                 element = VisualTreeHelper.GetParent(element);
             }
             return false;
@@ -702,7 +705,7 @@ namespace Undefined.DesignerCanvas.Controls
 
         #region Notifications from Children
 
-        internal void NotifyItemMouseDown(DesignerCanvasEntityContainer container)
+        internal void NotifyItemMouseDown(DesignerCanvasItemContainer container)
         {
             Debug.Assert(container != null);
             //Debug.Print("NotifyItemMouseDown");
@@ -1001,8 +1004,8 @@ namespace Undefined.DesignerCanvas.Controls
         private readonly Dictionary<ICanvasItem, DependencyObject> containerDict =
             new Dictionary<ICanvasItem, DependencyObject>();
 
-        private readonly ObjectPool<DesignerCanvasEntityContainer> entityContainerPool =
-            new ObjectPool<DesignerCanvasEntityContainer>(() => new DesignerCanvasEntityContainer());
+        private readonly ObjectPool<DesignerCanvasItemContainer> entityContainerPool =
+            new ObjectPool<DesignerCanvasItemContainer>(() => new DesignerCanvasItemContainer());
 
         public event EventHandler<ContainerPreparingEventArgs> ContainerPreparing;
 
@@ -1060,9 +1063,9 @@ namespace Undefined.DesignerCanvas.Controls
             var item = ItemFromContainer(container);
             if (item == null) throw new InvalidOperationException("试图回收非列表项目。");
             if (removeContainerDictEntry) containerDict.Remove(item);
-            if (container is DesignerCanvasEntityContainer)
+            if (container is DesignerCanvasItemContainer)
             {
-                entityContainerPool.PutBack((DesignerCanvasEntityContainer) container);
+                entityContainerPool.PutBack((DesignerCanvasItemContainer) container);
             }
             else
             {
