@@ -448,15 +448,20 @@ namespace Undefined.DesignerCanvas.Controls
             // Bottom
             delta = _ExtendRect.Bottom - _ViewPortRect.Bottom;
             if (delta > 0)
+            {
                 SetContainerVisibility(new Rect(_ExtendRect.Left, _ViewPortRect.Bottom, _ExtendRect.Width,
                     delta), false);
+            }
             // Left
             SetContainerVisibility(new Rect(_ExtendRect.Left, _ViewPortRect.Top, _ViewPortRect.Left - _ExtendRect.Left,
                 _ViewPortRect.Height), false);
             // Right
             delta = _ExtendRect.Right - _ViewPortRect.Right;
-            SetContainerVisibility(new Rect(_ViewPortRect.Right, _ViewPortRect.Top,
-                delta, _ViewPortRect.Height), false);
+            if (delta > 0)
+            {
+                SetContainerVisibility(new Rect(_ViewPortRect.Right, _ViewPortRect.Top,
+                    delta, _ViewPortRect.Height), false);
+            }
         }
 
         #endregion
