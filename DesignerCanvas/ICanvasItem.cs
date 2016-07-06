@@ -1,9 +1,9 @@
 using System;
 using System.Windows;
 
-namespace Undefined.DesignerCanvas.ObjectModel
+namespace Undefined.DesignerCanvas
 {
-    public interface IGraphicalObject
+    public interface ICanvasItem
     {
         /// <summary>
         /// Gets the bounding rectangle of the object.
@@ -19,5 +19,20 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// Determines whether the object is in the specified region.
         /// </summary>
         HitTestResult HitTest(Rect testRectangle);
+
+        double Left { get; set; }
+
+        double Top { get; set; }
+
+        double Width { get; set; }
+
+        double Height { get; set; }
+
+        /// <summary>
+        /// Angle of rotation, in degrees.
+        /// </summary>
+        double Angle { get; set; }
+
+        bool Resizeable { get; }
     }
 }

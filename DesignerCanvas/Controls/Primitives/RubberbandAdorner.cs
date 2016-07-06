@@ -1,20 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace Undefined.DesignerCanvas.Primitive
+namespace Undefined.DesignerCanvas.Controls.Primitives
 {
     public class RubberbandAdorner : Adorner
     {
-        private readonly DesignerCanvas _Canvas;
+        private readonly Controls.DesignerCanvas _Canvas;
         private readonly Action<object, Rect> _Callback;
         private readonly RubberbandChrome chrome;
         // Note the adorner layer will not scroll.
@@ -24,7 +19,7 @@ namespace Undefined.DesignerCanvas.Primitive
         private Point _EndPoint;
 
         /// <param name="startPoint">Relative to the adorner layer. Note the adorner layer will not scroll.</param>
-        public RubberbandAdorner(DesignerCanvas canvas, Point startPoint, Action<object, Rect> callback) : base(canvas)
+        public RubberbandAdorner(Controls.DesignerCanvas canvas, Point startPoint, Action<object, Rect> callback) : base(canvas)
         {
             _Canvas = canvas;
             _Callback = callback;
@@ -40,7 +35,14 @@ namespace Undefined.DesignerCanvas.Primitive
             CaptureMouse();
         }
 
-        protected override HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
+        /// <summary>
+        /// Implements <see cref="M:System.Windows.Media.Visual.HitTestCore(System.Windows.Media.PointHitTestParameters)"/> to supply base element hit testing behavior (returning <see cref="T:System.Windows.Media.HitTestResult"/>). 
+        /// </summary>
+        /// <returns>
+        /// Results of the test, including the evaluated point.
+        /// </returns>
+        /// <param name="hitTestParameters">Describes the hit test to perform, including the initial hit point.</param>
+        protected override System.Windows.Media.HitTestResult HitTestCore(PointHitTestParameters hitTestParameters)
         {
             var result = base.HitTestCore(hitTestParameters);
             if (result == null) return new PointHitTestResult(this, hitTestParameters.HitPoint);

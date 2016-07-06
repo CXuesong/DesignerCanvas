@@ -7,16 +7,14 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using Undefined.DesignerCanvas.ObjectModel;
 
-namespace Undefined.DesignerCanvas.Primitive
+namespace Undefined.DesignerCanvas.Controls.Primitives
 {
     public class ResizeThumb : Thumb
     {
         private SizeAdorner sizeAdorner;
 
-        private DesignerCanvas parentCanvas;
+        private Controls.DesignerCanvas parentCanvas;
 
         public ResizeThumb()
         {
@@ -27,8 +25,8 @@ namespace Undefined.DesignerCanvas.Primitive
 
         private void ResizeThumb_DragStarted(object sender, DragStartedEventArgs e)
         {
-            parentCanvas = DesignerCanvas.FindDesignerCanvas(this);
-            var destControl = DataContext as IGraphicalObject;
+            parentCanvas = Controls.DesignerCanvas.FindDesignerCanvas(this);
+            var destControl = DataContext as ICanvasItem;
             if (parentCanvas != null && destControl != null)
             {
                 var adornerLayer = AdornerLayer.GetAdornerLayer(this);
@@ -59,11 +57,11 @@ namespace Undefined.DesignerCanvas.Primitive
             var mod = Keyboard.Modifiers;
             double minLeft, minTop, minDeltaHorizontal, minDeltaVertical;
             // only resize DesignerItems
-            CalculateDragLimits(parentCanvas.SelectedItems.OfType<IEntity>(), out minLeft, out minTop,
+            CalculateDragLimits(parentCanvas.SelectedItems.OfType<ICanvasItem>(), out minLeft, out minTop,
                 out minDeltaHorizontal, out minDeltaVertical);
             var isResizingWidthAndHeight = HorizontalAlignment != HorizontalAlignment.Stretch &&
                                            VerticalAlignment != VerticalAlignment.Stretch;
-            foreach (var item in parentCanvas.SelectedItems.OfType<IEntity>())
+            foreach (var item in parentCanvas.SelectedItems.OfType<ICanvasItem>())
             {
                 Debug.Assert(item != null);
                 double ratio = double.NaN; // Width / Height
@@ -109,7 +107,7 @@ namespace Undefined.DesignerCanvas.Primitive
             e.Handled = true;
         }
 
-        private static void CalculateDragLimits(IEnumerable<IEntity> items, out double minLeft, out double minTop,
+        private static void CalculateDragLimits(IEnumerable<ICanvasItem> items, out double minLeft, out double minTop,
             out double minDeltaHorizontal, out double minDeltaVertical)
         {
             const double DefaultMinSize = 10;

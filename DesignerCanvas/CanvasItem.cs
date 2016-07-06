@@ -1,18 +1,17 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using System.Windows.Media;
 
-namespace Undefined.DesignerCanvas.ObjectModel
+namespace Undefined.DesignerCanvas
 {
     /// <summary>
     /// Represents an entity (or an object, node, vertex) in the graph or diagram.
     /// There can be <see cref="Connection"/>s between entities.
     /// This class can be inherited by user to contain more information.
     /// </summary>
-    public class Entity : INotifyPropertyChanged, IEntity, ISizeConstraint
+    public class CanvasItem : INotifyPropertyChanged, ICanvasItem, ISizeConstraint
     {
         public event EventHandler BoundsChanged;
         private ImageSource _Image;
@@ -127,15 +126,15 @@ namespace Undefined.DesignerCanvas.ObjectModel
         {
             get
             {
-                var angle = _Angle*Math.PI/180.0;
+                var angle = _Angle * Math.PI / 180.0;
                 var sa = Math.Abs(Math.Abs(angle) < 0.01 ? angle : Math.Sin(angle));
                 var ca = Math.Abs(Math.Abs(angle) < 0.01 ? 1 - angle * angle / 2 : Math.Cos(angle));
-                var centerX = _Location.X + _Size.Width/2;
-                var centerY = _Location.Y + _Size.Height/2;
+                var centerX = _Location.X + _Size.Width / 2;
+                var centerY = _Location.Y + _Size.Height / 2;
                 // bounding rectangle
-                var width = _Size.Width*ca + _Size.Height*sa;
-                var height = _Size.Width*sa + _Size.Height*ca;
-                return new Rect(centerX - width/2, centerY - height/2, width, height);
+                var width = _Size.Width * ca + _Size.Height * sa;
+                var height = _Size.Width * sa + _Size.Height * ca;
+                return new Rect(centerX - width / 2, centerY - height / 2, width, height);
             }
         }
 
@@ -152,11 +151,6 @@ namespace Undefined.DesignerCanvas.ObjectModel
         }
 
         public virtual bool Resizeable => _Resizeable;
-
-        /// <summary>
-        /// Gets the collection of the object's connectors.
-        /// </summary>
-        public ConnectorCollection Connectors { get; }
 
         #region PropertyNotifications
 
@@ -183,22 +177,18 @@ namespace Undefined.DesignerCanvas.ObjectModel
 
         #endregion
 
-        public Entity()
+        public CanvasItem()
         {
-            Connectors = new ConnectorCollection(this, 4);
-            Connectors[0].RelativePosition = new Point(0.5, 0);
-            Connectors[1].RelativePosition = new Point(1, 0.5);
-            Connectors[2].RelativePosition = new Point(0.5, 1);
-            Connectors[3].RelativePosition = new Point(0, 0.5);
+
         }
 
-        public Entity(float left, float top, float width, float height, ImageSource image)
-            : this()
+        public CanvasItem(float left, float top, float width, float height, ImageSource image)
         {
             _Location = new Point(left, top);
             _Size = new Size(width, height);
             _Image = image;
         }
+
 
         protected virtual void OnBoundsChanged()
         {
@@ -210,31 +200,8 @@ namespace Undefined.DesignerCanvas.ObjectModel
         public virtual double MinHeight => 10;
     }
 
-    public interface IEntity : IGraphicalObject
-    {
-        double Left { get; set; }
-
-        double Top { get; set; }
-
-        double Width { get; set; }
-
-        double Height { get; set; }
-
-        /// <summary>
-        /// Angle of rotation, in degrees.
-        /// </summary>
-        double Angle { get; set; }
-
-        bool Resizeable { get; }
-
-        /// <summary>
-        /// Gets the collection of the object's connectors.
-        /// </summary>
-        ConnectorCollection Connectors { get; }
-    }
-
     /// <summary>
-    /// Enables size constraint for a specific type of <see cref="IEntity"/> 。
+    /// Enables size constraint for a specific type of <see cref="ICanvasItem"/> 。
     /// </summary>
     public interface ISizeConstraint
     {

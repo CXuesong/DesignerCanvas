@@ -6,21 +6,20 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using Undefined.DesignerCanvas.ObjectModel;
+using Undefined.DesignerCanvas;
 
 namespace WpfTestApplication
 {
     /// <summary>
-    /// Custom <see cref="IEntity"/> implementation test.
+    /// Custom <see cref="ICanvasItem"/> implementation test.
     /// </summary>
-    class MyEntity : IEntity, INotifyPropertyChanged
+    class MyEntity : ICanvasItem, INotifyPropertyChanged
     {
         private Rect _Bounds;
 
         public MyEntity()
         {
-            Connectors = new ConnectorCollection(this, 1);
-            Connectors[0].RelativePosition = new Point(0.5, 0.5);
+
         }
 
         /// <summary>
@@ -99,11 +98,6 @@ namespace WpfTestApplication
         }
 
         public bool Resizeable => false;
-
-        /// <summary>
-        /// Gets the collection of the object's connectors.
-        /// </summary>
-        public ConnectorCollection Connectors { get; }
 
         private double _Angle;
 

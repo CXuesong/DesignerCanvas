@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
-using Undefined.DesignerCanvas.ObjectModel;
 
-namespace Undefined.DesignerCanvas.Primitive
+namespace Undefined.DesignerCanvas.Controls.Primitives
 {
     public class RotateThumb : Thumb
     {
@@ -27,9 +24,9 @@ namespace Undefined.DesignerCanvas.Primitive
 
         private void RotateThumb_DragStarted(object sender, DragStartedEventArgs e)
         {
-            var destObject = DataContext as IEntity;
+            var destObject = DataContext as ICanvasItem;
             if (destObject == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(this);
+            var designer = Controls.DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
             var container = designer.ItemContainerGenerator.ContainerFromItem(destObject) as FrameworkElement;
             if (container == null) return;
@@ -41,9 +38,9 @@ namespace Undefined.DesignerCanvas.Primitive
 
         private void RotateThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            var destObject = DataContext as IEntity;
+            var destObject = DataContext as ICanvasItem;
             if (destObject == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(this);
+            var designer = Controls.DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
             var mod = Keyboard.Modifiers;
             destObject.Angle = initialAngle + EvalAngle((mod & ModifierKeys.Shift) == ModifierKeys.Shift);
@@ -51,13 +48,13 @@ namespace Undefined.DesignerCanvas.Primitive
 
         private void RotateThumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            var destObject = DataContext as IEntity;
+            var destObject = DataContext as ICanvasItem;
             if (destObject == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(this);
+            var designer = Controls.DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
             var mod = Keyboard.Modifiers;
             var deltaAngle = EvalAngle((mod & ModifierKeys.Shift) == ModifierKeys.Shift);
-            foreach (var item in designer.SelectedItems.OfType<IEntity>())
+            foreach (var item in designer.SelectedItems.OfType<ICanvasItem>())
             {
                 if (item != destObject)
                     item.Angle += deltaAngle;

@@ -9,13 +9,13 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using Undefined.DesignerCanvas.ObjectModel;
-using Undefined.DesignerCanvas.Primitive;
+using Undefined.DesignerCanvas.Controls;
+using Undefined.DesignerCanvas.Controls.Primitives;
 
 namespace Undefined.DesignerCanvas
 {
     /// <summary>
-    /// Used for rendering <see cref="Entity"/> in <see cref="DesignerCanvas" />.
+    /// Used for rendering <see cref="CanvasItem"/> in <see cref="DesignerCanvas" />.
     /// </summary>
     [TemplatePart(Name = "PART_Image", Type = typeof(Image))]
     [TemplatePart(Name = "PART_DragThumb", Type = typeof(DragThumb))]
@@ -42,7 +42,7 @@ namespace Undefined.DesignerCanvas
             DependencyProperty.Register("Resizeable", typeof(bool), typeof(DesignerCanvasEntityContainer), new PropertyMetadata(true));
 
 
-        public DesignerCanvas ParentDesigner => DesignerCanvas.FindDesignerCanvas(this);
+        public Controls.DesignerCanvas ParentDesigner => Controls.DesignerCanvas.FindDesignerCanvas(this);
 
         #region Interactions
 
@@ -60,7 +60,7 @@ namespace Undefined.DesignerCanvas
         private void UpdateDesignerAdorner()
         {
             var pd = ParentDesigner;
-            var obj = DataContext as IEntity;
+            var obj = DataContext as ICanvasItem;
             if (!IsSelected || pd == null || obj == null)
             {
                 if (designerAdorner != null)

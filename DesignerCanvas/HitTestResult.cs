@@ -1,4 +1,4 @@
-namespace Undefined.DesignerCanvas.ObjectModel
+namespace Undefined.DesignerCanvas
 {
     public enum HitTestResult
     {

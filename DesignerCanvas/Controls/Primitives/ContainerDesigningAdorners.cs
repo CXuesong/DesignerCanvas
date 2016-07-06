@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using Undefined.DesignerCanvas.ObjectModel;
 
-namespace Undefined.DesignerCanvas.Primitive
+namespace Undefined.DesignerCanvas.Controls.Primitives
 {
     /// <summary>
     /// Represents a adorder to a specific CanvasItem.
@@ -21,7 +14,7 @@ namespace Undefined.DesignerCanvas.Primitive
     /// <remarks>This  class is used becaused it won't zoom as CanvasEntityItem is being zoomed.</remarks>
     public class CanvasAdorner : Control
     {
-        public IGraphicalObject AdornedObject { get; }
+        public ICanvasItem AdornedObject { get; }
 
         public double Left
         {
@@ -41,11 +34,11 @@ namespace Undefined.DesignerCanvas.Primitive
         public static readonly DependencyProperty TopProperty =
             DependencyProperty.Register("Top", typeof(double), typeof(CanvasAdorner), new PropertyMetadata(0.0));
 
-        private DesignerCanvas _ParentCanvas;
+        private Controls.DesignerCanvas _ParentCanvas;
 
-        public DesignerCanvas ParentCanvas => _ParentCanvas;
+        public Controls.DesignerCanvas ParentCanvas => _ParentCanvas;
 
-        internal void SetCanvas(DesignerCanvas canvas)
+        internal void SetCanvas(Controls.DesignerCanvas canvas)
         {
             if (_ParentCanvas != null) _ParentCanvas.ZoomChanged -= ParentCanvas_ZoomChanged;
             _ParentCanvas = canvas;
@@ -59,7 +52,7 @@ namespace Undefined.DesignerCanvas.Primitive
             OnUpdateLayout();
         }
 
-        public CanvasAdorner(IGraphicalObject adornedObject)
+        public CanvasAdorner(ICanvasItem adornedObject)
         {
             if (adornedObject == null) throw new ArgumentNullException(nameof(adornedObject));
             AdornedObject = adornedObject;
@@ -104,9 +97,9 @@ namespace Undefined.DesignerCanvas.Primitive
     {
         private RotateTransform rotateTransform = new RotateTransform();
 
-        public new IEntity AdornedObject => (IEntity) base.AdornedObject;
+        public new ICanvasItem AdornedObject => (ICanvasItem) base.AdornedObject;
 
-        public ResizeRotateAdorner(IEntity adornedObject) : base(adornedObject)
+        public ResizeRotateAdorner(ICanvasItem adornedObject) : base(adornedObject)
         {
             SnapsToDevicePixels = true;
             this.DataContext = adornedObject;
@@ -123,7 +116,7 @@ namespace Undefined.DesignerCanvas.Primitive
         {
             base.OnAdornedObjectPropertyChanged(propertyName);
             if (ParentCanvas == null) return;
-            if (propertyName == nameof(IEntity.Angle)) OnUpdateLayout();
+            if (propertyName == nameof(ICanvasItem.Angle)) OnUpdateLayout();
         }
 
         protected override void OnUpdateLayout()
@@ -140,7 +133,7 @@ namespace Undefined.DesignerCanvas.Primitive
 
     public class SizeAdorner : CanvasAdorner
     {
-        public SizeAdorner(IGraphicalObject adornedObject) : base(adornedObject)
+        public SizeAdorner(ICanvasItem adornedObject) : base(adornedObject)
         {
             SnapsToDevicePixels = true;
             this.DataContext = adornedObject;

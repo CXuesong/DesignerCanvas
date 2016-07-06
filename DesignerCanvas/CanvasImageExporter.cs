@@ -29,7 +29,7 @@ namespace Undefined.DesignerCanvas
             Dispatcher.PushFrame(frame);
         }
 
-        public static BitmapSource CreateImage(DesignerCanvas canvas, double dpiX, double dpiY)
+        public static BitmapSource CreateImage(Controls.DesignerCanvas canvas, double dpiX, double dpiY)
         {
             var image = new RenderTargetBitmap((int) (canvas.ExtentWidth*dpiX/WpfDpi),
                 (int) (canvas.ExtentHeight*dpiX/WpfDpi), dpiX, dpiY,
@@ -115,7 +115,7 @@ namespace Undefined.DesignerCanvas
             return null;
         }
 
-        public static void ExportImage(DesignerCanvas canvas, Stream s, BitmapEncoder encoder, double dpiX, double dpiY)
+        public static void ExportImage(Controls.DesignerCanvas canvas, Stream s, BitmapEncoder encoder, double dpiX, double dpiY)
         {
             if (canvas == null) throw new ArgumentNullException(nameof(canvas));
             if (s == null) throw new ArgumentNullException(nameof(s));
@@ -125,7 +125,7 @@ namespace Undefined.DesignerCanvas
             encoder.Save(s);
         }
 
-        public static void ExportImage(DesignerCanvas canvas, string fileName, double dpiX, double dpiY)
+        public static void ExportImage(Controls.DesignerCanvas canvas, string fileName, double dpiX, double dpiY)
         {
             if (canvas == null) throw new ArgumentNullException(nameof(canvas));
             if (string.IsNullOrEmpty(fileName))

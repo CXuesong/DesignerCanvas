@@ -2,13 +2,13 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="clr-namespace:Undefined.DesignerCanvas"
-    xmlns:primitive="clr-namespace:Undefined.DesignerCanvas.Primitive"
-    xmlns:om="clr-namespace:Undefined.DesignerCanvas.ObjectModel">
+    xmlns:controls="clr-namespace:Undefined.DesignerCanvas.Controls"
+    xmlns:primitives="clr-namespace:Undefined.DesignerCanvas.Controls.Primitives">
     <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-    <Style TargetType="{x:Type local:DesignerCanvas}">
+    <Style TargetType="{x:Type controls:DesignerCanvas}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type local:DesignerCanvas}">
+                <ControlTemplate TargetType="{x:Type controls:DesignerCanvas}">
                     <Border Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
@@ -45,7 +45,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <ControlTemplate x:Key="DragThumbTemplate" TargetType="primitive:DragThumb">
+    <ControlTemplate x:Key="DragThumbTemplate" TargetType="primitives:DragThumb">
         <!-- Later the invisible thumb may be changed into different shapes -->
         <Rectangle Fill="Transparent" />
     </ControlTemplate>
@@ -54,7 +54,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type local:DesignerCanvasEntityContainer}">
                     <Grid>
-                        <primitive:DragThumb x:Name="PART_DragThumb" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Template="{StaticResource DragThumbTemplate}" />
+                        <primitives:DragThumb x:Name="PART_DragThumb" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Template="{StaticResource DragThumbTemplate}" />
                         <ContentPresenter IsHitTestVisible="False" />
                     </Grid>
                 </ControlTemplate>
@@ -90,27 +90,27 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style TargetType="{x:Type primitive:ResizeRotateAdorner}">
+    <Style TargetType="{x:Type primitives:ResizeRotateAdorner}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="primitive:ResizeRotateAdorner">
+                <ControlTemplate TargetType="primitives:ResizeRotateAdorner">
                     <Grid>
                         <!-- Thumbs for operation, but should be transparent. -->
                         <Grid Opacity="0">
                             <Grid>
                                 <!-- ResizeThumb -->
-                                <primitive:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 -4 0 0" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
-                                <primitive:ResizeThumb Width="3" Cursor="SizeWE" Margin="-4 0 0 0" VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
-                                <primitive:ResizeThumb Width="3" Cursor="SizeWE" Margin="0 0 -4 0" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
-                                <primitive:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 0 0 -4" VerticalAlignment="Bottom"  HorizontalAlignment="Stretch"/>
-                                <primitive:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="-6 -6 0 0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
-                                <primitive:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="0 -6 -6 0" VerticalAlignment="Top" HorizontalAlignment="Right"/>
-                                <primitive:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="-6 0 0 -6" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
-                                <primitive:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="0 0 -6 -6" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+                                <primitives:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 -4 0 0" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
+                                <primitives:ResizeThumb Width="3" Cursor="SizeWE" Margin="-4 0 0 0" VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
+                                <primitives:ResizeThumb Width="3" Cursor="SizeWE" Margin="0 0 -4 0" VerticalAlignment="Stretch" HorizontalAlignment="Right"/>
+                                <primitives:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 0 0 -4" VerticalAlignment="Bottom"  HorizontalAlignment="Stretch"/>
+                                <primitives:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="-6 -6 0 0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                                <primitives:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="0 -6 -6 0" VerticalAlignment="Top" HorizontalAlignment="Right"/>
+                                <primitives:ResizeThumb Width="7" Height="7" Cursor="SizeNESW" Margin="-6 0 0 -6" VerticalAlignment="Bottom" HorizontalAlignment="Left"/>
+                                <primitives:ResizeThumb Width="7" Height="7" Cursor="SizeNWSE" Margin="0 0 -6 -6" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
                             </Grid>
                             <!-- RotateThumb -->
                             <Grid>
-                                <primitive:RotateThumb Cursor="Cross" Width="10" Height="10" Margin="0,-28,0,0"
+                                <primitives:RotateThumb Cursor="Cross" Width="10" Height="10" Margin="0,-28,0,0"
                                                            VerticalAlignment="Top" HorizontalAlignment="Center" />
                             </Grid>
                         </Grid>
@@ -150,10 +150,10 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style TargetType="{x:Type primitive:SizeAdorner}">
+    <Style TargetType="{x:Type primitives:SizeAdorner}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="primitive:SizeAdorner">
+                <ControlTemplate TargetType="primitives:SizeAdorner">
                     <!--- 调整控件大小时显示大小值。 -->
                     <Grid>
                         <Path Stroke="Red"
@@ -193,10 +193,10 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style TargetType="primitive:RubberbandChrome">
+    <Style TargetType="primitives:RubberbandChrome">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="primitive:RubberbandChrome">
+                <ControlTemplate TargetType="primitives:RubberbandChrome">
                     <Rectangle Stroke="{DynamicResource {x:Static SystemColors.HighlightBrushKey}}" >
                         <Rectangle.Fill>
                             <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}" Opacity="0.3"/>
@@ -206,31 +206,7 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style TargetType="local:DesignerCanvasConnection">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="local:DesignerCanvasConnection">
-                    <Grid DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" >
-                        <Path Name="PART_ConnectionPath"
-                              StrokeThickness="2"
-                              StrokeStartLineCap="Round"
-                              StrokeEndLineCap="Round"
-                              StrokeLineJoin="Round"
-                              SnapsToDevicePixels="True"
-                              Data="{Binding PathGeometry}" Stroke="Navy"/>
-                        <!--<Canvas.Effect>
-                            <DropShadowEffect Color="Gray" Direction="315" ShadowDepth="10" Opacity="0.1"/>
-                        </Canvas.Effect>-->
-                    </Grid>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="SourcePoint" Value="{Binding SourcePosition}" />
-        <Setter Property="SinkPoint" Value="{Binding SinkPosition}" />
-        <Setter Property="SourceDirection" Value="{Binding SourceDirection}" />
-        <Setter Property="SinkDirection" Value="{Binding SinkDirection}" />
-    </Style>
-    <DataTemplate DataType="{x:Type om:Entity}">
+    <DataTemplate DataType="{x:Type local:CanvasItem}">
         <Image Source="{Binding Image}" />
     </DataTemplate>
 </ResourceDictionary>

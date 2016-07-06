@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Undefined.DesignerCanvas.Primitive
+namespace Undefined.DesignerCanvas.Controls.Primitives
 {
     public class RelativePositionPanel : Panel
     {

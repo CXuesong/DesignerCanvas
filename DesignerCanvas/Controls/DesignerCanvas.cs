@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Automation.Peers;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
@@ -16,24 +12,21 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using Undefined.DesignerCanvas.ObjectModel;
-using Undefined.DesignerCanvas.Primitive;
+using Undefined.DesignerCanvas.Controls.Primitives;
 
-namespace Undefined.DesignerCanvas
+namespace Undefined.DesignerCanvas.Controls
 {
 
     public class DesigningAdornerGeneratingEventArgs : EventArgs
     {
-        public DesigningAdornerGeneratingEventArgs(IGraphicalObject item)
+        public DesigningAdornerGeneratingEventArgs(ICanvasItem item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             Item = item;
         }
 
-        public IGraphicalObject Item { get; }
+        public ICanvasItem Item { get; }
 
         public CanvasAdorner Adorder { get; set; }
 
@@ -139,10 +132,10 @@ namespace Undefined.DesignerCanvas
             DesigningAdornerGenerating?.Invoke(this, e);
         }
 
-        internal CanvasAdorner GenerateDesigningAdornerFormItem(IGraphicalObject obj)
+        internal CanvasAdorner GenerateDesigningAdornerFormItem(ICanvasItem obj)
         {
             if (obj == null) throw new ArgumentNullException(nameof(obj));
-            var entity = obj as IEntity;
+            var entity = obj as ICanvasItem;
             var e = new DesigningAdornerGeneratingEventArgs(obj);
             // Initialize defaults.
             if (entity != null)
@@ -191,7 +184,7 @@ namespace Undefined.DesignerCanvas
                         {
                             foreach (var item in e.OldItems)
                             {
-                                var container = _ItemContainerGenerator.ContainerFromItem((IGraphicalObject) item);
+                                var container = _ItemContainerGenerator.ContainerFromItem((ICanvasItem) item);
                                 container?.SetValue(Selector.IsSelectedProperty, false);
                             }
                         }
@@ -199,7 +192,7 @@ namespace Undefined.DesignerCanvas
                         {
                             foreach (var item in e.NewItems)
                             {
-                                var container = _ItemContainerGenerator.ContainerFromItem((IGraphicalObject) item);
+                                var container = _ItemContainerGenerator.ContainerFromItem((ICanvasItem) item);
                                 container?.SetValue(Selector.IsSelectedProperty, true);
                             }
                         }
@@ -242,7 +235,7 @@ namespace Undefined.DesignerCanvas
                 case NotifyCollectionChangedAction.Replace:
                     if (e.OldItems != null)
                     {
-                        foreach (IGraphicalObject item in e.OldItems)
+                        foreach (ICanvasItem item in e.OldItems)
                         {
                             item.BoundsChanged -= Item_BoundsChanged;
                             SetContainerVisibility(item, false);
@@ -251,7 +244,7 @@ namespace Undefined.DesignerCanvas
                     }
                     if (e.NewItems != null)
                     {
-                        foreach (IGraphicalObject item in e.NewItems)
+                        foreach (ICanvasItem item in e.NewItems)
                         {
                             if (item == null) continue;
                             if (_ViewPortRect.IntersectsWith(item.Bounds))
@@ -261,7 +254,7 @@ namespace Undefined.DesignerCanvas
                             item.BoundsChanged += Item_BoundsChanged;
                         }
                     }
-                    UnionExtendRect(e.NewItems.Cast<IGraphicalObject>().GetBounds());
+                    UnionExtendRect(e.NewItems.Cast<ICanvasItem>().GetBounds());
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     _ItemContainerGenerator.RecycleAll();
@@ -278,7 +271,7 @@ namespace Undefined.DesignerCanvas
 
         private void Item_BoundsChanged(object sender, EventArgs e)
         {
-            var obj = (IGraphicalObject) sender;
+            var obj = (ICanvasItem) sender;
             // Bring the container into view if the bounds has been moved into viewport, vice versa.
             SetContainerVisibility(obj, _ViewPortRect.IntersectsWith(obj.Bounds));
             UnionExtendRect(obj.Bounds);
@@ -396,7 +389,7 @@ namespace Undefined.DesignerCanvas
                     double.MaxValue, double.MaxValue), false);
         }
 
-        private void SetContainerVisibility(IGraphicalObject item, bool visible)
+        private void SetContainerVisibility(ICanvasItem item, bool visible)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             if (visible)
@@ -537,7 +530,6 @@ namespace Undefined.DesignerCanvas
             {
                 if (element is DesignerCanvas) return true;
                 if (element is DesignerCanvasEntityContainer) return false;
-                if (element is DesignerCanvasConnection) return false;
                 element = VisualTreeHelper.GetParent(element);
             }
             return false;
@@ -594,7 +586,7 @@ namespace Undefined.DesignerCanvas
             }
             else
             {
-                var newItems = new HashSet<IGraphicalObject>(Items.ObjectsInRegion(rect));
+                var newItems = new HashSet<ICanvasItem>(Items.ObjectsInRegion(rect));
                 if ((mod & ModifierKeys.Shift) == ModifierKeys.Shift)
                 {
                     // Switch
@@ -1006,14 +998,11 @@ namespace Undefined.DesignerCanvas
             DependencyProperty.RegisterAttached("DataItem", typeof (object), typeof (GraphicalObjectContainerGenerator),
                 new FrameworkPropertyMetadata(null));
 
-        private readonly Dictionary<IGraphicalObject, DependencyObject> containerDict =
-            new Dictionary<IGraphicalObject, DependencyObject>();
+        private readonly Dictionary<ICanvasItem, DependencyObject> containerDict =
+            new Dictionary<ICanvasItem, DependencyObject>();
 
         private readonly ObjectPool<DesignerCanvasEntityContainer> entityContainerPool =
             new ObjectPool<DesignerCanvasEntityContainer>(() => new DesignerCanvasEntityContainer());
-
-        private readonly ObjectPool<DesignerCanvasConnection> connectionontainerPool =
-            new ObjectPool<DesignerCanvasConnection>(() => new DesignerCanvasConnection());
 
         public event EventHandler<ContainerPreparingEventArgs> ContainerPreparing;
 
@@ -1028,43 +1017,29 @@ namespace Undefined.DesignerCanvas
         public int MaxPooledContainers
         {
             get { return entityContainerPool.Capacity; }
-            set { entityContainerPool.Capacity = connectionontainerPool.Capacity = value; }
+            set { entityContainerPool.Capacity = value; }
         }
 
         /// <summary>
         /// Gets a new or pooled container for a specific Entity.
         /// </summary>
-        public DependencyObject CreateContainer(IGraphicalObject item)
+        public DependencyObject CreateContainer(ICanvasItem item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
-            DependencyObject doContainer;
-            if (item is IEntity)
-            {
-                var container = entityContainerPool.Take();
-                PrepareContainer(container, item);
-                doContainer = container;
-            }
-            else if (item is IConnection)
-            {
-                var container = connectionontainerPool.Take();
-                PrepareContainer(container, item);
-                doContainer = container;
-            }
-            else
-            {
-                throw new ArgumentException(null, nameof(item));
-            }
+            var container = entityContainerPool.Take();
+            PrepareContainer(container, item);
+            var doContainer = container;
             containerDict.Add(item, doContainer);
             return doContainer;
         }
 
-        private void PrepareContainer(DependencyObject container, IGraphicalObject item)
+        private void PrepareContainer(DependencyObject container, ICanvasItem item)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
             container.SetValue(DataItemProperty, item);
             // Ensure a connection line won't cover any entity.
             container.SetValue(FrameworkElement.DataContextProperty, item);
-            container.SetValue(Panel.ZIndexProperty, item is IEntity ? 10 : -10);
+            container.SetValue(Panel.ZIndexProperty, 10);
             OnContainerPreparing(new ContainerPreparingEventArgs(container, item));
         }
 
@@ -1088,9 +1063,6 @@ namespace Undefined.DesignerCanvas
             if (container is DesignerCanvasEntityContainer)
             {
                 entityContainerPool.PutBack((DesignerCanvasEntityContainer) container);
-            } else if (container is DesignerCanvasConnection)
-            {
-                connectionontainerPool.PutBack((DesignerCanvasConnection) container);
             }
             else
             {
@@ -1109,7 +1081,7 @@ namespace Undefined.DesignerCanvas
         /// Gets the container, if generated, for a specific item.
         /// </summary>
         /// <returns></returns>
-        public DependencyObject ContainerFromItem(IGraphicalObject item)
+        public DependencyObject ContainerFromItem(ICanvasItem item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             DependencyObject container;
@@ -1122,12 +1094,12 @@ namespace Undefined.DesignerCanvas
         /// Gets the corresponding item, if exists, for a specific container.
         /// </summary>
         /// <returns></returns>
-        public IGraphicalObject ItemFromContainer(DependencyObject container)
+        public ICanvasItem ItemFromContainer(DependencyObject container)
         {
             if (container == null) throw new ArgumentNullException(nameof(container));
             var localValue = container.ReadLocalValue(DataItemProperty);
             if (localValue == DependencyProperty.UnsetValue) localValue = null;
-            return (IGraphicalObject) localValue;
+            return (ICanvasItem) localValue;
         }
 
         protected virtual void OnContainerPreparing(ContainerPreparingEventArgs e)
@@ -1139,9 +1111,9 @@ namespace Undefined.DesignerCanvas
     public class ContainerPreparingEventArgs : EventArgs
     {
         public DependencyObject Container { get; }
-        public IGraphicalObject DataContext { get; }
+        public ICanvasItem DataContext { get; }
 
-        public ContainerPreparingEventArgs(DependencyObject container, IGraphicalObject dataContext)
+        public ContainerPreparingEventArgs(DependencyObject container, ICanvasItem dataContext)
         {
             Container = container;
             DataContext = dataContext;

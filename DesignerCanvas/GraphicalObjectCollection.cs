@@ -4,34 +4,33 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 
-namespace Undefined.DesignerCanvas.ObjectModel
+namespace Undefined.DesignerCanvas
 {
     /// <summary>
-    /// Provides basic operations for a collection of <see cref="Entity"/>s & <see cref="Connection"/>s.
+    /// Provides basic operations for a collection of <see cref="CanvasItem"/>s & <see cref="Connection"/>s.
     /// The implementation of this class may be subject to change for a better performance. (E.g. R-Tree)
     /// Thus for now only foundamental operations are provided, and this class doesn't implement <see cref="IList"/>.
     /// </summary>
-    public class GraphicalObjectCollection : ICollection<IGraphicalObject>, INotifyPropertyChanged, INotifyCollectionChanged
+    public class GraphicalObjectCollection : ICollection<ICanvasItem>, INotifyPropertyChanged, INotifyCollectionChanged
     {
-        private readonly HashSet<IGraphicalObject> myCollection = new HashSet<IGraphicalObject>();
+        private readonly HashSet<ICanvasItem> myCollection = new HashSet<ICanvasItem>();
 
         /// <summary>
-        /// Gets all <see cref="IGraphicalObject"/> contained in the specified rectangle region.
+        /// Gets all <see cref="ICanvasItem"/> contained in the specified rectangle region.
         /// </summary>
-        public IEnumerable<IGraphicalObject> ObjectsInRegion(Rect bounds)
+        public IEnumerable<ICanvasItem> ObjectsInRegion(Rect bounds)
         {
             return ObjectsInRegion(bounds, ItemSelectionOptions.None);
         }
 
         /// <summary>
-        /// Gets all <see cref="IGraphicalObject"/> contained in or intersecting with the specified rectangle region.
+        /// Gets all <see cref="ICanvasItem"/> contained in or intersecting with the specified rectangle region.
         /// </summary>
-        public IEnumerable<IGraphicalObject> ObjectsInRegion(Rect bounds, ItemSelectionOptions options)
+        public IEnumerable<ICanvasItem> ObjectsInRegion(Rect bounds, ItemSelectionOptions options)
         {
-            if (bounds.IsEmpty || bounds.Width == 0 || bounds.Height == 0) return Enumerable.Empty<IGraphicalObject>();
+            if (bounds.IsEmpty || bounds.Width == 0 || bounds.Height == 0) return Enumerable.Empty<ICanvasItem>();
             var query = ((options & ItemSelectionOptions.IncludePartialSelection) == ItemSelectionOptions.IncludePartialSelection)
                 ? myCollection.Where(obj => bounds.IntersectsWith(obj.Bounds))
                 : myCollection.Where(obj => bounds.Contains(obj.Bounds));
@@ -58,7 +57,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
         }
 
         #region ICollection
-        public IEnumerator<IGraphicalObject> GetEnumerator()
+        public IEnumerator<ICanvasItem> GetEnumerator()
             => myCollection.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -68,7 +67,7 @@ namespace Undefined.DesignerCanvas.ObjectModel
         /// 向集合添加一个新项目。
         /// </summary>
         /// <param name="item">不可为<c>null</c>。</param>
-        public void Add(IGraphicalObject item)
+        public void Add(ICanvasItem item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             myCollection.Add(item);
@@ -77,10 +76,10 @@ namespace Undefined.DesignerCanvas.ObjectModel
             OnPropertyChanged("Item[]");
         }
 
-        public void AddRange(IEnumerable<IGraphicalObject> items)
+        public void AddRange(IEnumerable<ICanvasItem> items)
         {
             const double batchNotificationItems = 128;
-            var tempList = new List<IGraphicalObject>();
+            var tempList = new List<ICanvasItem>();
             foreach (var obj in items)
             {
                 myCollection.Add(obj);
@@ -108,13 +107,13 @@ namespace Undefined.DesignerCanvas.ObjectModel
             OnPropertyChanged("Item[]");
         }
 
-        public bool Contains(IGraphicalObject item)
+        public bool Contains(ICanvasItem item)
             => myCollection.Contains(item);
 
-        public void CopyTo(IGraphicalObject[] array, int arrayIndex)
+        public void CopyTo(ICanvasItem[] array, int arrayIndex)
             => myCollection.CopyTo(array, arrayIndex);
 
-        public bool Remove(IGraphicalObject item)
+        public bool Remove(ICanvasItem item)
         {
             // NOTE: this is an O(n) operation!
             var result = myCollection.Remove(item);

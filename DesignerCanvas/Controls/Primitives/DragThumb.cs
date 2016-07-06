@@ -1,16 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using System.Windows.Documents;
 using System.Windows.Media;
-using Undefined.DesignerCanvas.ObjectModel;
 
-namespace Undefined.DesignerCanvas.Primitive
+namespace Undefined.DesignerCanvas.Controls.Primitives
 {
     /// <summary>
     /// Used for drag &amp; moving objects on the canvas.
@@ -37,7 +31,7 @@ namespace Undefined.DesignerCanvas.Primitive
         {
             var destControl = DataContext as DependencyObject;
             if (destControl == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
+            var designer = Controls.DesignerCanvas.FindDesignerCanvas(destControl);
             if (designer == null) return;
             instantPreview = designer.SelectedItems.Count < InstantPreviewItemsThreshold;
         }
@@ -46,7 +40,7 @@ namespace Undefined.DesignerCanvas.Primitive
         {
             var destControl = DataContext as FrameworkElement;
             if (destControl == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
+            var designer = Controls.DesignerCanvas.FindDesignerCanvas(destControl);
             if (designer == null) return;
             var minLeft = double.MaxValue;
             var minTop = double.MaxValue;
@@ -54,7 +48,7 @@ namespace Undefined.DesignerCanvas.Primitive
             var delta = new Point(e.HorizontalChange, e.VerticalChange);
             var tf = destControl.RenderTransform;
             if (tf != null) delta = tf.Transform(delta);
-            foreach (var item in designer.SelectedItems.OfType<IEntity>())
+            foreach (var item in designer.SelectedItems.OfType<ICanvasItem>())
             {
                 minLeft = Math.Min(item.Left, minLeft);
                 minTop = Math.Min(item.Top, minTop);
@@ -64,7 +58,7 @@ namespace Undefined.DesignerCanvas.Primitive
             if (instantPreview)
             {
                 // This operation may be slow.
-                foreach (var item in designer.SelectedItems.OfType<IEntity>())
+                foreach (var item in designer.SelectedItems.OfType<ICanvasItem>())
                 {
                     item.Left += deltaX;
                     item.Top += deltaY;
@@ -72,7 +66,7 @@ namespace Undefined.DesignerCanvas.Primitive
             }
             else
             {
-                var thisItem = (IEntity)designer.ItemContainerGenerator.ItemFromContainer(destControl);
+                var thisItem = (ICanvasItem)designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 thisItem.Left += deltaX;
                 thisItem.Top += deltaY;
             }
@@ -83,7 +77,7 @@ namespace Undefined.DesignerCanvas.Primitive
         {
             var destControl = DataContext as FrameworkElement;
             if (destControl == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
+            var designer = Controls.DesignerCanvas.FindDesignerCanvas(destControl);
             if (designer == null) return;
             if (!instantPreview)
             {
@@ -93,7 +87,7 @@ namespace Undefined.DesignerCanvas.Primitive
                 var thisItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
                 var minLeft = double.MaxValue;
                 var minTop = double.MaxValue;
-                foreach (var item in designer.SelectedItems.OfType<IEntity>())
+                foreach (var item in designer.SelectedItems.OfType<ICanvasItem>())
                 {
                     var left = item.Left;
                     var top = item.Top;
@@ -102,7 +96,7 @@ namespace Undefined.DesignerCanvas.Primitive
                 }
                 var deltaHorizontal = Math.Max(-minLeft, delta.X);
                 var deltaVertical = Math.Max(-minTop, delta.Y);
-                foreach (var item in designer.SelectedItems.OfType<IEntity>())
+                foreach (var item in designer.SelectedItems.OfType<ICanvasItem>())
                 {
                     if (item == thisItem) continue;
                     item.Left += deltaHorizontal;

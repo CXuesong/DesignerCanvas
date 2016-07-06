@@ -58,26 +58,20 @@
   <ItemGroup>
     <Compile Include="CanvasHelper.cs" />
     <Compile Include="CanvasImageExporter.cs" />
-    <Compile Include="ConnectionCollection.cs" />
-    <Compile Include="DesignerCanvas.cs" />
-    <Compile Include="DesignerCanvasConnectionBuilder.cs" />
+    <Compile Include="Controls\DesignerCanvas.cs" />
     <Compile Include="DesignerCanvasEntityContainer.cs" />
-    <Compile Include="ObjectModel\Connection.cs" />
-    <Compile Include="ObjectModel\Connector.cs" />
-    <Compile Include="ObjectModel\ConnectorCollection.cs" />
-    <Compile Include="ObjectModel\Entity.cs" />
-    <Compile Include="ObjectModel\GraphicalObjectCollection.cs" />
-    <Compile Include="ObjectModel\HitTestResult.cs" />
-    <Compile Include="ObjectModel\IGraphicalObject.cs" />
+    <Compile Include="CanvasItem.cs" />
+    <Compile Include="GraphicalObjectCollection.cs" />
+    <Compile Include="HitTestResult.cs" />
+    <Compile Include="ICanvasItem.cs" />
     <Compile Include="ObjectPool.cs" />
-    <Compile Include="DesignerCanvasConnection.cs" />
-    <Compile Include="Primitive\ContainerDesigningAdorners.cs" />
-    <Compile Include="Primitive\ContainerDesigningDecorator.cs" />
-    <Compile Include="Primitive\DragThumb.cs" />
-    <Compile Include="Primitive\RelativePositionPanel.cs" />
-    <Compile Include="Primitive\ResizeThumb.cs" />
-    <Compile Include="Primitive\RotateThumb.cs" />
-    <Compile Include="Primitive\RubberbandAdorner.cs" />
+    <Compile Include="Controls\Primitives\ContainerDesigningAdorners.cs" />
+    <Compile Include="Controls\Primitives\ContainerDesigningDecorator.cs" />
+    <Compile Include="Controls\Primitives\DragThumb.cs" />
+    <Compile Include="Controls\Primitives\RelativePositionPanel.cs" />
+    <Compile Include="Controls\Primitives\ResizeThumb.cs" />
+    <Compile Include="Controls\Primitives\RotateThumb.cs" />
+    <Compile Include="Controls\Primitives\RubberbandAdorner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

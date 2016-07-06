@@ -4,7 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfTestApplication"
-        xmlns:DesignerCanvas="clr-namespace:Undefined.DesignerCanvas;assembly=DesignerCanvas" x:Class="WpfTestApplication.MainWindow"
+        xmlns:DesignerCanvas="clr-namespace:Undefined.DesignerCanvas;assembly=DesignerCanvas"
+        xmlns:controls="clr-namespace:Undefined.DesignerCanvas.Controls;assembly=DesignerCanvas"
+        x:Class="WpfTestApplication.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="350" Width="525" Loaded="Window_Loaded">
     <Grid>
@@ -14,7 +16,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Border BorderBrush="{DynamicResource {x:Static SystemColors.ActiveCaptionBrushKey}}" BorderThickness="1" Background="#FFD4EDFF">
-            <DesignerCanvas:DesignerCanvas x:Name="dcvs" MouseDown="dcvs_MouseDown" Background="White" MouseMove="dcvs_MouseMove" ShowBoundaries="True" />
+            <controls:DesignerCanvas x:Name="dcvs" MouseDown="dcvs_MouseDown" Background="White" MouseMove="dcvs_MouseMove" ShowBoundaries="True" />
         </Border>
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
