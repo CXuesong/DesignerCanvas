@@ -24,6 +24,21 @@ using Undefined.DesignerCanvas.Primitive;
 
 namespace Undefined.DesignerCanvas
 {
+
+    public class DesigningAdornerGeneratingEventArgs : EventArgs
+    {
+        public DesigningAdornerGeneratingEventArgs(IGraphicalObject item)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+            Item = item;
+        }
+
+        public IGraphicalObject Item { get; }
+
+        public CanvasAdorner Adorder { get; set; }
+
+    }
+
     /// <summary>
     /// Hosts a canvas that supports diagram designing.
     /// </summary>
@@ -115,6 +130,25 @@ namespace Undefined.DesignerCanvas
         protected virtual void OnSelectionChanged()
         {
             SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        public event EventHandler<DesigningAdornerGeneratingEventArgs> DesigningAdornerGenerating;
+
+        protected virtual void OnDesigningAdornerGenerating(DesigningAdornerGeneratingEventArgs e)
+        {
+            DesigningAdornerGenerating?.Invoke(this, e);
+        }
+
+        internal CanvasAdorner GenerateDesigningAdornerFormItem(IGraphicalObject obj)
+        {
+            if (obj == null) throw new ArgumentNullException(nameof(obj));
+            var entity = obj as IEntity;
+            var e = new DesigningAdornerGeneratingEventArgs(obj);
+            // Initialize defaults.
+            if (entity != null)
+                e.Adorder = new ResizeRotateAdorner(entity);
+            OnDesigningAdornerGenerating(e);
+            return e.Adorder;
         }
 
         #endregion
@@ -256,7 +290,9 @@ namespace Undefined.DesignerCanvas
 
         private Canvas partCanvas, adornerCanvas;
         private ScrollBar horizontalScrollBar, verticalScrollBar;
-        private TranslateTransform canvasTranslateTransform = new TranslateTransform();
+        private readonly TranslateTransform canvasTranslateTransform = new TranslateTransform();
+        private readonly ScaleTransform canvasScaleTransform = new ScaleTransform();
+        private readonly TranslateTransform adornerCanvasTranslateTransform = new TranslateTransform();
 
         internal static DesignerCanvas FindDesignerCanvas(DependencyObject childContainer)
         {
@@ -268,6 +304,21 @@ namespace Undefined.DesignerCanvas
             }
             return null;
         }
+        
+        internal void AddAdorner(CanvasAdorner adorner)
+        {
+            if (adorner == null) throw new ArgumentNullException(nameof(adorner));
+            adorner.SetCanvas(this);
+            adornerCanvas.Children.Add(adorner);
+        }
+
+        internal void RemoveAdorner(CanvasAdorner adorner)
+        {
+            if (adorner == null) throw new ArgumentNullException(nameof(adorner));
+            if (adorner.ParentCanvas != this) throw new InvalidOperationException("Invalid ParentCanvas.");
+            adorner.SetCanvas(null);
+            adornerCanvas.Children.Remove(adorner);
+        }
 
         private DrawingVisual debuggingVisual;
 
@@ -278,7 +329,11 @@ namespace Undefined.DesignerCanvas
             adornerCanvas = (Canvas)GetTemplateChild("PART_AdornerCanvas");
             horizontalScrollBar = (ScrollBar)GetTemplateChild("PART_HorizontalScrollBar");
             verticalScrollBar = (ScrollBar)GetTemplateChild("PART_VerticalScrollBar");
-            partCanvas.RenderTransform = canvasTranslateTransform;
+            var ct = new TransformGroup();
+            ct.Children.Add(canvasTranslateTransform);
+            ct.Children.Add(canvasScaleTransform);
+            partCanvas.RenderTransform = ct;
+            adornerCanvas.RenderTransform = adornerCanvasTranslateTransform;
             horizontalScrollBar.SetBinding(RangeBase.ValueProperty,
                 new Binding("HorizontalScrollOffset") {Source = this});
             verticalScrollBar.SetBinding(RangeBase.ValueProperty,
@@ -297,8 +352,11 @@ namespace Undefined.DesignerCanvas
                 {
                     // Generate / Recycle Items
                     OnViewPortChanged(_ViewPortRect, vp);
+                    var z = Zoom/100.0;
                     canvasTranslateTransform.X = -vp.Left;
                     canvasTranslateTransform.Y = -vp.Top;
+                    adornerCanvasTranslateTransform.X = -vp.Left*z;
+                    adornerCanvasTranslateTransform.Y = -vp.Top*z;
                 }
                 _ViewPortRect = vp;
             }, DispatcherPriority.Render);
@@ -337,16 +395,6 @@ namespace Undefined.DesignerCanvas
                 SetContainerVisibility(new Rect(double.MinValue/2, newViewPort.Bottom,
                     double.MaxValue, double.MaxValue), false);
         }
-
-        ///// <summary>
-        ///// Creates or recycles the container for specified item,
-        ///// depending whether the bounds of item is in ViewPort.
-        ///// </summary>
-        //private void SetContainerVisibility(Entity item)
-        //{
-        //    if (item == null) throw new ArgumentNullException(nameof(item));
-        //    SetContainerVisibility(item, _ViewPortRect.IntersectsWith(item.Bounds));
-        //}
 
         private void SetContainerVisibility(IGraphicalObject item, bool visible)
         {
@@ -488,7 +536,7 @@ namespace Undefined.DesignerCanvas
             while (element != null)
             {
                 if (element is DesignerCanvas) return true;
-                if (element is DesignerCanvasEntity) return false;
+                if (element is DesignerCanvasEntityContainer) return false;
                 if (element is DesignerCanvasConnection) return false;
                 element = VisualTreeHelper.GetParent(element);
             }
@@ -572,6 +620,8 @@ namespace Undefined.DesignerCanvas
 
         #region Public UI
 
+        public event EventHandler ZoomChanged;
+
         public static readonly DependencyProperty ZoomProperty = DependencyProperty.Register("Zoom",
             typeof (double), typeof (DesignerCanvas),
             new FrameworkPropertyMetadata(100.0, FrameworkPropertyMetadataOptions.AffectsMeasure, ZoomChangedCallback),
@@ -584,9 +634,12 @@ namespace Undefined.DesignerCanvas
         private static void ZoomChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             var dc = (DesignerCanvas) d;
-            //dc.canvasScaleTransform.ScaleX
-            //    = dc.canvasScaleTransform.ScaleY
-            //        = ((double) e.NewValue)/100;
+            var z = (double) e.NewValue/100;
+            var vp = dc.ViewPortRect;
+            dc.canvasScaleTransform.ScaleX = dc.canvasScaleTransform.ScaleY = z;
+            dc.adornerCanvasTranslateTransform.X = -vp.Left * z;
+            dc.adornerCanvasTranslateTransform.Y = -vp.Top * z;
+            dc.OnZoomChanged();
         }
 
         /// <summary>
@@ -657,7 +710,7 @@ namespace Undefined.DesignerCanvas
 
         #region Notifications from Children
 
-        internal void NotifyItemMouseDown(DesignerCanvasEntity container)
+        internal void NotifyItemMouseDown(DesignerCanvasEntityContainer container)
         {
             Debug.Assert(container != null);
             //Debug.Print("NotifyItemMouseDown");
@@ -676,6 +729,8 @@ namespace Undefined.DesignerCanvas
         internal void NotifyItemIsSelectedChanged(DependencyObject container)
         {
             Debug.Assert(container != null);
+            // Show / Hides the adorner
+
             // Do not update SelectedItems when SelectedItems are being updated.
             if (isSelectedContainersSynchronizing) return;
             var item = _ItemContainerGenerator.ItemFromContainer(container);
@@ -931,6 +986,11 @@ namespace Undefined.DesignerCanvas
             }
         }
         #endregion
+
+        protected virtual void OnZoomChanged()
+        {
+            ZoomChanged?.Invoke(this, EventArgs.Empty);
+        }
     }
 
     /// <summary>
@@ -949,8 +1009,8 @@ namespace Undefined.DesignerCanvas
         private readonly Dictionary<IGraphicalObject, DependencyObject> containerDict =
             new Dictionary<IGraphicalObject, DependencyObject>();
 
-        private readonly ObjectPool<DesignerCanvasEntity> entityContainerPool =
-            new ObjectPool<DesignerCanvasEntity>(() => new DesignerCanvasEntity());
+        private readonly ObjectPool<DesignerCanvasEntityContainer> entityContainerPool =
+            new ObjectPool<DesignerCanvasEntityContainer>(() => new DesignerCanvasEntityContainer());
 
         private readonly ObjectPool<DesignerCanvasConnection> connectionontainerPool =
             new ObjectPool<DesignerCanvasConnection>(() => new DesignerCanvasConnection());
@@ -1025,9 +1085,9 @@ namespace Undefined.DesignerCanvas
             var item = ItemFromContainer(container);
             if (item == null) throw new InvalidOperationException("试图回收非列表项目。");
             if (removeContainerDictEntry) containerDict.Remove(item);
-            if (container is DesignerCanvasEntity)
+            if (container is DesignerCanvasEntityContainer)
             {
-                entityContainerPool.PutBack((DesignerCanvasEntity) container);
+                entityContainerPool.PutBack((DesignerCanvasEntityContainer) container);
             } else if (container is DesignerCanvasConnection)
             {
                 connectionontainerPool.PutBack((DesignerCanvasConnection) container);

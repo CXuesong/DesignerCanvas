@@ -21,7 +21,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Border Background="Blue" ClipToBounds="True">
+                            <Border Background="Transparent" ClipToBounds="True">
                                 <!-- Enables mouse evnet handling -->
                                 <Grid>
                                     <Canvas x:Name="PART_Canvas">
@@ -37,7 +37,6 @@
                                     </Canvas>
                                 </Grid>
                             </Border>
-
                             <ScrollBar Grid.Column="1" Orientation="Vertical" x:Name="PART_VerticalScrollBar" />
                             <ScrollBar Grid.Row="1" Orientation="Horizontal" x:Name="PART_HorizontalScrollBar" />
                         </Grid>
@@ -50,20 +49,14 @@
         <!-- Later the invisible thumb may be changed into different shapes -->
         <Rectangle Fill="Transparent" />
     </ControlTemplate>
-    <Style TargetType="local:DesignerCanvasEntity">
+    <Style TargetType="local:DesignerCanvasEntityContainer">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type local:DesignerCanvasEntity}">
+                <ControlTemplate TargetType="{x:Type local:DesignerCanvasEntityContainer}">
                     <Grid>
                         <primitive:DragThumb x:Name="PART_DragThumb" DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" Template="{StaticResource DragThumbTemplate}" />
                         <ContentPresenter IsHitTestVisible="False" />
-                        <primitive:ContainerDesigningDecorator DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}" x:Name="PART_DesigningDecorator" />
                     </Grid>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="Selector.IsSelected" Value="True">
-                            <Setter TargetName="PART_DesigningDecorator" Property="DecoratorVisible" Value="True" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
@@ -97,14 +90,14 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style TargetType="primitive:ResizeRotateChrome">
+    <Style TargetType="{x:Type primitive:ResizeRotateAdorner}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="primitive:ResizeRotateChrome">
+                <ControlTemplate TargetType="primitive:ResizeRotateAdorner">
                     <Grid>
                         <!-- Thumbs for operation, but should be transparent. -->
                         <Grid Opacity="0">
-                            <Grid Visibility="{TemplateBinding CanResize, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid>
                                 <!-- ResizeThumb -->
                                 <primitive:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 -4 0 0" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
                                 <primitive:ResizeThumb Width="3" Cursor="SizeWE" Margin="-4 0 0 0" VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
@@ -133,7 +126,7 @@
                                             Margin="0,-20,0,0"
                                             Stroke="Blue"/>
                             <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-25,0,0"/>
-                            <Grid Visibility="{TemplateBinding CanResize, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Grid>
                                 <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left"
                                            VerticalAlignment="Top" />
                                 <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right"
@@ -157,10 +150,10 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style TargetType="primitive:SizeChrome">
+    <Style TargetType="{x:Type primitive:SizeAdorner}">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="primitive:SizeChrome">
+                <ControlTemplate TargetType="primitive:SizeAdorner">
                     <!--- 调整控件大小时显示大小值。 -->
                     <Grid>
                         <Path Stroke="Red"

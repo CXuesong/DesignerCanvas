@@ -27,7 +27,7 @@
             <StackPanel Orientation="Horizontal">
                 <Button x:Name="TestButton" Content="Button" Click="TestButton_Click" Command="{Binding test}" />
                 <Button x:Name="AddItemsButton" Content="_Add 10000 items" Click="AddItemsButton_Click" />
-                <Button x:Name="ExportImageButton" Content="_Export Image" Click="ExportImageButton_Click" />
+                <Button x:Name="ExportImageButton" Content="_Export Image" Click="ExportImageButton_Click" Height="25" VerticalAlignment="Top" />
             </StackPanel>
             <Slider Grid.Column="4" Value="{Binding Zoom, ElementName=dcvs}" Minimum="1" Maximum="1000"/>
             <Label Grid.Column="3" d:LayoutOverrides="Width" Content="{Binding Zoom, ElementName=dcvs}" ContentStringFormat="{}{0}%"/>

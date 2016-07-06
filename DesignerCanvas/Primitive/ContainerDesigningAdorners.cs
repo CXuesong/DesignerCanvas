@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,102 +9,157 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
+using Undefined.DesignerCanvas.ObjectModel;
 
 namespace Undefined.DesignerCanvas.Primitive
 {
     /// <summary>
-    /// Used for rendering a handle for resizing & rotation.
+    /// Represents a adorder to a specific CanvasItem.
     /// </summary>
-    public class ResizeRotateAdorner : Adorner
+    /// <remarks>This  class is used becaused it won't zoom as CanvasEntityItem is being zoomed.</remarks>
+    public class CanvasAdorner : Control
     {
-        private readonly ResizeRotateChrome chrome;
+        public IGraphicalObject AdornedObject { get; }
 
-        protected override int VisualChildrenCount => 1;
+        public double Left
+        {
+            get { return (double)GetValue(LeftProperty); }
+            set { SetValue(LeftProperty, value); }
+        }
 
-        public ResizeRotateAdorner(UIElement destControl) : base(destControl)
+        public static readonly DependencyProperty LeftProperty =
+            DependencyProperty.Register("Left", typeof(double), typeof(CanvasAdorner), new PropertyMetadata(0.0));
+
+        public double Top
+        {
+            get { return (double)GetValue(TopProperty); }
+            set { SetValue(TopProperty, value); }
+        }
+
+        public static readonly DependencyProperty TopProperty =
+            DependencyProperty.Register("Top", typeof(double), typeof(CanvasAdorner), new PropertyMetadata(0.0));
+
+        private DesignerCanvas _ParentCanvas;
+
+        public DesignerCanvas ParentCanvas => _ParentCanvas;
+
+        internal void SetCanvas(DesignerCanvas canvas)
+        {
+            if (_ParentCanvas != null) _ParentCanvas.ZoomChanged -= ParentCanvas_ZoomChanged;
+            _ParentCanvas = canvas;
+            if (canvas != null) canvas.ZoomChanged += ParentCanvas_ZoomChanged;
+            if (canvas != null) OnUpdateLayout();
+        }
+
+        private void ParentCanvas_ZoomChanged(object sender, EventArgs e)
+        {
+            Debug.Assert(sender == _ParentCanvas);
+            OnUpdateLayout();
+        }
+
+        public CanvasAdorner(IGraphicalObject adornedObject)
+        {
+            if (adornedObject == null) throw new ArgumentNullException(nameof(adornedObject));
+            AdornedObject = adornedObject;
+            var npc = adornedObject as INotifyPropertyChanged;
+            if (npc != null)
+            {
+                PropertyChangedEventManager.AddHandler(npc, AdornedObject_PropertyChanged, "");
+            }
+            SetBinding(Canvas.LeftProperty, new Binding("Left") {RelativeSource = RelativeSource.Self});
+            SetBinding(Canvas.TopProperty, new Binding("Top") {RelativeSource = RelativeSource.Self});
+        }
+
+        static CanvasAdorner()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(CanvasAdorner), new FrameworkPropertyMetadata(typeof(CanvasAdorner)));
+        }
+
+        private void AdornedObject_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Debug.Assert(sender == AdornedObject);
+            OnAdornedObjectPropertyChanged(e.PropertyName);
+        }
+
+        protected virtual void OnAdornedObjectPropertyChanged(string propertyName)
+        {
+            if (_ParentCanvas != null)
+            {
+                if (propertyName == nameof(AdornedObject.Bounds)) OnUpdateLayout();
+            }
+        }
+
+        protected virtual void OnUpdateLayout()
+        {
+            
+        }
+    }
+
+    /// <summary>
+    /// Used for rendering a handle for resizing &amp; rotation.
+    /// </summary>
+    public class ResizeRotateAdorner : CanvasAdorner
+    {
+        private RotateTransform rotateTransform = new RotateTransform();
+
+        public new IEntity AdornedObject => (IEntity) base.AdornedObject;
+
+        public ResizeRotateAdorner(IEntity adornedObject) : base(adornedObject)
         {
             SnapsToDevicePixels = true;
-            chrome = new ResizeRotateChrome();
-            AddVisualChild(chrome);
-            chrome.DataContext = destControl;
-            chrome.SetBinding(ResizeRotateChrome.CanResizeProperty, new Binding("Resizeable")
-            {
-                Source = destControl,
-                Mode = BindingMode.OneWay
-            });
+            this.DataContext = adornedObject;
+            this.RenderTransform = rotateTransform;
+            this.RenderTransformOrigin = new Point(0.5, 0.5);
         }
 
-        protected override Size ArrangeOverride(Size arrangeBounds)
+        static ResizeRotateAdorner()
         {
-            chrome.Arrange(new Rect(arrangeBounds));
-            return arrangeBounds;
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(ResizeRotateAdorner), new FrameworkPropertyMetadata(typeof(ResizeRotateAdorner)));
         }
 
-        protected override Visual GetVisualChild(int index)
+        protected override void OnAdornedObjectPropertyChanged(string propertyName)
         {
-            if (index == 0)
-                return chrome;
-            throw new IndexOutOfRangeException();
+            base.OnAdornedObjectPropertyChanged(propertyName);
+            if (ParentCanvas == null) return;
+            if (propertyName == nameof(IEntity.Angle)) OnUpdateLayout();
+        }
+
+        protected override void OnUpdateLayout()
+        {
+            base.OnUpdateLayout();
+            var zoom = ParentCanvas.Zoom/100.0;
+            Left = AdornedObject.Left*zoom;
+            Top = AdornedObject.Top * zoom;
+            Width = AdornedObject.Width*zoom;
+            Height = AdornedObject.Height*zoom;
+            rotateTransform.Angle = AdornedObject.Angle;
         }
     }
 
-    /// <summary>
-    /// Used for rendering a handle for resizing & rotation.
-    /// </summary>
-    public class ResizeRotateChrome : Control
+    public class SizeAdorner : CanvasAdorner
     {
-        static ResizeRotateChrome()
+        public SizeAdorner(IGraphicalObject adornedObject) : base(adornedObject)
         {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(ResizeRotateChrome), new FrameworkPropertyMetadata(typeof(ResizeRotateChrome)));
+            SnapsToDevicePixels = true;
+            this.DataContext = adornedObject;
         }
 
-        public static readonly DependencyProperty CanResizeProperty =
-            DependencyProperty.Register("CanResize", typeof(bool), typeof(ResizeRotateChrome), new PropertyMetadata(true));
-
-        public bool CanResize
+        protected override void OnUpdateLayout()
         {
-            get { return (bool)GetValue(CanResizeProperty); }
-            set { SetValue(CanResizeProperty, value); }
-        }
-    }
-
-    public class SizeAdorner : Adorner
-    {
-        private readonly SizeChrome chrome;
-
-        protected override int VisualChildrenCount => 1;
-
-        public SizeAdorner(FrameworkElement designerItem) : base(designerItem)
-        {
-            this.SnapsToDevicePixels = true;
-            chrome = new SizeChrome();
-            this.AddVisualChild(chrome);
-            chrome.DataContext = designerItem;
+            base.OnUpdateLayout();
+            var bounds = AdornedObject.Bounds;
+            var zoom = ParentCanvas.Zoom / 100.0;
+            Left = bounds.Left * zoom;
+            Top = bounds.Top * zoom;
+            Width = bounds.Width * zoom;
+            Height = bounds.Height * zoom;
         }
 
-        protected override Size ArrangeOverride(Size arrangeBounds)
+        static SizeAdorner()
         {
-            chrome.Arrange(new Rect(arrangeBounds));
-            return arrangeBounds;
-        }
-
-        protected override Visual GetVisualChild(int index)
-        {
-            if (index == 0) return chrome;
-            throw new IndexOutOfRangeException();
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(SizeAdorner), new FrameworkPropertyMetadata(typeof(SizeAdorner)));
         }
     }
-
-    /// <summary>
-    /// Used for displaying object dimension when resizing items.
-    /// </summary>
-    public class SizeChrome : Control
-    {
-        static SizeChrome()
-        {
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(SizeChrome), new FrameworkPropertyMetadata(typeof(SizeChrome)));
-        }
-    }
-
 }

@@ -16,6 +16,8 @@ namespace Undefined.DesignerCanvas.Primitive
     {
         private SizeAdorner sizeAdorner;
 
+        private DesignerCanvas parentCanvas;
+
         public ResizeThumb()
         {
             DragDelta += ResizeThumb_DragDelta;
@@ -25,16 +27,16 @@ namespace Undefined.DesignerCanvas.Primitive
 
         private void ResizeThumb_DragStarted(object sender, DragStartedEventArgs e)
         {
-            //var canvas = DesignerCanvas.FindDesignerCanvas(this);
-            var destControl = DataContext as FrameworkElement;
-            if (destControl != null)
+            parentCanvas = DesignerCanvas.FindDesignerCanvas(this);
+            var destControl = DataContext as IGraphicalObject;
+            if (parentCanvas != null && destControl != null)
             {
                 var adornerLayer = AdornerLayer.GetAdornerLayer(this);
                 if (adornerLayer != null)
                 {
                     Debug.Assert(sizeAdorner == null);
                     sizeAdorner = new SizeAdorner(destControl);
-                    adornerLayer.Add(sizeAdorner);
+                    parentCanvas.AddAdorner(sizeAdorner);
                 }
             }
         }
@@ -43,31 +45,25 @@ namespace Undefined.DesignerCanvas.Primitive
         {
             if (sizeAdorner != null)
             {
-                var adornerLayer = AdornerLayer.GetAdornerLayer(this);
-                adornerLayer?.Remove(sizeAdorner);
+                ((Canvas) sizeAdorner.Parent).Children.Remove(sizeAdorner);
                 sizeAdorner = null;
             }
-            var destControl = DataContext as DependencyObject;
-            if (destControl == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
-            if (designer == null) return;
-            designer.InvalidateMeasure();
         }
 
         void ResizeThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            var destControl = DataContext as DependencyObject;
-            if (destControl == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
-            if (designer == null) return;
+            if (parentCanvas == null) return;
+            var z = parentCanvas.Zoom/100.0;
+            var hc = e.HorizontalChange/z;
+            var vc = e.VerticalChange/z;
             var mod = Keyboard.Modifiers;
             double minLeft, minTop, minDeltaHorizontal, minDeltaVertical;
             // only resize DesignerItems
-            CalculateDragLimits(designer.SelectedItems.OfType<IEntity>(), out minLeft, out minTop,
+            CalculateDragLimits(parentCanvas.SelectedItems.OfType<IEntity>(), out minLeft, out minTop,
                 out minDeltaHorizontal, out minDeltaVertical);
             var isResizingWidthAndHeight = HorizontalAlignment != HorizontalAlignment.Stretch &&
                                            VerticalAlignment != VerticalAlignment.Stretch;
-            foreach (var item in designer.SelectedItems.OfType<IEntity>())
+            foreach (var item in parentCanvas.SelectedItems.OfType<IEntity>())
             {
                 Debug.Assert(item != null);
                 double ratio = double.NaN; // Width / Height
@@ -77,11 +73,11 @@ namespace Undefined.DesignerCanvas.Primitive
                 switch (VerticalAlignment)
                 {
                     case VerticalAlignment.Bottom:
-                        dragDeltaVertical = Math.Min(-e.VerticalChange, minDeltaVertical);
+                        dragDeltaVertical = Math.Min(-vc, minDeltaVertical);
                         item.Height = item.Height - dragDeltaVertical;
                         break;
                     case VerticalAlignment.Top:
-                        dragDeltaVertical = Math.Min(Math.Max(-minTop, e.VerticalChange), minDeltaVertical);
+                        dragDeltaVertical = Math.Min(Math.Max(-minTop, vc), minDeltaVertical);
                         item.Top += dragDeltaVertical;
                         item.Height = item.Height - dragDeltaVertical;
                         break;
@@ -92,12 +88,12 @@ namespace Undefined.DesignerCanvas.Primitive
                     switch (HorizontalAlignment)
                     {
                         case HorizontalAlignment.Left:
-                            dragDeltaHorizontal = Math.Min(Math.Max(-minLeft, e.HorizontalChange), minDeltaHorizontal);
+                            dragDeltaHorizontal = Math.Min(Math.Max(-minLeft, hc), minDeltaHorizontal);
                             item.Left += dragDeltaHorizontal;
                             item.Width -= dragDeltaHorizontal;
                             break;
                         case HorizontalAlignment.Right:
-                            dragDeltaHorizontal = Math.Min(-e.HorizontalChange, minDeltaHorizontal);
+                            dragDeltaHorizontal = Math.Min(-hc, minDeltaHorizontal);
                             item.Width -= dragDeltaHorizontal;
                             break;
                     }

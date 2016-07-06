@@ -27,49 +27,40 @@ namespace Undefined.DesignerCanvas.Primitive
 
         private void RotateThumb_DragStarted(object sender, DragStartedEventArgs e)
         {
-            var destControl = DataContext as FrameworkElement;
-            if (destControl == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
+            var destObject = DataContext as IEntity;
+            if (destObject == null) return;
+            var designer = DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
-            var item = designer.ItemContainerGenerator.ItemFromContainer(destControl) as IEntity;
-            if (item == null) return;
-            centerPoint = destControl.TranslatePoint(
-                new Point(destControl.Width*destControl.RenderTransformOrigin.X,
-                    destControl.Height*destControl.RenderTransformOrigin.Y),
-                canvas);
-            initialAngle = item.Angle;
-            var startPoint = Mouse.GetPosition(canvas);
+            var container = designer.ItemContainerGenerator.ContainerFromItem(destObject) as FrameworkElement;
+            if (container == null) return;
+            centerPoint = container.TranslatePoint(new Point(destObject.Width*0.5, destObject.Height*0.5), null);
+            initialAngle = destObject.Angle;
+            var startPoint = Mouse.GetPosition(null);
             startVector = Point.Subtract(startPoint, centerPoint);
         }
 
         private void RotateThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            var destControl = DataContext as DependencyObject;
-            if (destControl == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
+            var destObject = DataContext as IEntity;
+            if (destObject == null) return;
+            var designer = DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
-            var item = designer.ItemContainerGenerator.ItemFromContainer(destControl) as IEntity;
-            if (item == null) return;
             var mod = Keyboard.Modifiers;
-            item.Angle = initialAngle + EvalAngle((mod & ModifierKeys.Shift) == ModifierKeys.Shift);
-            (destControl as UIElement)?.InvalidateArrange();
+            destObject.Angle = initialAngle + EvalAngle((mod & ModifierKeys.Shift) == ModifierKeys.Shift);
         }
 
         private void RotateThumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            var destControl = DataContext as DependencyObject;
-            if (destControl == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(destControl);
+            var destObject = DataContext as IEntity;
+            if (destObject == null) return;
+            var designer = DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
-            var destItem = designer.ItemContainerGenerator.ItemFromContainer(destControl);
             var mod = Keyboard.Modifiers;
             var deltaAngle = EvalAngle((mod & ModifierKeys.Shift) == ModifierKeys.Shift);
             foreach (var item in designer.SelectedItems.OfType<IEntity>())
             {
-                if (item != destItem)
-                {
+                if (item != destObject)
                     item.Angle += deltaAngle;
-                }
             }
             designer.InvalidateMeasure();
         }
@@ -77,7 +68,7 @@ namespace Undefined.DesignerCanvas.Primitive
         private double EvalAngle(bool makeRegular)
         {
             const double regularAngleStep = 15;
-            var currentPoint = Mouse.GetPosition(canvas);
+            var currentPoint = Mouse.GetPosition(null);
             var currentVector = Point.Subtract(currentPoint, centerPoint);
             var angle = Vector.AngleBetween(startVector, currentVector);
             if (makeRegular)
