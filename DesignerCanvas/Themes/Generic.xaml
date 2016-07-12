@@ -46,17 +46,20 @@
         </Setter>
     </Style>
     <ControlTemplate x:Key="DragThumbTemplate" TargetType="primitives:DragThumb">
-        <!-- Later the invisible thumb may be changed into different shapes -->
         <Rectangle Fill="Transparent" />
     </ControlTemplate>
-    <Style TargetType="local:DesignerCanvasItemContainer">
+    <Style TargetType="primitives:DesignerCanvasItemContainer">
         <Setter Property="Template">
             <Setter.Value>
-                <ControlTemplate TargetType="{x:Type local:DesignerCanvasItemContainer}">
-                    <Grid>
-                        <primitives:DragThumb x:Name="PART_DragThumb" Template="{StaticResource DragThumbTemplate}" />
-                        <ContentPresenter IsHitTestVisible="False" />
-                    </Grid>
+                <ControlTemplate TargetType="{x:Type primitives:DesignerCanvasItemContainer}">
+                    <Border BorderThickness="{TemplateBinding BorderThickness}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            Background="{TemplateBinding Background}">
+                        <Grid>
+                            <primitives:DragThumb x:Name="PART_DragThumb" Template="{StaticResource DragThumbTemplate}" />
+                            <ContentPresenter x:Name="PART_ContentPresenter" IsHitTestVisible="False" />
+                        </Grid>
+                    </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>

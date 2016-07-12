@@ -61,7 +61,7 @@
     <Compile Include="Controls\DesignerCanvas.cs" />
     <Compile Include="Controls\Primitives\PolyLineCanvasItemPresenter.cs" />
     <Compile Include="Controls\Primitives\PolyLineVerticesAdorner.cs" />
-    <Compile Include="DesignerCanvasItemContainer.cs" />
+    <Compile Include="Controls\Primitives\DesignerCanvasItemContainer.cs" />
     <Compile Include="CanvasItem.cs" />
     <Compile Include="GraphicalObjectCollection.cs" />
     <Compile Include="HitTestResult.cs" />

@@ -1,24 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-using Undefined.DesignerCanvas.Controls;
-using Undefined.DesignerCanvas.Controls.Primitives;
 
-namespace Undefined.DesignerCanvas
+namespace Undefined.DesignerCanvas.Controls.Primitives
 {
     /// <summary>
     /// Used for rendering <see cref="CanvasItem"/> in <see cref="DesignerCanvas" />.
     /// </summary>
-    [TemplatePart(Name = "PART_Image", Type = typeof(Image))]
     [TemplatePart(Name = "PART_DragThumb", Type = typeof(DragThumb))]
+    [TemplatePart(Name = "PART_ContentPresenter", Type = typeof(ContentPresenter))]
     public class DesignerCanvasItemContainer : ContentControl
     {
         public bool IsSelected
@@ -42,7 +35,27 @@ namespace Undefined.DesignerCanvas
             DependencyProperty.Register("Resizeable", typeof(bool), typeof(DesignerCanvasItemContainer), new PropertyMetadata(true));
 
 
-        public Controls.DesignerCanvas ParentDesigner => Controls.DesignerCanvas.FindDesignerCanvas(this);
+        public DesignerCanvas ParentDesigner => Controls.DesignerCanvas.FindDesignerCanvas(this);
+
+        // Not supported yet.
+
+        //public static Geometry GetContainerClip(DependencyObject obj)
+        //{
+        //    return (Geometry)obj.GetValue(ContainerClipProperty);
+        //}
+
+        //public static void SetContainerClip(DependencyObject obj, Geometry value)
+        //{
+        //    obj.SetValue(ContainerClipProperty, value);
+        //}
+
+        //public static readonly DependencyProperty ContainerClipProperty =
+        //    DependencyProperty.RegisterAttached("ContainerClip",
+        //        typeof(Geometry), typeof(DesignerCanvasItemContainer), new FrameworkPropertyMetadata(null, (d, e) =>
+        //        {
+        //            var container = (d as FrameworkElement)?.Parent as DesignerCanvasItemContainer;
+        //            container?.NotifyContentContainerClipChanged((Geometry) e.NewValue);
+        //        }));
 
         #region Interactions
 
@@ -83,6 +96,11 @@ namespace Undefined.DesignerCanvas
             }
         }
 
+        private void NotifyContentContainerClipChanged(Geometry newClip)
+        {
+            this.Clip = newClip;
+        }
+
         /// <summary>
         /// Invoked when the parent of this element in the visual tree is changed. Overrides <see cref="M:System.Windows.UIElement.OnVisualParentChanged(System.Windows.DependencyObject)"/>.
         /// </summary>
@@ -91,6 +109,21 @@ namespace Undefined.DesignerCanvas
         {
             base.OnVisualParentChanged(oldParent);
             UpdateDesignerAdorner();
+        }
+
+#if DEBUG
+        // See OnApplyTemplate()
+        private static readonly Brush BoundaryIndicatorBrush =
+            new SolidColorBrush(Color.FromArgb(102, 0, 255, 255));
+#endif
+
+        public DesignerCanvasItemContainer()
+        {
+#if DEBUG
+            // Display the boundary of the container. This is used for debugging.
+            BorderThickness = new Thickness(1);
+            BorderBrush = BoundaryIndicatorBrush;
+#endif
         }
 
         static DesignerCanvasItemContainer()
