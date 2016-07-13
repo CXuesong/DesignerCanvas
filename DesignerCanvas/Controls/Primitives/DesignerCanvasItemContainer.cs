@@ -14,6 +14,8 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
     [TemplatePart(Name = "PART_ContentPresenter", Type = typeof(ContentPresenter))]
     public class DesignerCanvasItemContainer : ContentControl
     {
+        private ContentPresenter contentPresenter;
+
         public bool IsSelected
         {
             get { return (bool)GetValue(IsSelectedProperty); }
@@ -21,7 +23,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         }
 
         public static readonly DependencyProperty IsSelectedProperty = Selector.IsSelectedProperty;
-    
+
         /// <summary>
         /// Determines whether the entity can be resized.
         /// </summary>
@@ -36,6 +38,15 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
 
         public DesignerCanvas ParentDesigner => Controls.DesignerCanvas.FindDesignerCanvas(this);
+
+        /// <summary>
+        /// When overridden in a derived class, is invoked whenever application code or internal processes call <see cref="M:System.Windows.FrameworkElement.ApplyTemplate"/>.
+        /// </summary>
+        public override void OnApplyTemplate()
+        {
+            base.OnApplyTemplate();
+            contentPresenter = GetTemplateChild("PART_ContentPresenter") as ContentPresenter;
+        }
 
         // Not supported yet.
 
@@ -57,6 +68,23 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         //            container?.NotifyContentContainerClipChanged((Geometry) e.NewValue);
         //        }));
 
+        /// <summary>
+        /// Raises when user attempt to start dragging the item.
+        /// </summary>
+        public static readonly RoutedEvent BeforeDraggingStartedEvent =
+            EventManager.RegisterRoutedEvent("BeforeDraggingStarted", RoutingStrategy.Direct,
+                typeof(RoutedEventHandler), typeof(DesignerCanvasItemContainer));
+
+        public static void AddBeforeDraggingStartedHandler(DependencyObject d, RoutedEventHandler handler)
+        {
+            (d as UIElement)?.AddHandler(BeforeDraggingStartedEvent, handler);
+        }
+
+        public static void RemoveBeforeDraggingStartedHandler(DependencyObject d, RoutedEventHandler handler)
+        {
+            (d as UIElement)?.RemoveHandler(BeforeDraggingStartedEvent, handler);
+        }
+
         #region Interactions
 
         protected override void OnPreviewMouseDown(MouseButtonEventArgs e)
@@ -64,6 +92,15 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
             base.OnPreviewMouseDown(e);
             ParentDesigner?.NotifyItemMouseDown(this);
             Focus();
+            if (VisualTreeHelper.GetChildrenCount(contentPresenter) > 0)
+            {
+                var content = VisualTreeHelper.GetChild(contentPresenter, 0) as UIElement;
+                if (content != null)
+                {
+                    var ee = new RoutedEventArgs(BeforeDraggingStartedEvent, this);
+                    content.RaiseEvent(ee);
+                }
+            }
         }
 
         #endregion

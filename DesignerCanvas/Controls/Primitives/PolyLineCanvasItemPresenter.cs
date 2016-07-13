@@ -6,13 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace Undefined.DesignerCanvas.Controls.Primitives
 {
     public class PolyLineCanvasItemPresenter : Control
     {
-
         public static readonly DependencyProperty PathGeometryProperty =
             DependencyProperty.Register("PathGeometry", typeof (PathGeometry), typeof (PolyLineCanvasItemPresenter),
                 new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.AffectsArrange));
@@ -35,15 +35,30 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
             var item = DataContext as IPolyLineCanvasItem;
             if (item?.Points.Count > 0)
             {
-                var figure = new PathFigure {StartPoint = item.Points[0]};
-                figure.Segments.Add(new PolyLineSegment(item.Points, true));
-                geometry.Figures.Add(figure);
+                geometry.Figures.Add(CanvasHelper.GenerstePathFigure(item.Points));
             }
         }
 
         public PolyLineCanvasItemPresenter()
         {
             this.DataContextChanged += PolyLineCanvasItemPresenter_DataContextChanged;
+            DesignerCanvasItemContainer.AddBeforeDraggingStartedHandler(this, PolyLineCanvasItemPresenter_BeforeDraggingStarted);
+        }
+
+        private void PolyLineCanvasItemPresenter_BeforeDraggingStarted(object sender, BeforeDraggingStartedEventArgs e)
+        {
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                var item = DataContext as IPolyLineCanvasItem;
+                if (item != null)
+                {
+                    // Use Control + Click on the segment to add a vertex
+                    var seg = GetSegmentIndex(item.Points, Mouse.GetPosition(this));
+                    //MessageBox.Show(seg.ToString());
+                    if (seg >= 0)
+                        item.Points.Insert(seg + 1, Mouse.GetPosition(this));
+                }
+            }
         }
 
         private void PolyLineCanvasItemPresenter_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -60,6 +75,29 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         private void CanvasItem_PointCollectionChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
         {
             UpdatePathGeometry();
+        }
+
+        /// <summary>
+        /// Gets the nearest line segment index from the given point.
+        /// </summary>
+        /// <returns>The smaller index of the segment vertex, or -1 if the point is too far from the segments.</returns>
+        protected static int GetSegmentIndex(IList<Point> vertices, Point point, double maxDistance = 5)
+        {
+            if (vertices.Count < 2) return -1;
+            var nearestIndex = -1;
+            var nearestDist = double.PositiveInfinity;
+            for (int i = 0, j = vertices.Count - 1; i < j; i++)
+            {
+                if (!CanvasHelper.IsBetweenPoints(point, vertices[i], vertices[i + 1])) continue;
+                var dist = CanvasHelper.DistanceToLine(point, vertices[i], vertices[i + 1]);
+                if (dist > maxDistance) continue;
+                if (dist < nearestDist)
+                {
+                    nearestIndex = i;
+                    nearestDist = dist;
+                }
+            }
+            return nearestIndex;
         }
 
         static PolyLineCanvasItemPresenter()

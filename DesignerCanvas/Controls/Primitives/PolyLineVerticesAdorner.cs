@@ -11,6 +11,8 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace Undefined.DesignerCanvas.Controls.Primitives
 {
@@ -38,9 +40,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         /// <param name="e">The event data.</param>
         protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
         {
-            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            if ((Keyboard.Modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
             {
-                // Use Ctrl to elete the vertex.
+                // Use Alt to delete the vertex.
                 // We do not allow the recession of a line segment.
                 if (PolyLine.Points.Count > 2) PolyLine.Points.RemoveAt(VertexIndex);
             }
@@ -79,12 +81,13 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         }
     }
 
-    [TemplatePart(Name = "PART_Canvas", Type = typeof (Canvas))]
+    [TemplatePart(Name = "PART_ThumbCanvas", Type = typeof (Canvas))]
+    [TemplatePart(Name = "PART_ConnectionPath", Type = typeof(Path))]
     public class PolyLineVerticesAdorner : CanvasAdorner
     {
         private List<PolyLineVertexThumb> vertexThumbs = new List<PolyLineVertexThumb>();
 
-        private Canvas canvas;
+        private Canvas thumbCanvas;
 
         public new IPolyLineCanvasItem AdornedObject => (IPolyLineCanvasItem) base.AdornedObject;
 
@@ -121,15 +124,15 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         public override void OnApplyTemplate()
         {
             base.OnApplyTemplate();
-            canvas = (Canvas) GetTemplateChild("PART_Canvas");
+            thumbCanvas = (Canvas) GetTemplateChild("PART_ThumbCanvas");
             ResetThumbs();
         }
 
         private void ResetThumbs()
         {
-            if (canvas == null) return;
+            if (thumbCanvas == null) return;
             vertexThumbs.Clear();
-            canvas.Children.Clear();
+            thumbCanvas.Children.Clear();
             //Debug.Print("VT {0} Cleared", vertexThumbs.GetHashCode());
             for (int i = 0; i < AdornedObject.Points.Count; i++)
             {
@@ -139,7 +142,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                 thumb.Margin = new Thickness(-4, -4, 0, 0);
                 thumb.Cursor = Cursors.Cross;
                 vertexThumbs.Add(thumb);
-                canvas.Children.Add(thumb);
+                thumbCanvas.Children.Add(thumb);
                 thumb.RefreshPosition();
             }
             //Debug.Print("VT {0} Filled, {1}", vertexThumbs.GetHashCode(), vertexThumbs.Count);

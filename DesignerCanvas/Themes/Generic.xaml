@@ -56,8 +56,8 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             Background="{TemplateBinding Background}">
                         <Grid>
+                            <ContentPresenter x:Name="PART_ContentPresenter" />
                             <primitives:DragThumb x:Name="PART_DragThumb" Template="{StaticResource DragThumbTemplate}" />
-                            <ContentPresenter x:Name="PART_ContentPresenter" IsHitTestVisible="False" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
@@ -98,7 +98,9 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:PolyLineVerticesAdorner">
-                    <Canvas x:Name="PART_Canvas" />
+                    <Grid>
+                        <Canvas x:Name="PART_ThumbCanvas" />
+                    </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
