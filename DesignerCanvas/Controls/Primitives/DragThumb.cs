@@ -62,12 +62,14 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                 // This operation may be slow.
                 foreach (var item in designer.SelectedItems)
                 {
+                    item.NotifyUserDragging(deltaX, deltaY);
                     item.Left += deltaX;
                     item.Top += deltaY;
                 }
             }
             else
             {
+                destItem.NotifyUserDragging(deltaX, deltaY);
                 destItem.Left += deltaX;
                 destItem.Top += deltaY;
             }
@@ -101,6 +103,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                 foreach (var item in designer.SelectedItems.OfType<IBoxCanvasItem>())
                 {
                     if (item == destItem) continue;
+                    item.NotifyUserDragging(deltaHorizontal, deltaVertical);
                     item.Left += deltaHorizontal;
                     item.Top += deltaVertical;
                 }

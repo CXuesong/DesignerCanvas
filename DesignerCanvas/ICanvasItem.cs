@@ -24,6 +24,10 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         HitTestResult HitTest(Rect testRectangle);
 
+        /// <summary>
+        /// Notifies the item when user dragging the item.
+        /// </summary>
+        void NotifyUserDragging(double deltaX, double deltaY);
     }
 
     public interface IBoxCanvasItem : ICanvasItem

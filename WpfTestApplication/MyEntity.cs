@@ -117,5 +117,13 @@ namespace WpfTestApplication
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        /// <summary>
+        /// Notifies the item when user dragging the item.
+        /// </summary>
+        public virtual void NotifyUserDragging(double deltaX, double deltaY)
+        {
+
+        }
     }
 }

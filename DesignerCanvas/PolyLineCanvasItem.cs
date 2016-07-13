@@ -52,6 +52,7 @@ namespace Undefined.DesignerCanvas
             get
             {
                 UpdateArrange();
+                if (_PointBounds.IsEmpty) return new Rect(_Left, _Top, 0, 0);
                 return Rect.Offset(_PointBounds, _Left, _Top);
             }
         }
@@ -113,6 +114,7 @@ namespace Undefined.DesignerCanvas
         public void NormalizePositions()
         {
             UpdateArrange();
+            if (_PointBounds.IsEmpty) return;
             var deltaVector = new Vector(_PointBounds.X, _PointBounds.Y);
             for (int i = 0; i < Points.Count; i++)
             {
@@ -120,6 +122,14 @@ namespace Undefined.DesignerCanvas
             }
             this.Left += deltaVector.X;
             this.Top += deltaVector.Y;
+        }
+
+        /// <summary>
+        /// Notifies the item when user dragging the item.
+        /// </summary>
+        public virtual void NotifyUserDragging(double deltaX, double deltaY)
+        {
+
         }
 
         public ObservableCollection<Point> Points { get; } = new ObservableCollection<Point>();

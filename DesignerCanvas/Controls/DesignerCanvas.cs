@@ -17,7 +17,6 @@ using Undefined.DesignerCanvas.Controls.Primitives;
 
 namespace Undefined.DesignerCanvas.Controls
 {
-
     public class DesigningAdornerGeneratingEventArgs : EventArgs
     {
         public DesigningAdornerGeneratingEventArgs(ICanvasItem item)
@@ -256,8 +255,8 @@ namespace Undefined.DesignerCanvas.Controls
                             }
                             item.BoundsChanged += Item_BoundsChanged;
                         }
+                        UnionExtendRect(e.NewItems.Cast<ICanvasItem>().GetBounds());
                     }
-                    UnionExtendRect(e.NewItems.Cast<ICanvasItem>().GetBounds());
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     _ItemContainerGenerator.RecycleAll();

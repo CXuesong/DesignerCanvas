@@ -42,6 +42,7 @@ namespace WpfTestApplication
             var bumpingItem = new ImageCanvasItem(50, 50, 32, 32, LoadImageResource("3.png"));
             dcvs.Items.AddRange(new ICanvasItem[] {g1, g2, bumpingItem, myG1});
             dcvs.Items.Add(new PolyLineCanvasItem(new[] {new Point(0, 0), new Point(50, 25), new Point(30,50), }));
+            dcvs.Items.Add(new PolyLineCanvasItem(new[] {new Point(20, 0),  new Point(60, 50),}));
             var aniTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(10),
@@ -52,7 +53,7 @@ namespace WpfTestApplication
                 bumpingItem.Left += (rnd.NextDouble() - 0.5)*2;
                 bumpingItem.Top += (rnd.NextDouble() - 0.5)*2;
             };
-            aniTimer.Start();
+            //aniTimer.Start();
 
             var statTimer = new DispatcherTimer
             {

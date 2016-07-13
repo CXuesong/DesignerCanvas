@@ -32,10 +32,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                 PathGeometry = geometry = new PathGeometry();
             }
             PathGeometry.Figures.Clear();
-            var item = DataContext as PolyLineCanvasItem;
+            var item = DataContext as IPolyLineCanvasItem;
             if (item?.Points.Count > 0)
             {
-                //var figure = new PathFigure {StartPoint = item.Points[0]};
                 var figure = new PathFigure {StartPoint = item.Points[0]};
                 figure.Segments.Add(new PolyLineSegment(item.Points, true));
                 geometry.Figures.Add(figure);
@@ -49,10 +48,10 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
         private void PolyLineCanvasItemPresenter_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            var oldItem = e.OldValue as PolyLineCanvasItem;
+            var oldItem = e.OldValue as IPolyLineCanvasItem;
             if (oldItem != null)
                 CollectionChangedEventManager.RemoveHandler(oldItem.Points, CanvasItem_PointCollectionChanged);
-            var newItem = e.NewValue as PolyLineCanvasItem;
+            var newItem = e.NewValue as IPolyLineCanvasItem;
             if (newItem != null)
                 CollectionChangedEventManager.AddHandler(newItem.Points, CanvasItem_PointCollectionChanged);
             UpdatePathGeometry();

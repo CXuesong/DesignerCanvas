@@ -32,6 +32,21 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
             DragCompleted += PolyLineVertexThumb_DragCompleted;
         }
 
+        /// <summary>
+        /// Provides class handling for the <see cref="E:System.Windows.ContentElement.MouseLeftButtonUp"/> event. 
+        /// </summary>
+        /// <param name="e">The event data.</param>
+        protected override void OnMouseLeftButtonUp(MouseButtonEventArgs e)
+        {
+            if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+            {
+                // Use Ctrl to elete the vertex.
+                // We do not allow the recession of a line segment.
+                if (PolyLine.Points.Count > 2) PolyLine.Points.RemoveAt(VertexIndex);
+            }
+            base.OnMouseLeftButtonUp(e);
+        }
+
         private void PolyLineVertexThumb_DragStarted(object sender, DragStartedEventArgs e)
         {
             parentCanvas = DesignerCanvas.FindDesignerCanvas(this);
@@ -87,7 +102,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                     case NotifyCollectionChangedAction.Move:
                     case NotifyCollectionChangedAction.Replace:
                         Debug.Assert(e.NewItems.Count == 1);
-                        vertexThumbs[e.OldStartingIndex].RefreshPosition();
+                        //Debug.Print("Load VT {0} -- {1}", vertexThumbs.GetHashCode(), vertexThumbs.Count);
+                        if (vertexThumbs.Count > e.OldStartingIndex)
+                            vertexThumbs[e.OldStartingIndex].RefreshPosition();
                         break;
                 }
             });
@@ -113,6 +130,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
             if (canvas == null) return;
             vertexThumbs.Clear();
             canvas.Children.Clear();
+            //Debug.Print("VT {0} Cleared", vertexThumbs.GetHashCode());
             for (int i = 0; i < AdornedObject.Points.Count; i++)
             {
                 //var p = AdornedObject.Points[i];
@@ -124,6 +142,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                 canvas.Children.Add(thumb);
                 thumb.RefreshPosition();
             }
+            //Debug.Print("VT {0} Filled, {1}", vertexThumbs.GetHashCode(), vertexThumbs.Count);
         }
 
         protected override void OnUpdateLayout()
