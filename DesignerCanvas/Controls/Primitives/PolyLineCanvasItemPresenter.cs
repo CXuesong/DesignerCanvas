@@ -45,7 +45,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
             DesignerCanvasItemContainer.AddBeforeDraggingStartedHandler(this, PolyLineCanvasItemPresenter_BeforeDraggingStarted);
         }
 
-        private void PolyLineCanvasItemPresenter_BeforeDraggingStarted(object sender, BeforeDraggingStartedEventArgs e)
+        private void PolyLineCanvasItemPresenter_BeforeDraggingStarted(object sender, RoutedEventArgs e)
         {
             if ((Keyboard.Modifiers & ModifierKeys.Control) == ModifierKeys.Control)
             {
