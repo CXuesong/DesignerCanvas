@@ -14,7 +14,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
     {
         private SizeAdorner sizeAdorner;
 
-        private Controls.DesignerCanvas parentCanvas;
+        private DesignerCanvas parentCanvas;
 
         public ResizeThumb()
         {

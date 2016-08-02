@@ -49,6 +49,11 @@ namespace WpfTestApplication
             return HitTestResult.None;
         }
 
+        public void NotifyUserDraggingStarted()
+        {
+            
+        }
+
         public double Left
         {
             get { return _Bounds.X; }
@@ -122,6 +127,11 @@ namespace WpfTestApplication
         /// Notifies the item when user dragging the item.
         /// </summary>
         public virtual void NotifyUserDragging(double deltaX, double deltaY)
+        {
+
+        }
+
+        public void NotifyUserDraggingCompleted()
         {
 
         }

@@ -27,11 +27,18 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         {
             // Currently we connect two connectors with a straight line.
             var geometry = PathGeometry;
+            //var clipGeomotry = GetValue(DesignerCanvasItemContainer.ContainerClipProperty) as PathGeometry;
+            //if (clipGeomotry == null)
+            //{
+            //    clipGeomotry = new PathGeometry();
+            //    SetValue(DesignerCanvasItemContainer.ContainerClipProperty, clipGeomotry);
+            //}
             if (geometry == null)
             {
                 PathGeometry = geometry = new PathGeometry();
             }
             PathGeometry.Figures.Clear();
+            //clipGeomotry.Figures.Clear();
             var item = DataContext as IPolyLineCanvasItem;
             if (item?.Points.Count > 0)
             {

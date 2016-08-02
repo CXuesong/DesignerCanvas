@@ -18,6 +18,9 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
         /// </summary>
         public const int InstantPreviewItemsThreshold = 200;
 
+        private ICanvasItem destItem;
+        private DesignerCanvas designer;
+
         public DragThumb()
         {
             DragStarted += DragThumb_DragStarted;
@@ -29,18 +32,20 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
         private void DragThumb_DragStarted(object sender, DragStartedEventArgs e)
         {
-            var destObject = DataContext as ICanvasItem;
-            if (destObject == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(this);
+            destItem = DataContext as ICanvasItem;
+            if (destItem == null) return;
+            designer = DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
             instantPreview = designer.SelectedItems.Count < InstantPreviewItemsThreshold;
+            foreach (var item in designer.SelectedItems)
+            {
+                item.NotifyUserDraggingStarted();
+            }
         }
 
         private void DragThumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            var destItem = DataContext as ICanvasItem;
             if (destItem == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
             var container = designer.ItemContainerGenerator.ContainerFromItem(destItem) as UIElement;
             if (container == null) return;
@@ -78,9 +83,6 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
         private void DragThumb_DragCompleted(object sender, DragCompletedEventArgs e)
         {
-            var destItem = DataContext as ICanvasItem;
-            if (destItem == null) return;
-            var designer = DesignerCanvas.FindDesignerCanvas(this);
             if (designer == null) return;
             var container = designer.ItemContainerGenerator.ContainerFromItem(destItem) as UIElement;
             if (container == null) return;
@@ -107,6 +109,10 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
                     item.Left += deltaHorizontal;
                     item.Top += deltaVertical;
                 }
+            }
+            foreach (var item in designer.SelectedItems)
+            {
+                item.NotifyUserDraggingStarted();
             }
             designer.InvalidateMeasure();
         }

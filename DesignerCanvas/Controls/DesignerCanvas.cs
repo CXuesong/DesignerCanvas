@@ -429,9 +429,31 @@ namespace Undefined.DesignerCanvas.Controls
                 SetContainerVisibility(obj, visible);
         }
 
+        internal void RenderImage(RenderTargetBitmap target)
+        {
+            if (target == null) throw new ArgumentNullException(nameof(target));
+            partCanvas.HorizontalAlignment = HorizontalAlignment.Left;
+            partCanvas.VerticalAlignment = VerticalAlignment.Top;
+            try
+            {
+                ShowContainers();
+                // Wait for item rendering.
+                CanvasImageExporter.DoEvents();
+                target.Render(partCanvas);
+            }
+            finally 
+            {
+                HideCoveredContainers();
+                partCanvas.HorizontalAlignment = HorizontalAlignment.Stretch;
+                partCanvas.VerticalAlignment = VerticalAlignment.Stretch;
+            }
+       }
+
         internal void ShowContainers()
         {
             // SLOW!
+            partCanvas.Width = ExtentWidth;
+            partCanvas.Height = ExtentHeight;
             foreach (var item in Items)
             {
                 SetContainerVisibility(item, true);
@@ -461,6 +483,8 @@ namespace Undefined.DesignerCanvas.Controls
                 SetContainerVisibility(new Rect(_ViewPortRect.Right, _ViewPortRect.Top,
                     delta, _ViewPortRect.Height), false);
             }
+            partCanvas.Width = double.NaN;
+            partCanvas.Height = double.NaN;
         }
 
         #endregion

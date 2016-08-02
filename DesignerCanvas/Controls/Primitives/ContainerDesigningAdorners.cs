@@ -97,6 +97,15 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
     {
         private RotateTransform rotateTransform = new RotateTransform();
 
+        public bool CanResize
+        {
+            get { return (bool)GetValue(CanResizeProperty); }
+            set { SetValue(CanResizeProperty, value); }
+        }
+
+        public static readonly DependencyProperty CanResizeProperty =
+            DependencyProperty.Register("CanResize", typeof(bool), typeof(ResizeRotateAdorner), new PropertyMetadata(true));
+
         public new IBoxCanvasItem AdornedObject => (IBoxCanvasItem) base.AdornedObject;
 
         public ResizeRotateAdorner(IBoxCanvasItem adornedObject) : base(adornedObject)
@@ -105,6 +114,7 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
             this.DataContext = adornedObject;
             this.RenderTransform = rotateTransform;
             this.RenderTransformOrigin = new Point(0.5, 0.5);
+            CanResize = adornedObject.Resizeable;
         }
 
         static ResizeRotateAdorner()

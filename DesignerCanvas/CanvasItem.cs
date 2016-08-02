@@ -141,6 +141,11 @@ namespace Undefined.DesignerCanvas
             return HitTestResult.None;
         }
 
+        public virtual void NotifyUserDraggingStarted()
+        {
+
+        }
+
         /// <summary>
         /// Notifies the item when user dragging the item.
         /// </summary>
@@ -149,7 +154,11 @@ namespace Undefined.DesignerCanvas
             
         }
 
-        public virtual event PropertyChangedEventHandler PropertyChanged;
+        public virtual void NotifyUserDraggingCompleted()
+        {
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {

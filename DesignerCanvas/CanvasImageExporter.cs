@@ -17,7 +17,7 @@ namespace Undefined.DesignerCanvas
     {
         public const double WpfDpi = 96;
 
-        private static void DoEvents()
+        public static void DoEvents()
         {
             var frame = new DispatcherFrame(true);
             Dispatcher.CurrentDispatcher.BeginInvoke(DispatcherPriority.Loaded,
@@ -34,64 +34,8 @@ namespace Undefined.DesignerCanvas
             var image = new RenderTargetBitmap((int) (canvas.ExtentWidth*dpiX/WpfDpi),
                 (int) (canvas.ExtentHeight*dpiX/WpfDpi), dpiX, dpiY,
                 PixelFormats.Pbgra32);
-            canvas.ShowContainers();
-            // Wait for item rendering.
-            DoEvents();
-            image.Render(canvas);
-            canvas.HideCoveredContainers();
+            canvas.RenderImage(image);
             return image;
-            /*
-            var drawing = new DrawingVisual();
-            var aaa = new RenderTargetBitmap(100, 100, dpiX, dpiY,
-                PixelFormats.Pbgra32);
-            //aaa.Render(new Label {Content = "bbb"});
-            ExportImage(aaa, "D:\\test.png");
-            using (var dc = drawing.RenderOpen())
-            {
-                dc.DrawRectangle(Brushes.CadetBlue, null, new Rect(0, 0, 100, 100));
-                foreach (var item in canvas.Items)
-                {
-                    var container = (FrameworkElement)canvas.ItemContainerGenerator.ContainerFromItem(item);
-                    var needDestryContainer = false;
-                    var alreadyGenerated = container != null;
-                    if (!alreadyGenerated)
-                    {
-                        container = (FrameworkElement)canvas.ItemContainerGenerator.CreateContainer(item);
-                        needDestryContainer = true;
-                    }
-                    var itemImage = new RenderTargetBitmap((int) (canvas.ExtentWidth*dpiX/WpfDpi),
-                        (int) (container.ActualHeight*dpiX/WpfDpi), dpiX, dpiY,
-                        PixelFormats.Pbgra32);
-                    itemImage.Render(container);
-                    dc.DrawImage(itemImage, item.Bounds);
-                    if (needDestryContainer) canvas.ItemContainerGenerator.Recycle(container);
-                }
-            }
-            var image = new RenderTargetBitmap((int) (canvas.ExtentWidth*dpiX/WpfDpi),
-                (int) (canvas.ExtentHeight*dpiX/WpfDpi), dpiX, dpiY,
-                PixelFormats.Pbgra32);
-            image.Render(drawing);
-            return image;
-            */
-            /*
-            var image = new WriteableBitmap((int) canvas.ExtentWidth, (int)canvas.ExtentHeight, dpiX, dpiY, PixelFormats.Bgr32, BitmapPalette.);
-            foreach (var item in canvas.Items)
-            {
-                var container = (FrameworkElement) canvas.ItemContainerGenerator.ContainerFromItem(item);
-                var needDestryContainer = false;
-                var alreadyGenerated = container != null;
-                if (!alreadyGenerated)
-                {
-                    container = (FrameworkElement) canvas.ItemContainerGenerator.CreateContainer(item);
-                    needDestryContainer = true;
-                }
-                var itemImage = new RenderTargetBitmap((int) container.ActualWidth, (int) container.ActualHeight, dpiX, dpiY,
-                    PixelFormats.Bgr32);
-                itemImage.Render(container);
-                if (needDestryContainer) canvas.ItemContainerGenerator.Recycle(container);
-
-            }
-            */
         }
 
         public static BitmapEncoder EncoderFromFileName(string fileName)

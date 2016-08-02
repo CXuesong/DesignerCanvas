@@ -50,23 +50,23 @@ namespace Undefined.DesignerCanvas.Controls.Primitives
 
         // Not supported yet.
 
-        //public static Geometry GetContainerClip(DependencyObject obj)
-        //{
-        //    return (Geometry)obj.GetValue(ContainerClipProperty);
-        //}
+        public static Geometry GetContainerClip(DependencyObject obj)
+        {
+            return (Geometry)obj.GetValue(ContainerClipProperty);
+        }
 
-        //public static void SetContainerClip(DependencyObject obj, Geometry value)
-        //{
-        //    obj.SetValue(ContainerClipProperty, value);
-        //}
+        public static void SetContainerClip(DependencyObject obj, Geometry value)
+        {
+            obj.SetValue(ContainerClipProperty, value);
+        }
 
-        //public static readonly DependencyProperty ContainerClipProperty =
-        //    DependencyProperty.RegisterAttached("ContainerClip",
-        //        typeof(Geometry), typeof(DesignerCanvasItemContainer), new FrameworkPropertyMetadata(null, (d, e) =>
-        //        {
-        //            var container = (d as FrameworkElement)?.Parent as DesignerCanvasItemContainer;
-        //            container?.NotifyContentContainerClipChanged((Geometry) e.NewValue);
-        //        }));
+        public static readonly DependencyProperty ContainerClipProperty =
+            DependencyProperty.RegisterAttached("ContainerClip",
+                typeof(Geometry), typeof(DesignerCanvasItemContainer), new FrameworkPropertyMetadata(null, (d, e) =>
+                {
+                    var container = (d as FrameworkElement)?.Parent as DesignerCanvasItemContainer;
+                    container?.NotifyContentContainerClipChanged((Geometry)e.NewValue);
+                }));
 
         /// <summary>
         /// Raises when user attempt to start dragging the item.

@@ -112,7 +112,7 @@
                     <Grid>
                         <!-- Thumbs for operation, but should be transparent. -->
                         <Grid Opacity="0">
-                            <Grid>
+                            <Grid Visibility="{TemplateBinding CanResize, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <!-- ResizeThumb -->
                                 <primitives:ResizeThumb Height="3" Cursor="SizeNS" Margin="0 -4 0 0" VerticalAlignment="Top" HorizontalAlignment="Stretch" />
                                 <primitives:ResizeThumb Width="3" Cursor="SizeWE" Margin="-4 0 0 0" VerticalAlignment="Stretch" HorizontalAlignment="Left"/>
@@ -141,7 +141,7 @@
                                             Margin="0,-20,0,0"
                                             Stroke="Blue"/>
                             <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,-25,0,0"/>
-                            <Grid>
+                            <Grid Visibility="{TemplateBinding CanResize, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Left"
                                            VerticalAlignment="Top" />
                                 <Rectangle Style="{StaticResource ThumbHandle}" HorizontalAlignment="Right"

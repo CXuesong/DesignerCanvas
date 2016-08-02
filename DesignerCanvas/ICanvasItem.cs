@@ -24,10 +24,14 @@ namespace Undefined.DesignerCanvas
         /// </summary>
         HitTestResult HitTest(Rect testRectangle);
 
+        void NotifyUserDraggingStarted();
+
         /// <summary>
         /// Notifies the item when user dragging the item.
         /// </summary>
         void NotifyUserDragging(double deltaX, double deltaY);
+
+        void NotifyUserDraggingCompleted();
     }
 
     public interface IBoxCanvasItem : ICanvasItem
@@ -43,6 +47,5 @@ namespace Undefined.DesignerCanvas
         /// Angle of rotation, in degrees.
         /// </summary>
         double Angle { get; set; }
-
     }
 }

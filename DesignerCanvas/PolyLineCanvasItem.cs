@@ -131,6 +131,16 @@ namespace Undefined.DesignerCanvas
         {
 
         }
+        public virtual void NotifyUserDraggingStarted()
+        {
+
+        }
+
+
+        public virtual void NotifyUserDraggingCompleted()
+        {
+
+        }
 
         public ObservableCollection<Point> Points { get; } = new ObservableCollection<Point>();
 
