@@ -84,6 +84,9 @@ namespace Undefined.DesignerCanvas.Controls
         public static readonly DependencyProperty ShowBoundariesProperty = DependencyProperty.Register("ShowBoundaries",
             typeof (bool), typeof (DesignerCanvas), new PropertyMetadata(false));
 
+        /// <summary>
+        /// The horizontal viewport offset from the origin.
+        /// </summary>
         public double HorizontalScrollOffset
         {
             get { return (double)GetValue(HorizontalScrollOffsetProperty); }
@@ -95,6 +98,9 @@ namespace Undefined.DesignerCanvas.Controls
                 new FrameworkPropertyMetadata(0.0, FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     (d, e) => ((DesignerCanvas)d).InvalidateViewPortRect()));
 
+        /// <summary>
+        /// The vertical viewport offset from the origin.
+        /// </summary>
         public double VerticalScrollOffset
         {
             get { return (double)GetValue(VerticalScrollOffsetProperty); }
@@ -696,6 +702,33 @@ namespace Undefined.DesignerCanvas.Controls
         public Point PointFromCanvas(Point point)
         {
             return partCanvas.TranslatePoint(point, this);
+        }
+
+        /// <summary>
+        /// Scrolls the canvas so that the specific rectangle on
+        /// canvas can be shown in the viewport.
+        /// </summary>
+        public void ScrollIntoView(Rect rect)
+        {
+            var vp = ViewPortRect;
+            double dx = 0.0, dy = 0.0;
+            if (vp.Contains(rect)) return;
+            if (rect.Left > vp.Right) dx = rect.Right - vp.Right;
+            else if (rect.Right < vp.Left) dx = rect.Left - vp.Left;
+            if (rect.Top > vp.Bottom) dy = rect.Bottom - vp.Bottom;
+            else if (rect.Bottom < vp.Top) dy = rect.Top - vp.Top;
+            HorizontalScrollOffset += dx;
+            VerticalScrollOffset += dy;
+        }
+
+        /// <summary>
+        /// Scrolls the canvas so that the specific canvas item 
+        /// can be shown in the viewport.
+        /// </summary>
+        public void ScrollIntoView(ICanvasItem item)
+        {
+            if (item == null) throw new ArgumentNullException(nameof(item));
+            ScrollIntoView(item.Bounds);
         }
 
         /// <summary>
